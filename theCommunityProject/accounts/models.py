@@ -1,10 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
+# 성별, 출생연도가 추가 된 유저 모델 새로 정의
 class User(AbstractUser):
     #유저 아이디
-    user_id = models.CharField(max_length=12, unique=True)
+    username = models.CharField(max_length=12, unique=True)
 
     #비밀번호
     password = models.CharField(null=False, blank=False, max_length=128)
