@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }} - 더 커뮤니티</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body { background: #121212; color: white; font-family: Pretendard, sans-serif; margin: 0; padding: 0; }
+        .container { display: flex; max-width: 1200px; margin: 2rem auto; gap: 2rem; }
+        .main { flex: 2; }
+        .sidebar { flex: 1; }
+        .card { background: #1e1e1e; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        .option { display: flex; justify-content: space-between; padding: 0.5rem; border-radius: 5px; margin-bottom: 0.5rem; background: #2a2a2a; }
+        .option.active { background: #2e5e3d; color: #a5ffcc; }
+        .meta { font-size: 0.75rem; color: #aaa; margin-top: 0.5rem; }
+        .thumbnail { width: 100%; height: 80px; background: #ccc; margin-bottom: 0.5rem; border-radius: 5px; }
+        footer { background: #1f1f1f; padding: 1rem 2rem; color: #888; font-size: 0.75rem; text-align: center; margin-top: 3rem; }
+        input, textarea, button { font-family: inherit; font-size: 1rem; }
+        textarea { width: 100%; height: 4rem; background: #2a2a2a; color: white; border: none; border-radius: 5px; padding: 0.5rem; }
+        button { background: #4caf50; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; margin-top: 0.5rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main">
+        <!-- 질문 -->
+        <div class="card">
+            <h2>{{ post.title }}</h2>
+            <span>{{ post.option1 }}</span>
+            <span>{{ post.option2 }}</span>
+            <span>{{ post.option3 }}</span>
+        </div>
+
+        <!-- 댓글 목록 -->
+        <div class="card">
+            <h3>의견</h3>
+            {% for comment in post.comments.all %}
+                <div style="border-top: 1px solid #333; padding: 0.5rem 0;">
+                    <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
+                    <div class="meta">{{ comment.created_at|date:"Y-m-d H:i" }}</div>
+                </div>
+            {% empty %}
+                <p>아직 의견이 없습니다.</p>
+            {% endfor %}
+        </div>
+
+        <!-- 댓글 입력 폼 -->
+        <div class="card">
+            <h3>댓글 작성</h3>
+            <form method="post" action="{% url 'community:detail_comment_create' post.id %}">
+                {% csrf_token %}
+                {{ comment_form.content }}
+                <button type="submit">등록</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 사이드바 -->
+    <div class="sidebar">
+        <div class="card">
+            <h4>관련 아티클</h4>
+            {% for related in related_posts %}
+                <div class="thumbnail"></div>
+                <div>{{ related.title|truncatechars:25 }}</div>
+                <div class="meta">👁 {{ related.views }} · 💬 {{ related.comments.count }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<footer>
+    더 커뮤니티 © 2025 | CONTACT US
+</footer>
+
+</body>
+</html>
