@@ -25,6 +25,10 @@
 
 <div class="container">
     <div class="main">
+        <!-- 홈으로 이동 -->
+    <div class="card" style="margin-bottom: 1rem;">
+        <a href="{% url 'community:home' %}" style="color: #a5ffcc; text-decoration: none;">← 커뮤니티 홈으로</a>
+    </div>
         <!-- 질문 -->
         <div class="card">
             <h2>{{ post.title }}</h2>
@@ -33,18 +37,33 @@
             <span>{{ post.option3 }}</span>
         </div>
 
-        <!-- 댓글 목록 -->
-        <div class="card">
-            <h3>의견</h3>
-            {% for comment in post.comments.all %}
-                <div style="border-top: 1px solid #333; padding: 0.5rem 0;">
-                    <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
-                    <div class="meta">{{ comment.created_at|date:"Y-m-d H:i" }}</div>
-                </div>
-            {% empty %}
-                <p>아직 의견이 없습니다.</p>
-            {% endfor %}
+       <!-- 댓글 목록 -->
+<div class="card">
+    <h3>의견</h3>
+    {% for comment in post.comments.all %}
+        <div style="border-top: 1px solid #333; padding: 0.5rem 0;">
+            <strong>{{ comment.user.username }}</strong>:
+
+            {% if request.user == comment.user and editing_comment_id == comment.id %}
+                <!-- 댓글 수정 폼 -->
+                <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
+                    {% csrf_token %}
+                    <textarea name="content">{{ comment.content }}</textarea>
+                    <button type="submit">수정 완료</button>
+                </form>
+            {% else %}
+                {{ comment.content }}
+                {% if request.user == comment.user %}
+                    <a href="?edit={{ comment.id }}" style="font-size: 0.75rem; margin-left: 0.5rem;">수정</a>
+                {% endif %}
+            {% endif %}
+
+            <div class="meta">{{ comment.created_at|date:"Y-m-d H:i" }}</div>
         </div>
+    {% empty %}
+        <p>아직 의견이 없습니다.</p>
+    {% endfor %}
+</div>
 
         <!-- 댓글 입력 폼 -->
         <div class="card">

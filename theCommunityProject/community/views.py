@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 
 from community.forms import CommentForm
 from community.models import Post, Comment
@@ -33,7 +34,8 @@ def detail(request, post_id):
     """
     게시글 상세 페이지 출력
     """
-    post = Post.objects.get(id=post_id)
+    post = get_object_or_404(Post, id=post_id)
+    editing_comment_id = request.GET.get('edit')
 
     context = {
         'post': post,
@@ -45,20 +47,21 @@ def detail(request, post_id):
             comment.user = request.user
             comment.post = post
             comment.save()
-            return redirect('detail', post_id=post_id)
+            return redirect('community:detail', post_id=post_id)
         else:
-            messages.error("댓글 내용을 확인해 주세요. ")
+            messages.error(request, "댓글 내용을 확인해 주세요. ")
     else:
         comment_form = CommentForm()
 
     context = {
         'post': post,
         'comment_form': comment_form,
+        'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
     }
 
     return render(request, 'community_detail.html', context)
 
-#@login_required(login_url='login') 병합 후 추가
+@login_required(login_url='accounts:login')
 def detail_comment_create(request, post_id):
     """
     댓글 등록
@@ -72,35 +75,54 @@ def detail_comment_create(request, post_id):
             comment.post = get_object_or_404(Post, id=post_id)
 
             comment.save()
-            return redirect('detail', comment.post.pk)
+            return redirect('community:detail', comment.post.pk)
     else:
         form = CommentForm()
     context = {
         'form': form,
     }
-    return redirect('detail', context)
+    return render(request,'community_detail.html', context)
 
+@login_required(login_url='accounts:login')
 def detail_comment_update(request, post_id, comment_id):
     """
     댓글 수정
     """
-    post = Post.objects.get(id=post_id)
+    post = get_object_or_404(Post, id=post_id)
     comment = get_object_or_404(Comment, id=comment_id)
+
     if request.user != comment.user:
         messages.error(request, '수정 권한이 없습니다.')
-        return redirect('detail', post.pk)
+        return redirect('community:detail', post.pk)
 
     if request.method == 'POST':
         form = CommentForm(request.POST, instance=comment)
         if form.is_valid():
-            comment = form.save(commit=False)
-            comment.save()
-            return redirect('detail', post.pk)
+            form.save()
+            return redirect('community:detail', post.pk)
 
     else:
         form = CommentForm(instance=comment)
-        context = {
-            'form': form,
-        }
+    context = {
+        'post': post,
+        'comment_form': form,
+        'editing_comment_id': comment.id,
+    }
+    return render(request, 'community_detail.html', context)
 
-    return redirect('detail', context)
+
+@login_required(login_url='accounts:login')
+def detail_comment_delate(request, post_id, comment_id):
+    """
+    댓글 삭제
+    """
+    post = get_object_or_404(Post, id=post_id)
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    if request.user != comment.user:
+        messages.error(request, "삭제 권한이 없습니다.")
+
+    if request.method == 'POST':
+        comment.delete()
+
+    return redirect('community:detail', post.pk)
