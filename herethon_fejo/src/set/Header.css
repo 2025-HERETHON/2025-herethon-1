@@ -1,0 +1,53 @@
+header{
+    width: 120rem;
+    height: 5rem;
+    background-color: #171717;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.gnb{
+    width: 88.5rem;
+    height: 2.25rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 27.2rem;
+    margin: 0 15.75rem;
+}
+header .logo{
+    width: 6.875rem;
+    height: 1.25rem;
+    padding: 0.5rem 0;
+}
+.menu{
+    width: 18rem;
+    height: 2.25rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3.25rem;
+}
+.article, .community, .policy{
+    font-size: 1rem ;
+    font-weight: 500;
+    color: #A3A3A3;
+    padding: 0.375rem 0;
+}
+.login{
+    width: 8.5625rem;
+    height: 2.25rem;
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6.25rem;
+}
+.join{
+    color: #262626;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+a{
+    text-decoration: none;
+}
