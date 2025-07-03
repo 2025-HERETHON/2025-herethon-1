@@ -4,94 +4,105 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ post.title }} - 더 커뮤니티</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        body { background: #121212; color: white; font-family: Pretendard, sans-serif; margin: 0; padding: 0; }
-        .container { display: flex; max-width: 1200px; margin: 2rem auto; gap: 2rem; }
-        .main { flex: 2; }
-        .sidebar { flex: 1; }
-        .card { background: #1e1e1e; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
-        .option { display: flex; justify-content: space-between; padding: 0.5rem; border-radius: 5px; margin-bottom: 0.5rem; background: #2a2a2a; }
-        .option.active { background: #2e5e3d; color: #a5ffcc; }
-        .meta { font-size: 0.75rem; color: #aaa; margin-top: 0.5rem; }
-        .thumbnail { width: 100%; height: 80px; background: #ccc; margin-bottom: 0.5rem; border-radius: 5px; }
-        footer { background: #1f1f1f; padding: 1rem 2rem; color: #888; font-size: 0.75rem; text-align: center; margin-top: 3rem; }
-        input, textarea, button { font-family: inherit; font-size: 1rem; }
-        textarea { width: 100%; height: 4rem; background: #2a2a2a; color: white; border: none; border-radius: 5px; padding: 0.5rem; }
-        button { background: #4caf50; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; margin-top: 0.5rem; cursor: pointer; }
-    </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="main">
-        <!-- 홈으로 이동 -->
-    <div class="card" style="margin-bottom: 1rem;">
-        <a href="{% url 'community:home' %}" style="color: #a5ffcc; text-decoration: none;">← 커뮤니티 홈으로</a>
-    </div>
-        <!-- 질문 -->
-        <div class="card">
-            <h2>{{ post.title }}</h2>
-            <span>{{ post.option1 }}</span>
-            <span>{{ post.option2 }}</span>
-            <span>{{ post.option3 }}</span>
-        </div>
-
-       <!-- 댓글 목록 -->
-<div class="card">
-    <h3>의견</h3>
-    {% for comment in post.comments.all %}
-        <div style="border-top: 1px solid #333; padding: 0.5rem 0;">
-            <strong>{{ comment.user.username }}</strong>:
-
-            {% if request.user == comment.user and editing_comment_id == comment.id %}
-                <!-- 댓글 수정 폼 -->
-                <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
-                    {% csrf_token %}
-                    <textarea name="content">{{ comment.content }}</textarea>
-                    <button type="submit">수정 완료</button>
-                </form>
-            {% else %}
-                {{ comment.content }}
-                {% if request.user == comment.user %}
-                    <a href="?edit={{ comment.id }}" style="font-size: 0.75rem; margin-left: 0.5rem;">수정</a>
-                {% endif %}
-            {% endif %}
-
-            <div class="meta">{{ comment.created_at|date:"Y-m-d H:i" }}</div>
-        </div>
-    {% empty %}
-        <p>아직 의견이 없습니다.</p>
+{% if messages %}
+  <div>
+    {% for message in messages %}
+      <p style="color:red;">{{ message }}</p>
     {% endfor %}
-</div>
+  </div>
+{% endif %}
 
-        <!-- 댓글 입력 폼 -->
-        <div class="card">
-            <h3>댓글 작성</h3>
-            <form method="post" action="{% url 'community:detail_comment_create' post.id %}">
-                {% csrf_token %}
-                {{ comment_form.content }}
-                <button type="submit">등록</button>
-            </form>
-        </div>
+<a href="{% url 'community:home' %}">← 커뮤니티 홈으로</a>
+
+<h1>{{ post.title }}</h1>
+<p>{{ post.option1 }}</p>
+<p>{{ post.option2 }}</p>
+<p>{{ post.option3 }}</p>
+
+<h2>의견</h2>
+
+{% for comment in post.comments.all %}
+  <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
+    <strong>{{ comment.user.username }}</strong>:
+
+    {% if editing_comment_id == comment.id %}
+      <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
+        {% csrf_token %}
+        <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
+        <button type="submit">수정 완료</button>
+      </form>
+    {% else %}
+      <p>{{ comment.content }}</p>
+      {% if request.user == comment.user %}
+        <a href="?edit_comment={{ comment.id }}">수정</a>
+      {% endif %}
+    {% endif %}
+
+    <p>
+      {{ comment.created_at|date:"Y-m-d H:i" }}
+      <button onclick="toggleReply({{ comment.id }})">
+        💬 대댓글 ({{ comment.replies.count }})
+      </button>
+      <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
+    </p>
+
+    <div id="reply-section-{{ comment.id }}" style="display:none; margin-left:20px; border-left:2px solid #000; padding-left:10px;">
+      {% for reply in comment.replies.all %}
+  <div id="reply_{{ reply.id }}">
+    <strong>{{ reply.user.username }}</strong>:
+
+    {% if editing_reply_id == reply.id %}
+      <!-- 답글 수정 폼 -->
+      <form method="post" action="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">
+        {% csrf_token %}
+        {{ reply_form.content }}
+        <button type="submit">수정 완료</button>
+      </form>
+    {% else %}
+      <p>{{ reply.content }}</p>
+      {% if request.user == reply.user %}
+        <a href="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">수정</a>
+      {% endif %}
+    {% endif %}
+
+    <small>{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+  </div>
+      {% empty %}
+        <p>대댓글이 없습니다.</p>
+      {% endfor %}
+
+      <form method="post" action="{% url 'community:detail_reply_create' post.id comment.id %}">
+        {% csrf_token %}
+        <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea><br>
+        <button type="submit">등록</button>
+      </form>
     </div>
 
-    <!-- 사이드바 -->
-    <div class="sidebar">
-        <div class="card">
-            <h4>관련 아티클</h4>
-            {% for related in related_posts %}
-                <div class="thumbnail"></div>
-                <div>{{ related.title|truncatechars:25 }}</div>
-                <div class="meta">👁 {{ related.views }} · 💬 {{ related.comments.count }}</div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+  </div>
+{% empty %}
+  <p>아직 의견이 없습니다.</p>
+{% endfor %}
 
-<footer>
-    더 커뮤니티 © 2025 | CONTACT US
-</footer>
+<h3>댓글 작성</h3>
+<form method="post" action="{% url 'community:detail_comment_create' post.id %}">
+  {% csrf_token %}
+  {{ comment_form.content }}
+  <button type="submit">등록</button>
+</form>
+
+<script>
+  function toggleReply(commentId) {
+    const el = document.getElementById('reply-section-' + commentId);
+    if (el.style.display === 'block') {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'block';
+    }
+  }
+</script>
 
 </body>
 </html>

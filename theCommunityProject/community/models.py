@@ -50,6 +50,7 @@ class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    liked = models.ManyToManyField(User, related_name='liked_comment')  # 추천인 추가
 
     def get_vote_choice(self):
         try:
@@ -58,10 +59,11 @@ class Comment(models.Model):
             return None
 
 class Reply(models.Model):
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='replies')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    liked = models.ManyToManyField(User, related_name='liked_reply')  # 추천인 추가
 
     def get_vote_choice(self):
         try:

@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 
-from community.forms import CommentForm
-from community.models import Post, Comment
+from community.forms import CommentForm, ReplyForm
+from community.models import Post, Comment, Reply
 
 
 # Create your views here.
@@ -36,6 +36,8 @@ def detail(request, post_id):
     """
     post = get_object_or_404(Post, id=post_id)
     editing_comment_id = request.GET.get('edit')
+    editing_reply_id = request.GET.get('edit_reply')
+
 
     context = {
         'post': post,
@@ -53,10 +55,21 @@ def detail(request, post_id):
     else:
         comment_form = CommentForm()
 
+    reply_form = None
+    if editing_reply_id:
+        try:
+            reply_obj = Reply.objects.get(id=editing_reply_id)
+            reply_form = ReplyForm(instance=reply_obj)
+        except Reply.DoesNotExist:
+            editing_reply_id = None
+
+
     context = {
         'post': post,
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
+        'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
+        'reply_form': reply_form,
     }
 
     return render(request, 'community_detail.html', context)
@@ -126,3 +139,102 @@ def detail_comment_delate(request, post_id, comment_id):
         comment.delete()
 
     return redirect('community:detail', post.pk)
+
+@login_required(login_url='accounts:login')
+def detail_comment_like(request, post_id, comment_id):
+    """
+    좋아요 기능
+    """
+    post = get_object_or_404(Post, id=post_id)
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    if request.user == comment.user:
+        messages.error(request, "본인이 작성한 댓글은 추천할 수 없습니다.")
+        return redirect('community:detail', post.pk)
+    else:
+        comment.liked.add(request.user)
+    return redirect('{}#comment_{}'.format(
+        resolve_url('community:detail', post_id=post_id), comment_id
+    ))
+
+@login_required(login_url='accounts:login')
+def detail_reply_create(request, post_id, comment_id):
+    """
+    답글 생성
+    """
+    if request.method == 'POST':
+        form = ReplyForm(request.POST)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.user = request.user
+            reply.comment = get_object_or_404(Comment, id=comment_id)
+            reply.save()
+            return redirect('community:detail', post_id=post_id)
+    else:
+        form = ReplyForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'community_detail.html', context)
+
+@login_required(login_url='accounts:login')
+def detail_reply_update(request, post_id, comment_id, reply_id):
+    """
+    답글 수정
+    """
+    post = get_object_or_404(Post, id=post_id)
+    #comment = get_object_or_404(Comment, id=comment_id)
+    reply = get_object_or_404(Reply, id=reply_id)
+
+    if request.user != reply.user:
+        messages.error(request, '수정 권한이 없습니다.')
+        return redirect('community:detail', post.pk)
+
+    if request.method == 'POST':
+        form = ReplyForm(request.POST, instance=reply)
+        if form.is_valid():
+            form.save()
+            return redirect(f'/community/{post.pk}/?edit_reply={reply.id}')
+
+
+    else:
+        form = ReplyForm(instance=reply)
+    context = {
+        'post': post,
+        'editing_reply_id': reply.id,
+        'reply_form': form,
+    }
+    return render(request, 'community_detail.html', context)
+
+@login_required(login_url='accounts:login')
+def detail_reply_delete(request, post_id, comment_id, reply_id):
+    """
+    답글 삭제
+    """
+    post = get_object_or_404(Post, id=post_id)
+    #comment = get_object_or_404(Comment, id=comment_id)
+    reply = get_object_or_404(Reply, id=reply_id)
+
+    if request.user != reply.user:
+        messages.error(request, "삭제 권한이 없습니다.")
+
+    if request.method == 'POST':
+        reply.delete()
+
+    return redirect('community:detail', post.pk)
+
+@login_required(login_url='accounts:login')
+def detail_reply_like(request, post_id, comment_id, reply_id):
+    post = get_object_or_404(Post, id=post_id)
+    #comment = get_object_or_404(Comment, id=comment_id)
+    reply = get_object_or_404(Reply, id=reply_id)
+
+    if request.user == reply.user:
+        messages.error(request, "본인이 작성한 답글은 추천할 수 없습니다.")
+        return redirect('community:detail', post.pk)
+    else:
+        reply.liked.add(request.user)
+    return redirect('{}#reply_{}'.format(
+        resolve_url('community:detail', post_id=post_id), comment_id, reply_id
+    ))
