@@ -1,8 +1,8 @@
 import re
 from django.shortcuts import render, redirect
 from .models import User
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from django.views.decorators.http import require_GET
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 
 def signup(request):
@@ -33,12 +33,12 @@ def signup(request):
         return render(request, 'signup.html')
 
 # 아이디 중복 확인용 함수
-@api_view(['GET']) 
+@require_GET 
 def check_username(request):
-    username = request.query_params.get('username')
+    username = request.GET.get('username')
     
     is_taken = User.objects.filter(username=username).exists()
-    return Response({'is_taken': is_taken})
+    return JsonResponse({'is_taken': is_taken})
 
 def login(request):
     if request.method=='POST':
