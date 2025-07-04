@@ -1,3 +1,4 @@
+/* 전체 페이지 구조 컨테이너 속성 */
 div .community {
   color: #fff;
 }
@@ -26,6 +27,7 @@ div .community {
   gap: var(--spacing-32, 2rem);
   flex-shrink: 0;
 }
+/* 투표 컨테이너 내 속성들 */
 #vote {
   display: flex;
   padding: -b-spacing-0;
@@ -292,6 +294,7 @@ div .community {
   letter-spacing: var(--Body-lg-letter-spacing, 0rem);
 }
 
+/* 댓글 작성 필드 css */
 .comment-reply-inputfield {
   display: flex;
   padding: var(--spacing-16, 1rem);
@@ -454,6 +457,7 @@ div .community {
   line-height: var(--Body-lg-line-height, 1.5rem); /* 150% */
   letter-spacing: var(--Body-lg-letter-spacing, 0rem);
 }
+/* 댓글 관련 css 속성 */
 .all-comment-group {
   display: flex;
   flex-direction: row;
@@ -497,6 +501,28 @@ div .community {
   align-items: center;
   align-self: stretch;
 }
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4, 0.25rem);
+  overflow: hidden;
+  color: var(--color-text-primary, #fff);
+  text-overflow: ellipsis;
+}
+.nickname {
+  overflow: hidden;
+  color: var(--color-text-primary, #fff);
+  text-overflow: ellipsis;
+
+  /* Body/md/medium */
+  font-family: Pretendard;
+  font-size: var(--Body-md-font-size, 0.875rem);
+  font-style: normal;
+  font-weight: 500;
+  line-height: var(--Body-md-line-height, 1.25rem); /* 142.857% */
+  letter-spacing: var(--Body-md-letter-spacing, -0.0125rem);
+  -webkit-box-orient: vertical;
+}
 .profile {
   display: flex;
   align-items: center;
@@ -535,12 +561,13 @@ div .community {
   gap: -b-spacing-0;
   align-self: stretch;
 }
+/* -webkit- 호환성 어쩌고 경고는 무시해도 괜찮습니다! */
 .comment-place {
-  display: -webkit-box; /* ✅ 핵심 */
-  -webkit-box-orient: vertical; /* ✅ 핵심 */
-  -webkit-line-clamp: 2; /* ✅ 줄 수 제한 */
-  overflow: hidden; /* ✅ 넘치는 내용 숨기기 */
-  text-overflow: ellipsis; /* ✅ 줄임표 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   color: #fff;
   font-family: Pretendard;
@@ -593,23 +620,13 @@ div .community {
   gap: var(--spacing-2, 0.125rem);
   border-radius: var(--border-radius-lg, 0.5rem);
 }
-.comment-div3 {
-  color: var(--color-text-secondary, #a3a3a3);
-  text-align: center;
 
-  /* Body/sm/medium */
-  font-family: Pretendard;
-  font-size: var(--Body-sm-font-size, 0.75rem);
-  font-style: normal;
-  font-weight: 500;
-  line-height: var(--Body-sm-line-height, 1rem); /* 133.333% */
-  letter-spacing: var(--Body-sm-letter-spacing, 0rem);
-}
 .more-see {
   border: none;
   background-color: transparent;
   cursor: pointer;
 }
+/* 기타 의견 관련 css */
 .another-opinion {
   display: flex;
   justify-content: space-between;
@@ -654,6 +671,7 @@ div .community {
   line-height: var(--Body-lg-line-height, 1.5rem); /* 150% */
   letter-spacing: var(--Body-lg-letter-spacing, 0rem);
 }
+/* 아티클 카드 관련 속성 */
 .article-category {
   align-self: stretch;
   color: var(--color-text-secondary, #a3a3a3);
