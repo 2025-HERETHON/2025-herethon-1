@@ -1,0 +1,274 @@
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404, resolve_url
+from django.contrib import messages
+
+from proposals.forms import ProposalCommentForm, ProposalReplyForm
+from proposals.models import ProposalPost, ProposalComment, ProposalReply
+
+# @login_required(login_url='accounts:login')
+def home(request):
+    """
+    정책 제안 게시글 리스트 출력
+    """
+    proposals = ProposalPost.objects.all().order_by('-created_at')
+    return render(request, 'proposals_home.html', {'proposals': proposals})
+
+# @login_required(login_url='accounts:login')
+def detail(request, post_id):
+    """
+    게시글 상세 페이지 출력
+    """
+    post = get_object_or_404(ProposalPost, id=post_id)
+
+    #댓글 수정 시, 수정할 댓글 id를 받아옴
+    editing_comment_id = request.GET.get('edit_comment')
+    #답글 수정 시, 수정할 답글 id를 받아옴
+    editing_reply_id = request.GET.get('edit_reply')
+    #답글 수정 완료 시, 답글 창 열린 상태 유지하기 위해서 답글이 달린 댓글의 id를 받아옴
+    open_reply_comment_id = request.GET.get('open_reply')
+
+    #답글 수정 완료 시 수정 완료한 답글 위치로 스크롤 하기 위해 검사
+    opened_reply_comment_id = None
+    if editing_reply_id:                                 #수정했거나 수정 예정인 답글이 있는 경우
+        editing_reply_id = int(editing_reply_id)
+        try:                                             #답글 토글 열림 상태
+            reply = ProposalReply.objects.get(pk=editing_reply_id)
+            opened_reply_comment_id = reply.comment.id
+        except ProposalReply.DoesNotExist:
+            editing_reply_id = None
+            pass
+    elif open_reply_comment_id:                          #답글 창이 열려 있었던 경우
+        try:
+            opened_reply_comment_id = int(open_reply_comment_id)  #답글 토글이 열려있던 댓글 id 정보 저장
+        except ValueError:
+            opened_reply_comment_id = None
+
+    #답글 수정 관련 시도 없음, 답글 토글 닫혀있던 경우
+    else:
+        opened_reply_comment_id = None
+        open_reply_comment_id = None
+
+    if(request.method == 'POST'):
+        comment_form = ProposalCommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
+            return redirect('proposals:detail', post_id=post_id)
+        else:
+            messages.error(request, "댓글 내용을 확인해 주세요. ")
+    else:
+        comment_form = ProposalCommentForm()
+
+    reply_form = None
+    if editing_reply_id:
+        try:
+            reply_obj = ProposalReply.objects.get(id=editing_reply_id)
+            reply_form = ProposalReplyForm(instance=reply_obj)
+        except ProposalReply.DoesNotExist:
+            editing_reply_id = None
+
+    context = {
+        'post': post,
+        'comment_form': comment_form,
+        'reply_form': reply_form,
+        'editing_comment_id': editing_comment_id,
+        'editing_reply_id': editing_reply_id,
+        'opened_reply_comment_id': opened_reply_comment_id,
+    }
+
+    return render(request, 'proposals_detail.html', context)
+
+#정책 제안 게시판의 경우 post도 좋아요 가능
+@login_required(login_url='accounts:login')
+def detail_post_like(request, post_id):
+    post = get_object_or_404(ProposalPost, id=post_id)
+    if request.user in post.liked.all():
+        post.liked.remove(request.user)
+    else:
+        post.liked.add(request.user)
+    return redirect('proposals:detail', post_id)
+
+#스크랩 기능 추가
+@login_required(login_url='accounts:login')
+def detail_post_scrap(request, post_id):
+    post = get_object_or_404(ProposalPost, id=post_id)
+    if request.user in post.scrapped.all():
+        post.scrapped.remove(request.user)
+    else:
+        post.scrapped.add(request.user)
+    return redirect('proposals:detail', post_id)
+
+@login_required(login_url='accounts:login')
+def detail_comment_create(request, post_id):
+    """
+    댓글 등록
+    """
+    if(request.method == 'POST'):
+        form = ProposalCommentForm(request.POST)
+        if(form.is_valid()):
+            comment = form.save(commit=False)
+            comment.user = request.user
+            
+            comment.proposal = get_object_or_404(ProposalPost, id=post_id)
+
+            comment.save()
+            return redirect('proposals:detail', comment.proposal.pk)
+    else:
+        form = ProposalCommentForm()
+    context = {
+        'form': form,
+    }
+    return render(request,'proposals_detail.html', context)
+
+@login_required(login_url='accounts:login')
+def detail_comment_update(request, post_id, comment_id):
+    """
+    댓글 수정
+    """
+    post = get_object_or_404(ProposalPost, id=post_id)
+    comment = get_object_or_404(ProposalComment, id=comment_id)
+
+    if request.user != comment.user:
+        messages.error(request, '수정 권한이 없습니다.')
+        return redirect('proposals:detail', post.pk)
+
+    if request.method == 'POST':
+        form = ProposalCommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            return redirect('proposals:detail', post.pk)
+
+    else:
+        form = ProposalCommentForm(instance=comment)
+        
+    context = {
+        'post': post,
+        'comment_form': form,
+        'editing_comment_id': comment.id,
+    }
+    return render(request, 'proposals_detail.html', context)
+
+
+@login_required(login_url='accounts:login')
+def detail_comment_delete(request, post_id, comment_id):
+    """
+    댓글 삭제
+    """
+    post = get_object_or_404(ProposalPost, id=post_id)
+    comment = get_object_or_404(ProposalComment, id=comment_id)
+
+    if request.user != comment.user:
+        messages.error(request, "삭제 권한이 없습니다.")
+
+    if request.method == 'POST':
+        comment.delete()
+
+    return redirect('proposals:detail', post.pk)
+
+@login_required(login_url='accounts:login')
+def detail_comment_like(request, post_id, comment_id):
+    """
+    좋아요 기능
+    """
+    post = get_object_or_404(ProposalPost, id=post_id)
+    comment = get_object_or_404(ProposalComment, id=comment_id)
+
+    if request.user == comment.user:
+        messages.error(request, "본인이 작성한 댓글은 추천할 수 없습니다.")
+        return redirect('proposals:detail', post.pk)
+    else:
+        comment.liked.add(request.user)
+    return redirect('{}#comment_{}'.format(
+        resolve_url('proposals:detail', post_id=post_id), comment_id
+    ))
+
+@login_required(login_url='accounts:login')
+def detail_reply_create(request, post_id, comment_id):
+    """
+    답글 생성
+    """
+    if request.method == 'POST':
+        form = ProposalReplyForm(request.POST)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.user = request.user
+            reply.comment = get_object_or_404(ProposalComment, id=comment_id)
+            reply.save()
+            return redirect('proposals:detail', post_id=post_id)
+    else:
+        form = ProposalReplyForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'proposals_detail.html', context)
+
+@login_required(login_url='accounts:login')
+def detail_reply_update(request, post_id, comment_id, reply_id):
+    """
+    답글 수정
+    """
+    post = get_object_or_404(ProposalPost, id=post_id)
+    #comment = get_object_or_404(ProposalComment, id=comment_id)
+    reply = get_object_or_404(ProposalReply, id=reply_id)
+
+    if request.user != reply.user:
+        messages.error(request, '수정 권한이 없습니다.')
+        return redirect('proposals:detail', post.pk)
+
+    if request.method == 'POST':
+        if request.POST.get("form_type") == "reply_update":
+            form = ProposalReplyForm(request.POST, instance=reply)
+            if form.is_valid():
+                form.save()
+                # 수정 완료 후 리다이렉트 시
+                return redirect(f"/proposals/{post.pk}/?open_reply={comment_id}#reply_{reply.id}")
+
+
+    else:
+        return redirect(f'/proposals/{post.pk}/?edit_reply={reply.id}#reply_{reply.id}')
+
+    form = ProposalReplyForm(instance=reply)
+    context = {
+        'post': post,
+        'editing_reply_id': reply.id,
+        'reply_form': form,
+    }
+    return render(request, 'proposals_detail.html', context)
+
+@login_required(login_url='accounts:login')
+def detail_reply_delete(request, post_id, comment_id, reply_id):
+    """
+    답글 삭제
+    """
+    post = get_object_or_404(ProposalPost, id=post_id)
+    #comment = get_object_or_404(ProposalComment, id=comment_id)
+    reply = get_object_or_404(ProposalReply, id=reply_id)
+
+    if request.user != reply.user:
+        messages.error(request, "삭제 권한이 없습니다.")
+
+    if request.method == 'POST':
+        reply.delete()
+
+    return redirect('proposals:detail', post.pk)
+
+@login_required(login_url='accounts:login')
+def detail_reply_like(request, post_id, comment_id, reply_id):
+    """
+    답글 좋아요
+    """
+    post = get_object_or_404(ProposalPost, id=post_id)
+    #comment = get_object_or_404(ProposalComment, id=comment_id)
+    reply = get_object_or_404(ProposalReply, id=reply_id)
+
+    if request.user == reply.user:
+        messages.error(request, "본인이 작성한 답글은 추천할 수 없습니다.")
+        return redirect('proposals:detail', post.pk)
+    else:
+        reply.liked.add(request.user)
+    return redirect('{}#reply_{}'.format(
+        resolve_url('proposals:detail', post_id=post_id), comment_id, reply_id
+    ))
