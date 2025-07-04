@@ -12,6 +12,7 @@ from community.models import Post, Comment, Reply, Vote
 
 # Create your views here.
 
+@login_required(login_url='accounts:login')
 def home(request):
     """
     커뮤니티 게시글 리스트 출력
@@ -32,7 +33,7 @@ def home(request):
     }
     return render(request, 'community_home.html', context)
 
-#post 정보 넘김
+@login_required(login_url='accounts:login')
 def detail(request, post_id):
     """
     게시글 상세 페이지 출력
