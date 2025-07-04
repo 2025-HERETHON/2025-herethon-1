@@ -47,6 +47,14 @@ def detail(request, post_id):
         if vote:
             voted_choice = vote.choice
 
+    profile_images = {
+        1 : '/media/profile_image/A.jpg',
+        2 : '/media/profile_image/B.jpg',
+        3 : '/media/profile_image/C.jpg',
+    }
+
+    user_profile_image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
+
     #댓글 수정 시, 수정할 댓글 id를 받아옴
     editing_comment_id = request.GET.get('edit_comment')
     #답글 수정 시, 수정할 답글 id를 받아옴
@@ -107,6 +115,7 @@ def detail(request, post_id):
         'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': reply_form,
         'voted_choice': voted_choice,
+        'user_profile_image': user_profile_image,
     }
 
     return render(request, 'community_detail.html', context)

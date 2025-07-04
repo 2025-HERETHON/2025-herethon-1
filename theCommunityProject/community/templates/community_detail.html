@@ -54,6 +54,7 @@
 
 {% for comment in post.comments.all %}
   <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
+    <img src="{{ user_profile_image }}" width="50" height="50">
     <strong>{{ comment.user.username }}</strong>:
 
     {% if editing_comment_id == comment.id %}
@@ -77,7 +78,7 @@
     <p>
       {{ comment.created_at|date:"Y-m-d H:i" }}
       <button onclick="toggleReply({{ comment.id }})">
-        💬 대댓글 ({{ comment.replies.count }})
+        💬 답글 ({{ comment.replies.count }})
       </button>
       <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
     </p>
@@ -90,6 +91,7 @@
 
       {% for reply in comment.replies.all %}
       <div id="reply_{{ reply.id }}">
+       <img src="{{ user_profile_image }}" width="50" height="50">
         <strong>{{ reply.user.username }}</strong>:
 
         {% if editing_reply_id == reply.id %}
