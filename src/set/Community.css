@@ -200,6 +200,47 @@ div .community {
   border-radius: 6249.9375rem;
   border: 1.5px solid #fff;
 }
+.vote-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-12, 0.75rem);
+}
+.vote-complete-buttons {
+  display: flex;
+  padding: var(--spacing-6, 0.375rem) var(--spacing-12, 0.75rem);
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-2, 0.125rem);
+  border-radius: var(--border-radius-lg, 0.5rem);
+  background: var(--color-indigo-400, #9d78ed);
+  border: none;
+  cursor: pointer;
+}
+.vote-complete-message {
+  color: var(--color-text-primary, #fff);
+  text-align: center;
+
+  /* Body/sm/medium */
+  font-family: Pretendard;
+  font-size: var(--Body-sm-font-size, 0.75rem);
+  font-style: normal;
+  font-weight: 500;
+  line-height: var(--Body-sm-line-height, 1rem); /* 133.333% */
+  letter-spacing: var(--Body-sm-letter-spacing, 0rem);
+}
+
+.vote-caution {
+  color: var(--color-text-secondary, #a3a3a3);
+
+  /* Body/sm/regular */
+  font-family: Pretendard;
+  font-size: var(--Body-sm-font-size, 0.75rem);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--Body-sm-line-height, 1rem); /* 133.333% */
+  letter-spacing: var(--Body-sm-letter-spacing, 0rem);
+}
 
 .bottom {
   display: flex;
@@ -208,12 +249,12 @@ div .community {
   align-items: flex-start;
   align-self: stretch;
 }
-.div6 {
+.vote-div6 {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
-.div7 {
+.vote-div7 {
   display: flex;
   padding: 0.5rem -b-spacing-0;
   justify-content: center;
@@ -221,13 +262,13 @@ div .community {
   gap: 0.125rem;
   border-radius: 0.5rem;
 }
-.div8 {
+.vote-div8 {
   display: flex;
   align-items: center;
   gap: var(--spacing-24, 1.5rem);
 }
 
-.div8 :hover {
+.vote-div8 :hover {
   color: #ad97f6;
 }
 .mini-menu {
@@ -412,6 +453,12 @@ div .community {
   line-height: var(--Body-lg-line-height, 1.5rem); /* 150% */
   letter-spacing: var(--Body-lg-letter-spacing, 0rem);
 }
+.all-comment-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-24, 1.5rem);
+}
 .vote-comment {
   display: flex;
   width: 20rem;
@@ -421,6 +468,7 @@ div .community {
 }
 .community-vote {
   display: flex;
+  width: 20rem;
   padding: var(--spacing-24, 1.5rem);
   align-items: center;
   gap: var(--spacing-12, 0.75rem);
@@ -428,6 +476,7 @@ div .community {
   border-radius: var(--border-radius-2xl, 1rem);
   background: var(--color-bg-secondary, #404040);
 }
+
 .comment-reply-card {
   display: flex;
   padding: var(--spacing-16, 1rem);

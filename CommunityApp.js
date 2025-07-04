@@ -1,5 +1,6 @@
 import { Header2 } from "./components/Header2.js";
 import { Footer } from "./components/Footer.js";
+import { renderVoteBlock } from "./components/VoteBlock.js";
 document.getElementById("header").innerHTML = `
 ${Header2()}
 `;
@@ -45,4 +46,8 @@ document.querySelectorAll(".delete-button1").forEach((btn) => {
       input.value = "";
     });
   });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderVoteBlock();
 });
