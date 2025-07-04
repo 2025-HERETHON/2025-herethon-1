@@ -1,3 +1,5 @@
+from urllib import request
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404, resolve_url
@@ -5,11 +7,12 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 
 from community.forms import CommentForm, ReplyForm
-from community.models import Post, Comment, Reply
+from community.models import Post, Comment, Reply, Vote
 
 
 # Create your views here.
 
+@login_required(login_url='accounts:login')
 def home(request):
     """
     커뮤니티 게시글 리스트 출력
@@ -30,14 +33,22 @@ def home(request):
     }
     return render(request, 'community_home.html', context)
 
-#post 정보 넘김
+@login_required(login_url='accounts:login')
 def detail(request, post_id):
     """
     게시글 상세 페이지 출력
     """
     post = get_object_or_404(Post, id=post_id)
+
+    #유저가 투표했는지 검사
+    voted_choice = None
+    if request.user.is_authenticated:
+        vote = Vote.objects.filter(post=post, user=request.user).first()
+        if vote:
+            voted_choice = vote.choice
+
     #댓글 수정 시, 수정할 댓글 id를 받아옴
-    editing_comment_id = request.GET.get('edit')
+    editing_comment_id = request.GET.get('edit_comment')
     #답글 수정 시, 수정할 답글 id를 받아옴
     editing_reply_id = request.GET.get('edit_reply')
     #답글 수정 완료 시, 답글 창 열린 상태 유지하기 위해서 답글이 달린 댓글의 id를 받아옴
@@ -85,6 +96,8 @@ def detail(request, post_id):
         except Reply.DoesNotExist:
             editing_reply_id = None
 
+    #투표 수(전달 형태: {1: 0, 2: 0, 3: 2})
+    print(post.count_votes())
 
     context = {
         'post': post,
@@ -93,6 +106,7 @@ def detail(request, post_id):
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
         'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': reply_form,
+        'voted_choice': voted_choice,
     }
 
     return render(request, 'community_detail.html', context)
@@ -268,3 +282,19 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
     return redirect('{}#reply_{}'.format(
         resolve_url('community:detail', post_id=post_id), comment_id, reply_id
     ))
+
+@login_required(login_url='accounts:login')
+def detail_vote(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if Vote.objects.filter(post=post, user=request.user).exists():
+        messages.error(request, "이미 투표하셨습니다.")
+        return redirect('community:detail', post_id=post.pk)
+
+    selected = int(request.POST.get('selected'))
+    if selected not in dict(Vote.choices):
+        messages.error(request, "잘못된 선택입니다.")
+        return redirect('community:detail', post_id=post.pk)
+
+    Vote.objects.create(post=post, user=request.user, choice=selected)
+    return redirect('community:detail', post_id=post.pk)

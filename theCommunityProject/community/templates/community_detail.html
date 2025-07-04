@@ -17,10 +17,38 @@
 
 <a href="{% url 'community:home' %}">← 커뮤니티 홈으로</a>
 
-<h1>{{ post.title }}</h1>
-<p>{{ post.option1 }}</p>
-<p>{{ post.option2 }}</p>
-<p>{{ post.option3 }}</p>
+<form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id %}">
+  {% csrf_token %}
+ <label>
+    <input type="radio" name="selected" value="1"
+           {% if voted_choice == 1 %}checked{% endif %}
+           {% if voted_choice %}disabled{% endif %}
+           onchange="this.form.submit()"> {{ post.option1 }}
+  </label><br>
+
+  <label>
+    <input type="radio" name="selected" value="2"
+           {% if voted_choice == 2 %}checked{% endif %}
+           {% if voted_choice %}disabled{% endif %}
+           onchange="this.form.submit()"> {{ post.option2 }}
+  </label><br>
+
+  <label>
+    <input type="radio" name="selected" value="3"
+           {% if voted_choice == 3 %}checked{% endif %}
+           {% if voted_choice %}disabled{% endif %}
+           onchange="this.form.submit()"> {{ post.option3 }}
+  </label><br>
+</form>
+
+<script>
+  function submitVote(radio) {
+    // 선택되면 바로 폼 제출
+    document.getElementById('voteForm').submit();
+  }
+</script>
+
+
 
 <h2>의견</h2>
 
@@ -54,8 +82,11 @@
       <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
     </p>
 
-    <div id="reply-section-{{ comment.id }}"
-     style="{% if comment.id == opened_reply_comment_id %}display:block{% else %}display:none{% endif %};">
+    {% if comment.id == opened_reply_comment_id %}
+        <div id="reply-section-{{ comment.id }}" style="display:block;">
+    {% else %}
+        <div id="reply-section-{{ comment.id }}" style="display:none;">
+    {% endif %}
 
       {% for reply in comment.replies.all %}
       <div id="reply_{{ reply.id }}">
