@@ -17,6 +17,7 @@ def home(request):
     #kw = 검색어 받아서 게시글 필터링
     kw = request.GET.get('kw', '')
     post_list = Post.objects.order_by('-created_at')
+
     if kw:
         post_list = post_list.filter(
             Q(title__icontains=kw) |
@@ -35,13 +36,34 @@ def detail(request, post_id):
     게시글 상세 페이지 출력
     """
     post = get_object_or_404(Post, id=post_id)
+    #댓글 수정 시, 수정할 댓글 id를 받아옴
     editing_comment_id = request.GET.get('edit')
+    #답글 수정 시, 수정할 답글 id를 받아옴
     editing_reply_id = request.GET.get('edit_reply')
+    #답글 수정 완료 시, 답글 창 열린 상태 유지하기 위해서 답글이 달린 댓글의 id를 받아옴
+    open_reply_comment_id = request.GET.get('open_reply')
 
+    #답글 수정 완료 시 수정 완료한 답글 위치로 스크롤 하기 위해 검사
+    opened_reply_comment_id = None
+    if editing_reply_id:                                 #수정했거나 수정 예정인 답글이 있는 경우
+        editing_reply_id = int(editing_reply_id)
+        try:                                             #답글 토글 열림 상태
+            reply = Reply.objects.get(pk=editing_reply_id)
+            opened_reply_comment_id = reply.comment.id
+        except Reply.DoesNotExist:
+            editing_reply_id = None
+            pass
+    elif open_reply_comment_id:                          #답글 창이 열려 있었던 경우
+        try:
+            opened_reply_comment_id = int(open_reply_comment_id)  #답글 토글이 열려있던 댓글 id 정보 저장
+        except ValueError:
+            opened_reply_comment_id = None
 
-    context = {
-        'post': post,
-    }
+    #답글 수정 관련 시도 없음, 답글 토글 닫혀있던 경우
+    else:
+        opened_reply_comment_id = None
+        open_reply_comment_id = None
+
     if(request.method == 'POST'):
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
@@ -69,6 +91,7 @@ def detail(request, post_id):
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
+        'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': reply_form,
     }
 
@@ -125,7 +148,7 @@ def detail_comment_update(request, post_id, comment_id):
 
 
 @login_required(login_url='accounts:login')
-def detail_comment_delate(request, post_id, comment_id):
+def detail_comment_delete(request, post_id, comment_id):
     """
     댓글 삭제
     """
@@ -192,14 +215,18 @@ def detail_reply_update(request, post_id, comment_id, reply_id):
         return redirect('community:detail', post.pk)
 
     if request.method == 'POST':
-        form = ReplyForm(request.POST, instance=reply)
-        if form.is_valid():
-            form.save()
-            return redirect(f'/community/{post.pk}/?edit_reply={reply.id}')
+        if request.POST.get("form_type") == "reply_update":
+            form = ReplyForm(request.POST, instance=reply)
+            if form.is_valid():
+                form.save()
+                # 수정 완료 후 리다이렉트 시
+                return redirect(f"/community/{post.pk}/?open_reply={comment_id}#reply_{reply.id}")
 
 
     else:
-        form = ReplyForm(instance=reply)
+        return redirect(f'/community/{post.pk}/?edit_reply={reply.id}#reply_{reply.id}')
+
+    form = ReplyForm(instance=reply)
     context = {
         'post': post,
         'editing_reply_id': reply.id,
@@ -226,6 +253,9 @@ def detail_reply_delete(request, post_id, comment_id, reply_id):
 
 @login_required(login_url='accounts:login')
 def detail_reply_like(request, post_id, comment_id, reply_id):
+    """
+    답글 좋아요
+    """
     post = get_object_or_404(Post, id=post_id)
     #comment = get_object_or_404(Comment, id=comment_id)
     reply = get_object_or_404(Reply, id=reply_id)

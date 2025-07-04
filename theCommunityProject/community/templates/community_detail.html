@@ -38,6 +38,11 @@
       <p>{{ comment.content }}</p>
       {% if request.user == comment.user %}
         <a href="?edit_comment={{ comment.id }}">수정</a>
+        <!-- 댓글 삭제 폼 -->
+        <form method="post" action="{% url 'community:detail_comment_delete' comment.post.id comment.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
+        </form>
       {% endif %}
     {% endif %}
 
@@ -49,27 +54,37 @@
       <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
     </p>
 
-    <div id="reply-section-{{ comment.id }}" style="display:none; margin-left:20px; border-left:2px solid #000; padding-left:10px;">
+    <div id="reply-section-{{ comment.id }}"
+     style="{% if comment.id == opened_reply_comment_id %}display:block{% else %}display:none{% endif %};">
+
       {% for reply in comment.replies.all %}
-  <div id="reply_{{ reply.id }}">
-    <strong>{{ reply.user.username }}</strong>:
+      <div id="reply_{{ reply.id }}">
+        <strong>{{ reply.user.username }}</strong>:
 
-    {% if editing_reply_id == reply.id %}
-      <!-- 답글 수정 폼 -->
-      <form method="post" action="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">
-        {% csrf_token %}
-        {{ reply_form.content }}
-        <button type="submit">수정 완료</button>
-      </form>
-    {% else %}
-      <p>{{ reply.content }}</p>
-      {% if request.user == reply.user %}
-        <a href="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">수정</a>
-      {% endif %}
-    {% endif %}
+        {% if editing_reply_id == reply.id %}
+          <!-- 답글 수정 폼 -->
+          <form method="post" action="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="reply_update">
+            {{ reply_form.content }}
+            <button type="submit">수정 완료</button>
+          </form>
+        {% else %}
+          <p>{{ reply.content }}</p>
+          {% if request.user == reply.user %}
+            <a href="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">수정</a>
+            <!-- 답글 삭제 폼 -->
+            <form method="post" action="{% url 'community:detail_reply_delete' reply.comment.post.id reply.comment.id reply.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+            </form>
+          {% endif %}
+        {% endif %}
 
-    <small>{{ reply.created_at|date:"Y-m-d H:i" }}</small>
-  </div>
+        <small>{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+        <!-- 답글 좋아요 -->
+        <a href="{% url 'community:detail_reply_like' post.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+      </div>
       {% empty %}
         <p>대댓글이 없습니다.</p>
       {% endfor %}
