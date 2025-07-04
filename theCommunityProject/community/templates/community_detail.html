@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }} - 더 커뮤니티</title>
+</head>
+<body>
+
+{% if messages %}
+  <div>
+    {% for message in messages %}
+      <p style="color:red;">{{ message }}</p>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<a href="{% url 'community:home' %}">← 커뮤니티 홈으로</a>
+
+<h1>{{ post.title }}</h1>
+<p>{{ post.option1 }}</p>
+<p>{{ post.option2 }}</p>
+<p>{{ post.option3 }}</p>
+
+<h2>의견</h2>
+
+{% for comment in post.comments.all %}
+  <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
+    <strong>{{ comment.user.username }}</strong>:
+
+    {% if editing_comment_id == comment.id %}
+      <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
+        {% csrf_token %}
+        <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
+        <button type="submit">수정 완료</button>
+      </form>
+    {% else %}
+      <p>{{ comment.content }}</p>
+      {% if request.user == comment.user %}
+        <a href="?edit_comment={{ comment.id }}">수정</a>
+        <!-- 댓글 삭제 폼 -->
+        <form method="post" action="{% url 'community:detail_comment_delete' comment.post.id comment.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
+        </form>
+      {% endif %}
+    {% endif %}
+
+    <p>
+      {{ comment.created_at|date:"Y-m-d H:i" }}
+      <button onclick="toggleReply({{ comment.id }})">
+        💬 대댓글 ({{ comment.replies.count }})
+      </button>
+      <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
+    </p>
+
+    <div id="reply-section-{{ comment.id }}"
+     style="{% if comment.id == opened_reply_comment_id %}display:block{% else %}display:none{% endif %};">
+
+      {% for reply in comment.replies.all %}
+      <div id="reply_{{ reply.id }}">
+        <strong>{{ reply.user.username }}</strong>:
+
+        {% if editing_reply_id == reply.id %}
+          <!-- 답글 수정 폼 -->
+          <form method="post" action="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="reply_update">
+            {{ reply_form.content }}
+            <button type="submit">수정 완료</button>
+          </form>
+        {% else %}
+          <p>{{ reply.content }}</p>
+          {% if request.user == reply.user %}
+            <a href="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">수정</a>
+            <!-- 답글 삭제 폼 -->
+            <form method="post" action="{% url 'community:detail_reply_delete' reply.comment.post.id reply.comment.id reply.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+            </form>
+          {% endif %}
+        {% endif %}
+
+        <small>{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+        <!-- 답글 좋아요 -->
+        <a href="{% url 'community:detail_reply_like' post.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+      </div>
+      {% empty %}
+        <p>대댓글이 없습니다.</p>
+      {% endfor %}
+
+      <form method="post" action="{% url 'community:detail_reply_create' post.id comment.id %}">
+        {% csrf_token %}
+        <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea><br>
+        <button type="submit">등록</button>
+      </form>
+    </div>
+
+  </div>
+{% empty %}
+  <p>아직 의견이 없습니다.</p>
+{% endfor %}
+
+<h3>댓글 작성</h3>
+<form method="post" action="{% url 'community:detail_comment_create' post.id %}">
+  {% csrf_token %}
+  {{ comment_form.content }}
+  <button type="submit">등록</button>
+</form>
+
+<script>
+  function toggleReply(commentId) {
+    const el = document.getElementById('reply-section-' + commentId);
+    if (el.style.display === 'block') {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'block';
+    }
+  }
+</script>
+
+</body>
+</html>
