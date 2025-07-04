@@ -38,7 +38,12 @@ class Post(models.Model):
 class Vote(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='votes')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    choice = models.IntegerField(choices=[(1, 'Option 1'), (2, 'Option 2'), (3, 'Option 3')])
+    choices = [
+        (1, 'Option 1'),
+        (2, 'Option 2'),
+        (3, 'Option 3'),
+    ]
+    choice = models.IntegerField(choices=choices)
 
     class Meta:
         # 한 유저는 한 게시글에 한 번만 투표
@@ -50,7 +55,8 @@ class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    liked = models.ManyToManyField(User, related_name='liked_comment')  # 추천인 추가
+    liked = models.ManyToManyField(User, related_name='liked_comment')
+    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
     def get_vote_choice(self):
         try:
@@ -64,6 +70,7 @@ class Reply(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     liked = models.ManyToManyField(User, related_name='liked_reply')  # 추천인 추가
+    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
     def get_vote_choice(self):
         try:
