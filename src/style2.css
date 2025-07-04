@@ -1,0 +1,7 @@
+@import "./set/Header.css";
+@import "./set/Footer.css";
+@import "./set/Community.css";
+
+body {
+  background-color: #171717;
+}
