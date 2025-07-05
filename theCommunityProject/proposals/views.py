@@ -11,6 +11,20 @@ def home(request):
     정책 제안 게시글 리스트 출력
     """
     proposals = ProposalPost.objects.all().order_by('-created_at')
+
+    # 정렬 추가
+    sort = request.GET.get('sort', 'recent')
+
+    if sort == 'popular':
+        # 인기 점수: (좋아요 수 * 5) + (댓글 수 * 2)
+        proposals = sorted(
+            proposals,
+            key=lambda post: (post.liked.count() * 5 + post.proposal_comments.count() * 2),
+            reverse=True
+        )
+    else:  # 최신순
+        proposals = proposals.order_by('-created_at')
+
     return render(request, 'proposals_home.html', {'proposals': proposals})
 
 # @login_required(login_url='accounts:login')
@@ -69,8 +83,27 @@ def detail(request, post_id):
         except ProposalReply.DoesNotExist:
             editing_reply_id = None
 
+    # 정렬/필터 파라미터 받기
+    sort = request.GET.get('sort', 'recent')  # 기본값: 최신순
+    petition_filter = request.GET.get('filter', '')  # 기본값: 필터링 안 함
+
+    # 기본 쿼리셋
+    comments = ProposalComment.objects.filter(proposal=post)
+
+    # 필터 적용
+    if petition_filter == 'petition':
+        comments = comments.exclude(link_url__isnull=True).exclude(link_url__exact='')
+
+    # 정렬 적용
+    if sort == 'popular':
+        comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
+    else:  # 최신순
+        comments = comments.order_by('-created_at')
+
     context = {
         'post': post,
+        # 정렬/필터링된 댓글 목록 comments 추가
+        'comments' : comments,
         'comment_form': comment_form,
         'reply_form': reply_form,
         'editing_comment_id': editing_comment_id,
@@ -179,10 +212,31 @@ def detail_comment_like(request, post_id, comment_id):
         messages.error(request, "본인이 작성한 댓글은 추천할 수 없습니다.")
         return redirect('proposals:detail', post.pk)
     else:
-        comment.liked.add(request.user)
+        #좋아요 토글 추가
+        if request.user in comment.liked.all():
+            comment.liked.remove(request.user)
+        else:
+            comment.liked.add(request.user)
     return redirect('{}#comment_{}'.format(
         resolve_url('proposals:detail', post_id=post_id), comment_id
     ))
+
+@login_required(login_url='accounts:login')
+def detail_comment_link(request, post_id, comment_id):
+    """
+    제안 댓글에 링크 추가/수정
+    """
+    comment = get_object_or_404(ProposalComment, pk=comment_id, proposal__id=post_id)
+    
+    if request.method == "POST":
+        link_url = request.POST.get("link_url")
+        comment.link_url = link_url
+        comment.save()
+        return redirect('{}?open_reply={}#comment_{}'.format(
+            resolve_url('proposals:detail', post_id=post_id), comment.id, comment.id
+        ))
+
+    return redirect('proposals:detail', post_id=post_id)
 
 @login_required(login_url='accounts:login')
 def detail_reply_create(request, post_id, comment_id):
@@ -268,7 +322,12 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
         messages.error(request, "본인이 작성한 답글은 추천할 수 없습니다.")
         return redirect('proposals:detail', post.pk)
     else:
-        reply.liked.add(request.user)
-    return redirect('{}#reply_{}'.format(
+        #좋아요 토글 추가
+        if request.user in reply.liked.all():
+            reply.liked.remove(request.user)
+        else:
+            reply.liked.add(request.user)
+    #대댓글 좋아요 시 스크롤 위로 올라가는 문제 수정
+    return redirect('{}?open_reply={}#reply_{}'.format(
         resolve_url('proposals:detail', post_id=post_id), comment_id, reply_id
     ))
