@@ -13,6 +13,8 @@ class Post(models.Model):
     option3 = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     finish_at = models.DateTimeField(blank=True, null=True)
+    #filtered_comments = models.IntegerField(default=0)
+
     # article = models.ForeignKey(Article, on_delete = models.CASCADE)
 
     def save(self, *args, **kwargs):
@@ -54,7 +56,7 @@ class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(null=True, blank=True)
     liked = models.ManyToManyField(User, related_name='liked_comment')
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
@@ -68,7 +70,7 @@ class Reply(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='replies')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(null=True, blank=True)
     liked = models.ManyToManyField(User, related_name='liked_reply')  # 추천인 추가
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
@@ -77,3 +79,13 @@ class Reply(models.Model):
             return Vote.objects.get(post=self.comment.post, user=self.user).choice
         except Vote.DoesNotExist:
             return None
+
+class CommentEvidence(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_evidence')
+    keyword = models.CharField(max_length=100)
+    evidence = models.URLField(max_length=500, blank=True, null=True)
+
+class ReplyEvidence(models.Model):
+    reply = models.ForeignKey(Reply, on_delete=models.CASCADE, related_name='reply_evidence')
+    keyword = models.CharField(max_length=100)
+    evidence = models.URLField(max_length=500, blank=True, null=True)

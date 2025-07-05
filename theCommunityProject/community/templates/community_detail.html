@@ -52,7 +52,7 @@
 
 <h2>의견</h2>
 
-{% for comment in post.comments.all %}
+{% for comment in comments.all %}
   <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
     <img src="{{ user_profile_image }}" width="50" height="50">
     <strong>{{ comment.user.username }}</strong>:
@@ -135,11 +135,51 @@
 {% endfor %}
 
 <h3>댓글 작성</h3>
-<form method="post" action="{% url 'community:detail_comment_create' post.id %}">
+<form method="post" id="comment-form" action="{% url 'community:detail_comment_create' post.id %}">
   {% csrf_token %}
   {{ comment_form.content }}
-  <button type="submit">등록</button>
+
+  <button type="submit" id="submit-comment">댓글 작성</button>
+  <button type="button" id="ai-button">AI</button>
 </form>
+
+<script>
+  document.getElementById('ai-button').addEventListener('click', function() {
+    const form = document.getElementById('comment-form');
+    form.action = "{% url 'community:detail_comment_ai_response' post.id %}";
+    form.submit();
+    form.action = "{% url 'community:detail_comment_create' post.id %}"; // 제출 후 다시 원복
+  });
+</script>
+
+<!-- AI 결과 영역 (기본 숨김) -->
+{% if commentEvidence %}
+  <div id="aiResult" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
+    <div style="font-weight:bold; margin-bottom:6px;">result</div>
+    <div style="background:#555; padding:10px; border-radius:4px;">
+      자료 검색 결과<br>
+
+      AI 주석<br>
+      {{ commentEvidence.keyword }}<br>
+
+      <a href="{{ commentEvidence.evidence }}" target="_blank" style="color:#9cf;">출처 링크</a>
+    </div>
+  </div>
+{% endif %}
+
+<script>
+  const aiBtn = document.getElementById('aiBtn');
+  const aiResult = document.getElementById('aiResult');
+
+  aiBtn.addEventListener('click', () => {
+    if (aiResult.style.display === 'none') {
+      aiResult.style.display = 'block';
+    } else {
+      aiResult.style.display = 'none';
+    }
+  });
+</script>
+
 
 <script>
   function toggleReply(commentId) {

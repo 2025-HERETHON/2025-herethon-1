@@ -1,13 +1,18 @@
+
+from email.quoprimime import unquote
 from urllib import request
+from django.utils import timezone
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 from django.contrib import messages
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from community.apis import get_gemini_response
 from community.forms import CommentForm, ReplyForm
-from community.models import Post, Comment, Reply, Vote
+from community.models import Post, Comment, Reply, Vote, CommentEvidence
 
 
 # Create your views here.
@@ -20,6 +25,12 @@ def home(request):
     #kw = 검색어 받아서 게시글 필터링
     kw = request.GET.get('kw', '')
     post_list = Post.objects.order_by('-created_at')
+
+    i = 0
+    if post_list:
+        post = post_list[i]
+        post.filtered_comments = post.comments.filter(created_at__isnull=False)
+
 
     if kw:
         post_list = post_list.filter(
@@ -40,7 +51,7 @@ def detail(request, post_id):
     """
     post = get_object_or_404(Post, id=post_id)
 
-    #유저가 투표했는지 검사
+    #유저가 투표 항목에 따른 프로필 이미지 변경 기능 (43-56 줄)
     voted_choice = None
     if request.user.is_authenticated:
         vote = Vote.objects.filter(post=post, user=request.user).first()
@@ -54,6 +65,7 @@ def detail(request, post_id):
     }
 
     user_profile_image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
+
 
     #댓글 수정 시, 수정할 댓글 id를 받아옴
     editing_comment_id = request.GET.get('edit_comment')
@@ -109,6 +121,7 @@ def detail(request, post_id):
 
     context = {
         'post': post,
+        'comments' : post.comments.filter(created_at__isnull=False),
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
@@ -132,7 +145,7 @@ def detail_comment_create(request, post_id):
             comment.user = request.user
 
             comment.post = get_object_or_404(Post, id=post_id)
-
+            comment.created_at = timezone.now()
             comment.save()
             return redirect('community:detail', comment.post.pk)
     else:
@@ -307,3 +320,39 @@ def detail_vote(request, post_id):
 
     Vote.objects.create(post=post, user=request.user, choice=selected)
     return redirect('community:detail', post_id=post.pk)
+
+def detail_comment_ai_response(request, post_id):
+    """
+    AI 근거 자료 생성
+    """
+    if request.method != 'POST':
+        messages.error(request, "잘못된 요청입니다.")
+        return redirect ('community:detail', post_id=post_id)
+
+    post = get_object_or_404(Post, id=post_id)
+    content = request.POST.get('content')
+
+    if not content:
+        commentKeyword = None
+        messages.error(request, "댓글 내용을 입력하세요.")
+        return redirect(f"{reverse('community:detail', args=[post_id])}#comment-form")
+    else:
+        comment = Comment(user=request.user, content=content, post=post, created_at=None)
+        comment.save()
+        extra_text = ' 댓글의 주제 키워드를 찾아 줘 그리고 그 키워드에 대해 긍정적인 의견이라면 찬성, 그렇지 않으면 반대라고 덧붙여 줘 추가 텍스트 없이 키워드만 답변으로 보내 줘.'
+        full_prompt = content + extra_text
+        title, link = get_gemini_response(full_prompt)
+        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=title, evidence=link)
+
+        comment_form = CommentForm(initial={'content': content})
+
+        context = {
+            'post': post,
+            'comment_form': comment_form,
+            'commentEvidence': commentEvidence,
+        }
+
+        return render(request, 'community_detail.html', context)
+
+
+
