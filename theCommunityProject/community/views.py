@@ -26,10 +26,11 @@ def home(request):
     kw = request.GET.get('kw', '')
     post_list = Post.objects.order_by('-created_at')
 
-    i = 0
     if post_list:
-        post = post_list[i]
-        post.filtered_comments = post.comments.filter(created_at__isnull=False)
+        for post in post_list:
+
+            post.filtered_comments = post.comments.filter(created_at__isnull=False)
+            print(post.title, post.filtered_comments.count())
 
 
     if kw:
@@ -51,20 +52,6 @@ def detail(request, post_id):
     """
     post = get_object_or_404(Post, id=post_id)
 
-    #유저가 투표 항목에 따른 프로필 이미지 변경 기능 (43-56 줄)
-    voted_choice = None
-    if request.user.is_authenticated:
-        vote = Vote.objects.filter(post=post, user=request.user).first()
-        if vote:
-            voted_choice = vote.choice
-
-    profile_images = {
-        1 : '/media/profile_image/A.jpg',
-        2 : '/media/profile_image/B.jpg',
-        3 : '/media/profile_image/C.jpg',
-    }
-
-    user_profile_image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
 
 
     #댓글 수정 시, 수정할 댓글 id를 받아옴
@@ -127,8 +114,6 @@ def detail(request, post_id):
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
         'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': reply_form,
-        'voted_choice': voted_choice,
-        'user_profile_image': user_profile_image,
     }
 
     return render(request, 'community_detail.html', context)
@@ -143,9 +128,24 @@ def detail_comment_create(request, post_id):
         if(form.is_valid()):
             comment = form.save(commit=False)
             comment.user = request.user
-
             comment.post = get_object_or_404(Post, id=post_id)
             comment.created_at = timezone.now()
+
+            # 투표 항목에 따른 프로필 이미지
+            voted_choice = None
+            if request.user.is_authenticated:
+                vote = Vote.objects.filter(post=comment.post, user=request.user).first()
+                if vote:
+                    voted_choice = vote.choice
+
+            profile_images = {
+                1: '/media/profile_image/A.jpg',
+                2: '/media/profile_image/B.jpg',
+                3: '/media/profile_image/C.jpg',
+            }
+
+            comment.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
+
             comment.save()
             return redirect('community:detail', comment.post.pk)
     else:
@@ -227,6 +227,24 @@ def detail_reply_create(request, post_id, comment_id):
             reply = form.save(commit=False)
             reply.user = request.user
             reply.comment = get_object_or_404(Comment, id=comment_id)
+
+            # 투표 항목에 따른 프로필 이미지
+            voted_choice = None
+            if request.user.is_authenticated:
+                vote = Vote.objects.filter(post=reply.comment.post, user=request.user).first()
+                if vote:
+                    voted_choice = vote.choice
+                else:
+                    messages.error(request, "투표하지 않은 사용자는 답글을 작성할 수 없습니다. ")
+                    return redirect('community:detail', post_id=post_id)
+
+            profile_images = {
+                1: '/media/profile_image/A.jpg',
+                2: '/media/profile_image/B.jpg',
+                3: '/media/profile_image/C.jpg',
+            }
+
+            reply.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
             reply.save()
             return redirect('community:detail', post_id=post_id)
     else:
@@ -339,10 +357,10 @@ def detail_comment_ai_response(request, post_id):
     else:
         comment = Comment(user=request.user, content=content, post=post, created_at=None)
         comment.save()
-        extra_text = ' 댓글의 주제 키워드를 찾아 줘 그리고 그 키워드에 대해 긍정적인 의견이라면 찬성, 그렇지 않으면 반대라고 덧붙여 줘 추가 텍스트 없이 키워드만 답변으로 보내 줘.'
+        extra_text = ' 이 글의 주제 키워드를 하나만 찾아 줘 그리고 그 키워드에 대해 긍정적인 의견이라면 찬성, 그렇지 않으면 반대라고 덧붙여 줘 추가 텍스트 없이 키워드 - 의견 형식으로 보내 줘.'
         full_prompt = content + extra_text
-        title, link = get_gemini_response(full_prompt)
-        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=title, evidence=link)
+        evidence, link = get_gemini_response(full_prompt)
+        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, evidence=link)
 
         comment_form = CommentForm(initial={'content': content})
 

@@ -67,6 +67,9 @@ class Comment(models.Model):
         except Vote.DoesNotExist:
             return None
 
+    def __str__(self):
+        return self.content + ', ' + self.created_at.strftime('%m/%d/%y')
+
 class Reply(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='replies')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
