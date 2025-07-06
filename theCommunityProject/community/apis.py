@@ -39,32 +39,32 @@ def get_gemini_response(prompt):
 
     print(cleaned_text)
 
-    title, link = get_dbpia_response(cleaned_text)
-    #개발 중인 부분 주석 처리
-    # paper = get_dbpia_response(cleaned_text)
-    #
-    # check_prompt = paper + ("이 자료들이 ") + prompt + ("의견을 뒷받침하기에 적당한지 판단하고, 가장 적합한 것을 한 개 이상 남겨 줘. "
-    #                                              "남은 자료들을 다시 텍스트로 정리해서 가독성 좋게 보여 줘. "
-    #                                                "그리고 링크로 된 자료들은 링크 url을 마지막에 포함해 줘")
-    #
-    # data = {
-    #     "contents": [
-    #         {
-    #             "parts": [
-    #                 {"text": check_prompt}
-    #             ]
-    #         }
-    #     ],
-    # }
-    # response = requests.post(url, json=data, headers=headers)
-    # response_json = response.json()
-    # text = response_json['candidates'][0]['content']['parts'][0]['text']
-    #
-    # # 텍스트 변환
-    # cleaned_text = text.replace('**', '')  # 볼드 제거
-    # cleaned_text = cleaned_text.replace('*', '')
+    #title, link = get_dbpia_response(cleaned_text)
+    #개발 중인 부분
+    paper, link = get_dbpia_response(cleaned_text)
 
-    return title, link #cleaned_text
+    check_prompt = paper + "이 논문의 내용이" + prompt + (" 라는 의견을 뒷받침할 수 있도록 논문을 인용해서 근거를 3줄 이내로 작성해 줘."
+                                                 " "
+                                                   )
+
+    data = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": check_prompt}
+                ]
+            }
+        ],
+    }
+    response = requests.post(url, json=data, headers=headers)
+    response_json = response.json()
+    text = response_json['candidates'][0]['content']['parts'][0]['text']
+
+    # 텍스트 변환
+    cleaned_text = text.replace('**', '')  # 볼드 제거
+    cleaned_text = cleaned_text.replace('*', '')
+
+    return cleaned_text, link
 
 
 def get_dbpia_response(search_word):
