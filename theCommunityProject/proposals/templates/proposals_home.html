@@ -24,7 +24,7 @@
     <nav>
         <div class="logo">더 커뮤니티</div>
         <ul>
-            <li>이슈룸</li>
+            <li>아티클</li>
             <li>커뮤니티</li>
             <li style="color: #a57bff">정책 제안</li>
         </ul>
@@ -37,6 +37,19 @@
 </header>
 
 <main>
+    <div style="padding: 1rem 2rem;">
+        {% if request.GET.sort == 'popular' %}
+            <strong>인기순</strong>
+        {% else %}
+            <a href="?sort=popular">인기순</a>
+        {% endif %}
+        <!-- 최신순의 경우 기본 정렬도 포함 -->
+        {% if request.GET.sort == 'recent' or not request.GET.sort %}
+            <strong>최신순</strong>
+        {% else %}
+            <a href="?sort=recent">최신순</a>
+        {% endif %}
+    </div>
     <section class="grid">
         {% for post in proposals %}
         <a href="{% url 'proposals:detail' post.id %}" class="card-link">

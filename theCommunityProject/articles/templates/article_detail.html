@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>{{ article.title }} - 아티클</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Pretendard', sans-serif;
+      background-color: #121212;
+      color: white;
+    }
+
+    header,
+    footer {
+      background-color: #1f1f1f;
+      padding: 1rem 2rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      color: #a57bff;
+      font-weight: bold;
+    }
+
+    .article-container {
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+    }
+
+    .article-header img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .section {
+      margin-top: 2rem;
+    }
+
+    .section img {
+      width: 100%;
+      margin: 1rem 0;
+      border-radius: 8px;
+    }
+
+    .quote {
+      background: #222;
+      padding: 1rem;
+      border-left: 4px solid #a57bff;
+      margin: 1rem 0;
+      color: #ddd;
+    }
+
+    .meta-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .action-bar form {
+      display: inline;
+    }
+
+    .comments {
+      margin-top: 3rem;
+    }
+
+    .comment, .reply {
+      background: #1f1f1f;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .reply {
+      margin-left: 2rem;
+      background-color: #2a2a2a;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav>
+      <div class="logo">더 커뮤니티</div>
+    </nav>
+  </header>
+
+  <div class="article-container">
+    <div class="article-header">
+      {% if article.image %}
+      <img src="{{ article.image.url }}" alt="대표 이미지">
+      {% endif %}
+      <h1>{{ article.title }}</h1>
+      <div class="meta-bar">
+        <div>작성일: {{ article.created_at }}</div>
+        <div>
+          ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }} |
+          <a href="{% url 'articles:article_like' article.id %}">[좋아요]</a>
+          <a href="{% url 'articles:article_scrap' article.id %}">[스크랩]</a>
+        </div>
+      </div>
+    </div>
+
+    {% for section in article.sections.all %}
+    <div class="section">
+      {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+      {% if section.image %}
+      <img src="{{ section.image.url }}" alt="{{ section.image_alt }}">
+      {% endif %}
+      {% if section.quote %}<div class="quote">“{{ section.quote }}”</div>{% endif %}
+      <p>{{ section.text|linebreaks }}</p>
+    </div>
+    {% endfor %}
+
+    <hr>
+    <div class="comments">
+      <h3>댓글 {{ comments|length }}개</h3>
+
+      <form method="post" action="{% url 'articles:comment_create' article.id %}">
+        {% csrf_token %}
+        {{ comment_form.as_p }}
+        <button type="submit">댓글 작성</button>
+      </form>
+
+      {% for comment in comments %}
+      <div class="comment" id="comment_{{ comment.id }}">
+        <p><strong>{{ comment.user.username }}</strong> | {{ comment.created_at|date:"Y-m-d H:i" }}</p>
+        <p>{{ comment.content }}</p>
+        <div class="action-bar">
+          {% if request.user == comment.user %}
+          <a href="{% url 'articles:comment_update' article.id comment.id %}">수정</a>
+          <form method="post" action="{% url 'articles:comment_delete' article.id comment.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">삭제</button>
+          </form>
+          {% endif %}
+          <a href="{% url 'articles:comment_like' article.id comment.id %}">❤️ {{ comment.liked.count }}</a>
+        </div>
+
+        {% for reply in comment.article_replies.all %}
+        <div class="reply" id="reply_{{ reply.id }}">
+          <p><strong>{{ reply.user.username }}</strong> | {{ reply.created_at|date:"Y-m-d H:i" }}</p>
+          <p>{{ reply.content }}</p>
+          <div class="action-bar">
+            {% if request.user == reply.user %}
+            <a href="{% url 'articles:reply_update' article.id comment.id reply.id %}">수정</a>
+            <form method="post" action="{% url 'articles:reply_delete' article.id comment.id reply.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">삭제</button>
+            </form>
+            {% endif %}
+            <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+          </div>
+        </div>
+        {% endfor %}
+
+        <form method="post" action="{% url 'articles:reply_create' article.id comment.id %}" style="margin-top: 1rem;">
+          {% csrf_token %}
+          {{ reply_form.as_p }}
+          <button type="submit">답글 작성</button>
+        </form>
+
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <footer>
+    <div class="logo">더 커뮤니티</div>
+  </footer>
+</body>
+
+</html>
