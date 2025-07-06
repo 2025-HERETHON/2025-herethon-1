@@ -79,7 +79,6 @@
       {% endif %}
     </div>
     <div><button onclick="copyCurrentUrl()">공유</button></div>
-    <div><button>신고</button></div>
   </div>
 
   <hr>
@@ -96,7 +95,7 @@
         <textarea name="title" required></textarea><br>
         <label>현황 및 문제점</label><br>
         <textarea name="problem" required></textarea><br>
-        <label>감선 방안</label><br>
+        <label>개선 방안</label><br>
         <textarea name="solution" required></textarea><br>
         <label>기대 효과</label><br>
         <textarea name="effect" required></textarea><br>
@@ -116,7 +115,7 @@
         <textarea name="title" id="editCommentTitle" required></textarea><br>
         <label>현황 및 문제점</label><br>
         <textarea name="problem" id="editCommentProblem" required></textarea><br>
-        <label>감선 방안</label><br>
+        <label>개선 방안</label><br>
         <textarea name="solution" id="editCommentSolution" required></textarea><br>
         <label>기대 효과</label><br>
         <textarea name="effect" id="editCommentEffect" required></textarea><br>
@@ -180,7 +179,7 @@
     <strong>{{ comment.user.username }}</strong>:
     <p><strong>{{ comment.title }}</strong></p>
     <p><b>현황 및 문제점:</b> {{ comment.problem }}</p>
-    <p><b>감선 방안:</b> {{ comment.solution }}</p>
+    <p><b>개선 방안:</b> {{ comment.solution }}</p>
     <p><b>기대 효과:</b> {{ comment.effect }}</p>
     {% if request.user == comment.user %}
     <button

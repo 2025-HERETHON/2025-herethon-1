@@ -11,6 +11,8 @@
     <h1>홈페이지에 오신 것을 환영합니다.</h1>
     {% if user.is_authenticated %}
     <a href="{% url 'accounts:logout' %}">로그아웃</a><br>
+    <a href="{% url 'scrapped_article_posts' %}">스크랩한 아티클 게시판 글</a><br>
+    <a href="{% url 'scrapped_community_posts' %}">스크랩한 커뮤니티 게시판 글</a><br>
     <a href="{% url 'scrapped_proposal_posts' %}">스크랩한 정책 제안 게시판 글</a><br>
     {% else %}
     <a href="{% url 'accounts:signup' %}">회원가입</a><br>
