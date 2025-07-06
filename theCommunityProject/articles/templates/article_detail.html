@@ -14,8 +14,7 @@
       color: white;
     }
 
-    header,
-    footer {
+    header, footer {
       background-color: #1f1f1f;
       padding: 1rem 2rem;
     }
@@ -24,6 +23,24 @@
       font-size: 1.5rem;
       color: #a57bff;
       font-weight: bold;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li {
+      cursor: pointer;
     }
 
     .article-container {
@@ -35,6 +52,12 @@
     .article-header img {
       width: 100%;
       border-radius: 10px;
+      margin-bottom: 0.5rem;
+    }
+
+    .article-header small {
+      display: block;
+      color: #aaa;
       margin-bottom: 1rem;
     }
 
@@ -64,30 +87,21 @@
       color: #bbb;
     }
 
-    .action-bar {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .action-bar form {
-      display: inline;
-    }
-
-    .comments {
+    .author-info {
       margin-top: 3rem;
-    }
-
-    .comment, .reply {
-      background: #1f1f1f;
       padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
-    .reply {
-      margin-left: 2rem;
-      background-color: #2a2a2a;
+    .author-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -96,22 +110,29 @@
   <header>
     <nav>
       <div class="logo">더 커뮤니티</div>
+      <ul>
+        <li><a href="/articles/" style="color: #a57bff">아티클</a></li>
+        <li><a href="/community/">커뮤니티</a></li>
+        <li><a href="/proposals/">정책 제안</a></li>
+      </ul>
+      {% if user.is_authenticated %}
+      <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
+      {% else %}
+      <a href="{% url 'accounts:login' %}" class="auth-links">로그인/회원가입</a>
+      {% endif %}
     </nav>
   </header>
 
   <div class="article-container">
+
     <div class="article-header">
       {% if article.image %}
       <img src="{{ article.image.url }}" alt="대표 이미지">
+      {% if article.image_alt %}<small>{{ article.image_alt }}</small>{% endif %}
       {% endif %}
       <h1>{{ article.title }}</h1>
       <div class="meta-bar">
         <div>작성일: {{ article.created_at }}</div>
-        <div>
-          ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }} |
-          <a href="{% url 'articles:article_like' article.id %}">[좋아요]</a>
-          <a href="{% url 'articles:article_scrap' article.id %}">[스크랩]</a>
-        </div>
       </div>
     </div>
 
@@ -120,68 +141,169 @@
       {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
       {% if section.image %}
       <img src="{{ section.image.url }}" alt="{{ section.image_alt }}">
+      {% if section.image_alt %}<small>{{ section.image_alt }}</small>{% endif %}
       {% endif %}
       {% if section.quote %}<div class="quote">“{{ section.quote }}”</div>{% endif %}
       <p>{{ section.text|linebreaks }}</p>
     </div>
     {% endfor %}
 
+    <div class="author-info">
+      {% if article.author_profile.photo %}
+      <img src="{{ article.author_profile.photo.url }}" alt="작성자 사진" class="author-photo">
+      {% endif %}
+      <div>
+        <p><strong>{{ article.author_profile.name }}</strong> - {{ article.author_profile.role }}</p>
+        <p>{{ article.author_profile.bio }}</p>
+        <p>{{ article.author_profile.email }}</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+      <div><a href="{% url 'articles:article_like' article.id %}">❤️ {{ article.liked.count }}</a></div>
+      <div>💬 {{ article.article_comments.count }}</div>
+      <div>
+        {% if request.user in article.scrapped.all %}
+          <a style="color: #a57bff;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
+        {% else %}
+          <a style="color: white;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
+        {% endif %}
+      </div>
+      <div><button onclick="copyCurrentUrl()">공유</button></div>
+    </div>
+
     <hr>
-    <div class="comments">
-      <h3>댓글 {{ comments|length }}개</h3>
+    <h3>댓글 {{ comments|length }}개</h3>
 
-      <form method="post" action="{% url 'articles:comment_create' article.id %}">
-        {% csrf_token %}
-        {{ comment_form.as_p }}
-        <button type="submit">댓글 작성</button>
-      </form>
+    {% if messages %}
+      <div>
+        {% for message in messages %}
+          <p style="color: red;">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-      {% for comment in comments %}
-      <div class="comment" id="comment_{{ comment.id }}">
-        <p><strong>{{ comment.user.username }}</strong> | {{ comment.created_at|date:"Y-m-d H:i" }}</p>
+    <div style="margin-bottom: 1rem;">
+      {% if request.GET.sort == 'popular' %}
+        <strong>인기순</strong>
+      {% else %}
+        <a href="?sort=popular">인기순</a>
+      {% endif %}
+
+      {% if request.GET.sort == 'recent' or not request.GET.sort %}
+        <strong>최신순</strong>
+      {% else %}
+        <a href="?sort=recent">최신순</a>
+      {% endif %}
+    </div>
+
+    {% for comment in comments %}
+    <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
+      <strong>{{ comment.user.username }}</strong>
+      <small>{% if comment.user.sex == 'M' %}(남성){% elif comment.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
+
+      {% if editing_comment_id == comment.id %}
+        <form method="post" action="{% url 'articles:comment_update' article.id comment.id %}">
+          {% csrf_token %}
+          <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
+          <button type="submit">수정 완료</button>
+        </form>
+      {% else %}
         <p>{{ comment.content }}</p>
-        <div class="action-bar">
-          {% if request.user == comment.user %}
-          <a href="{% url 'articles:comment_update' article.id comment.id %}">수정</a>
+        {% if request.user == comment.user %}
+          <form method="get" action="">
+            <input type="hidden" name="edit_comment" value="{{ comment.id }}">
+            <button>수정</button>
+          </form>
           <form method="post" action="{% url 'articles:comment_delete' article.id comment.id %}" style="display:inline;">
             {% csrf_token %}
-            <button type="submit">삭제</button>
+            <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
           </form>
-          {% endif %}
-          <a href="{% url 'articles:comment_like' article.id comment.id %}">❤️ {{ comment.liked.count }}</a>
-        </div>
+        {% endif %}
+      {% endif %}
+
+      <p>
+        {{ comment.created_at|date:"Y-m-d H:i" }}
+        <button onclick="toggleReply({{ comment.id }})">
+          💬 대댓글 ({{ comment.article_replies.count }})
+        </button>
+        <a href="{% url 'articles:comment_like' article.id comment.id %}">❤️ {{ comment.liked.count }}</a>
+      </p>
+
+      {% if opened_reply_comment_id == comment.id %}
+        <div id="reply-section-{{ comment.id }}" style="display:block;">
+      {% else %}
+        <div id="reply-section-{{ comment.id }}" style="display:none;">
+      {% endif %}
 
         {% for reply in comment.article_replies.all %}
-        <div class="reply" id="reply_{{ reply.id }}">
-          <p><strong>{{ reply.user.username }}</strong> | {{ reply.created_at|date:"Y-m-d H:i" }}</p>
-          <p>{{ reply.content }}</p>
-          <div class="action-bar">
-            {% if request.user == reply.user %}
-            <a href="{% url 'articles:reply_update' article.id comment.id reply.id %}">수정</a>
-            <form method="post" action="{% url 'articles:reply_delete' article.id comment.id reply.id %}" style="display:inline;">
+        <div id="reply_{{ reply.id }}">
+          <strong>{{ reply.user.username }}</strong>
+          <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
+
+          {% if editing_reply_id == reply.id %}
+            <form method="post" action="{% url 'articles:reply_update' article.id comment.id reply.id %}">
               {% csrf_token %}
-              <button type="submit">삭제</button>
+              <textarea name="content" style="width:100%; height:60px;">{{ reply.content }}</textarea><br>
+              <button type="submit">수정 완료</button>
             </form>
+          {% else %}
+            <p>{{ reply.content }}</p>
+            {% if request.user == reply.user %}
+              <form method="get" action="">
+                <input type="hidden" name="edit_reply" value="{{ reply.id }}">
+                <input type="hidden" name="open_reply" value="{{ comment.id }}">
+                <button>수정</button>
+              </form>
+              <form method="post" action="{% url 'articles:reply_delete' article.id comment.id reply.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+              </form>
             {% endif %}
-            <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
-          </div>
+          {% endif %}
+
+          <small>{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+          <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
         </div>
+        {% empty %}
+          <p>대댓글이 없습니다.</p>
         {% endfor %}
 
-        <form method="post" action="{% url 'articles:reply_create' article.id comment.id %}" style="margin-top: 1rem;">
+        <form method="post" action="{% url 'articles:reply_create' article.id comment.id %}">
           {% csrf_token %}
-          {{ reply_form.as_p }}
-          <button type="submit">답글 작성</button>
+          <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea><br>
+          <button type="submit">등록</button>
         </form>
-
       </div>
-      {% endfor %}
     </div>
+    {% empty %}
+      <p>아직 의견이 없습니다.</p>
+    {% endfor %}
+
+    <h3>댓글 작성</h3>
+    <form method="post" action="{% url 'articles:comment_create' article.id %}">
+      {% csrf_token %}
+      {{ comment_form.content }}
+      <button type="submit">등록</button>
+    </form>
   </div>
 
   <footer>
     <div class="logo">더 커뮤니티</div>
   </footer>
+
+  <script>
+    function copyCurrentUrl() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url);
+      alert("링크가 복사되었습니다!");
+    }
+
+    function toggleReply(commentId) {
+      const el = document.getElementById('reply-section-' + commentId);
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+  </script>
 </body>
 
 </html>

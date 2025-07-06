@@ -354,5 +354,14 @@ def detail_comment_ai_response(request, post_id):
 
         return render(request, 'community_detail.html', context)
 
+# 스크랩 함수 추가
+@login_required(login_url='accounts:login')
+def detail_post_scrap(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
 
+    if request.user in post.scrapped.all():
+        post.scrapped.remove(request.user)
+    else:
+        post.scrapped.add(request.user)
 
+    return redirect('community:detail', post_id)
