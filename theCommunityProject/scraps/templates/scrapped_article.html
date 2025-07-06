@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>스크랩 - 더 커뮤니티</title>
+  <style>
+    body {
+      background-color: #ffffff;
+      color: #111111;
+      font-family: 'Pretendard', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #f8f8f8;
+      padding: 20px 40px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .tabs {
+      margin-bottom: 30px;
+    }
+    .tabs a {
+      margin-right: 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+    }
+    .tabs a.active {
+      border-bottom: 2px solid #000;
+      padding-bottom: 4px;
+    }
+    .post {
+      border-bottom: 1px solid #ddd;
+      padding: 20px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .post-info {
+      max-width: 65%;
+    }
+    .post-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+    .post-content {
+      color: #555;
+      margin-bottom: 8px;
+    }
+    .post-meta {
+      font-size: 13px;
+      color: #999;
+    }
+    .post-thumbnail {
+      width: 30%;
+      height: 120px;
+      background-color: #eee;
+    }
+    footer {
+      margin-top: 60px;
+      padding: 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<header>더 커뮤니티</header>
+
+<div class="container">
+  <h2>스크랩</h2>
+
+  <div class="tabs">
+    <a href="#" class="active">아티클</a>
+    <a href="#">커뮤니티</a>
+    <a href="#">정책 제안</a>
+  </div>
+
+  {% for post in posts %}
+  <div class="post">
+    <div class="post-info">
+      <div class="post-meta">{{ post.created_at|date:"Y.m.d" }}</div>
+      <div class="post-title">{{ post.title }}</div>
+      <div class="post-content">{{ post.content|truncatechars:70 }}</div>
+      <div class="post-meta">{{ post.author.username }}</div>
+    </div>
+    <div class="post-thumbnail"></div>
+  </div>
+  {% empty %}
+  <p>스크랩한 글이 없습니다.</p>
+  {% endfor %}
+</div>
+
+<footer>
+  &copy; 더 커뮤니티. All rights reserved.
+</footer>
+
+</body>
+</html>

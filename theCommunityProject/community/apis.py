@@ -4,11 +4,13 @@ import requests
 import os
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
+import json
 
 load_dotenv()  # .env 파일에서 환경변수를 읽어옴
 
 GEMINI_KEY = os.getenv("GEMINI_KEY")
 DBPIA_KEY = os.getenv("DBPIA_KEY")
+KOSIS_KEY = os.getenv("KOSIS_KEY")
 search_word = ""
 
 def get_gemini_response(prompt):
@@ -36,12 +38,20 @@ def get_gemini_response(prompt):
     #텍스트 변환
     cleaned_text = text.replace('**', '')  # 볼드 제거
     cleaned_text = cleaned_text.replace('*', '')
+    cleaned_text = cleaned_text.replace('\n', '')
 
     print(cleaned_text)
 
     #title, link = get_dbpia_response(cleaned_text)
     #개발 중인 부분
     paper, link = get_dbpia_response(cleaned_text)
+    statistics_data = cleaned_text.replace("'", '"')
+    statistics_data = "'" + '"' + statistics_data + '"' + "'"
+
+    print(statistics_data)
+    print(json.loads(statistics_data))
+    statistics_data = json.loads(statistics_data)
+    statistics = get_kosis_response(statistics_data)
 
     check_prompt = paper + "이 논문의 내용이" + prompt + (" 라는 의견을 뒷받침할 수 있도록 논문을 인용해서 근거를 3줄 이내로 작성해 줘."
                                                  " "
@@ -96,3 +106,26 @@ def get_dbpia_response(search_word):
 
     print("API 호출 실패", response.status_code)
     return "논문 검색 결과가 없습니다.", 'https://www.dbpia.co.kr/'
+
+def get_kosis_response(search_word):
+    url = "https://kosis.kr/openapi/statisticsList.do?method=getList"
+    params = {
+        "method": "getList",
+        "api_key": f"{KOSIS_KEY}",
+        "format": "json",
+        "jsonVD": "2.0",
+        "orgId": "101",
+        "tblId": "DT_1B040A3"
+
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        try:
+            data = response.json()
+            print(data)
+            return data
+        except json.JSONDecodeError:
+            print("응답 형식은 JSON이어야 합니다.", response.text)
+            return {"error": "Invalid JSON response"}

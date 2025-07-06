@@ -383,3 +383,68 @@ def detail_post_scrap(request, post_id):
         post.scrapped.add(request.user)
 
     return redirect('community:detail', post_id)
+
+def detail_comment_detail(request, post_id):
+    """
+    댓글 상세 페이지로 이동
+    """
+    post = get_object_or_404(Post, id=post_id)
+    # 댓글 수정 시, 수정할 댓글 id를 받아옴
+    editing_comment_id = request.GET.get('edit_comment')
+    # 답글 수정 시, 수정할 답글 id를 받아옴
+    editing_reply_id = request.GET.get('edit_reply')
+    # 답글 수정 완료 시, 답글 창 열린 상태 유지하기 위해서 답글이 달린 댓글의 id를 받아옴
+    open_reply_comment_id = request.GET.get('open_reply')
+
+    # 답글 수정 완료 시 수정 완료한 답글 위치로 스크롤 하기 위해 검사
+    opened_reply_comment_id = None
+    if editing_reply_id:  # 수정했거나 수정 예정인 답글이 있는 경우
+        editing_reply_id = int(editing_reply_id)
+        try:  # 답글 토글 열림 상태
+            reply = Reply.objects.get(pk=editing_reply_id)
+            opened_reply_comment_id = reply.comment.id
+        except Reply.DoesNotExist:
+            editing_reply_id = None
+            pass
+    elif open_reply_comment_id:  # 답글 창이 열려 있었던 경우
+        try:
+            opened_reply_comment_id = int(open_reply_comment_id)  # 답글 토글이 열려있던 댓글 id 정보 저장
+        except ValueError:
+            opened_reply_comment_id = None
+
+    # 답글 수정 관련 시도 없음, 답글 토글 닫혀있던 경우
+    else:
+        opened_reply_comment_id = None
+        open_reply_comment_id = None
+
+    if (request.method == 'POST'):
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
+            return redirect('community:detail_comment_detail', post_id=post_id)
+        else:
+            messages.error(request, "댓글 내용을 확인해 주세요. ")
+    else:
+        comment_form = CommentForm()
+
+    reply_form = None
+    if editing_reply_id:
+        try:
+            reply_obj = Reply.objects.get(id=editing_reply_id)
+            reply_form = ReplyForm(instance=reply_obj)
+        except Reply.DoesNotExist:
+            editing_reply_id = None
+    context = {
+        'post': post,
+        'comments': post.comments.filter(created_at__isnull=False),
+        'replies' : Reply.objects.all(),
+        'comment_form': comment_form,
+        'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
+        'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
+        'opened_reply_comment_id': opened_reply_comment_id,
+        'reply_form': reply_form,
+    }
+    return render(request, 'community_detail_comment.html', context)

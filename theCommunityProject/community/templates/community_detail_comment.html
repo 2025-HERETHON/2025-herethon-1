@@ -15,32 +15,27 @@
   </div>
 {% endif %}
 
-<a href="{% url 'community:home' %}">← 커뮤니티 홈으로</a>
+<a href="{% url 'community:detail' post.id %}">← 이전</a>
 
-<form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id %}">
-  {% csrf_token %}
- <label>
+<form id="voteForm">
+  <label>
     <input type="radio" name="selected" value="1"
            {% if voted_choice == 1 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}
-           onchange="this.form.submit()"> {{ post.option1 }}
+           disabled> {{ post.option1 }}
   </label><br>
 
   <label>
     <input type="radio" name="selected" value="2"
            {% if voted_choice == 2 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}
-           onchange="this.form.submit()"> {{ post.option2 }}
+           disabled> {{ post.option2 }}
   </label><br>
 
   <label>
     <input type="radio" name="selected" value="3"
            {% if voted_choice == 3 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}
-           onchange="this.form.submit()"> {{ post.option3 }}
+           disabled> {{ post.option3 }}
   </label><br>
 </form>
-
 
 <hr>
   <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -97,6 +92,53 @@
       <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
     </p>
 
+    {% if comment.id == opened_reply_comment_id %}
+        <div id="reply-section-{{ comment.id }}" style="display:block;">
+    {% else %}
+        <div id="reply-section-{{ comment.id }}" style="display:none;">
+    {% endif %}
+
+      {% for reply in comment.replies.all %}
+      <div id="reply_{{ reply.id }}">
+       <img src="{{ user_profile_image }}" width="50" height="50">
+        <strong>{{ reply.user.username }}</strong>:
+
+        {% if editing_reply_id == reply.id %}
+          <!-- 답글 수정 폼 -->
+          <form method="post" action="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="reply_update">
+            {{ reply_form.content }}
+            <button type="submit">수정 완료</button>
+          </form>
+        {% else %}
+          <p>{{ reply.content }}</p>
+          {% if request.user == reply.user %}
+            <a href="{% url 'community:detail_reply_update' reply.comment.post.id reply.comment.id reply.id %}">수정</a>
+            <!-- 답글 삭제 폼 -->
+            <form method="post" action="{% url 'community:detail_reply_delete' reply.comment.post.id reply.comment.id reply.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+            </form>
+          {% endif %}
+        {% endif %}
+
+        <small>{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+        <!-- 답글 좋아요 -->
+        <a href="{% url 'community:detail_reply_like' post.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+      </div>
+      {% empty %}
+        <p>대댓글이 없습니다.</p>
+      {% endfor %}
+
+      <form method="post" action="{% url 'community:detail_reply_create' post.id comment.id %}">
+        {% csrf_token %}
+        <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea><br>
+        <button type="submit">등록</button>
+      </form>
+    </div>
+
+  </div>
 {% empty %}
   <p>아직 의견이 없습니다.</p>
 {% endfor %}
@@ -158,8 +200,6 @@
     }
   }
 </script>
-
-<a href="{% url 'community:detail_comment_detail' post.id %}">← 커뮤니티 홈으로</a>
 
 </body>
 </html>
