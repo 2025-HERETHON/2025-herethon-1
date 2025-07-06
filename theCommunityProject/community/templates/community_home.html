@@ -111,7 +111,7 @@
                 </div>
                 <div class="meta">
                     <span>👁 {{ post.views }}</span>
-                    <span>💬 {{ post.comments.count }}</span>
+                    <span>💬 {{ post.filtered_comments | length }}</span>
                 </div>
             </div>
         </a>
