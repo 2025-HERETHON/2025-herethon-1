@@ -14,7 +14,8 @@
       color: white;
     }
 
-    header, footer {
+    header,
+    footer {
       background-color: #1f1f1f;
       padding: 1rem 2rem;
     }
@@ -103,6 +104,28 @@
       border-radius: 50%;
       object-fit: cover;
     }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: #1f1f1f;
+      padding: 1rem;
+      border-radius: 10px;
+      color: white;
+      transition: transform 0.2s ease;
+    }
+
+    .thumbnail {
+      width: 100%;
+      height: 120px;
+      background-color: #333;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
 
@@ -114,6 +137,9 @@
         <li><a href="/articles/" style="color: #a57bff">아티클</a></li>
         <li><a href="/community/">커뮤니티</a></li>
         <li><a href="/proposals/">정책 제안</a></li>
+        {% if user.is_authenticated %}
+        <li><a href="/">스크랩</a></li>
+        {% endif %}
       </ul>
       {% if user.is_authenticated %}
       <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
@@ -132,7 +158,7 @@
       {% endif %}
       <h1>{{ article.title }}</h1>
       <div class="meta-bar">
-        <div>작성일: {{ article.created_at }}</div>
+        <div>작성일: {{ article.created_at|date:"Y.m.d" }}</div>
       </div>
     </div>
 
@@ -164,9 +190,9 @@
       <div>💬 {{ article.article_comments.count }}</div>
       <div>
         {% if request.user in article.scrapped.all %}
-          <a style="color: #a57bff;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
+        <a style="color: #a57bff;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
         {% else %}
-          <a style="color: white;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
+        <a style="color: white;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
         {% endif %}
       </div>
       <div><button onclick="copyCurrentUrl()">공유</button></div>
@@ -176,54 +202,57 @@
     <h3>댓글 {{ comments|length }}개</h3>
 
     {% if messages %}
-      <div>
-        {% for message in messages %}
-          <p style="color: red;">{{ message }}</p>
-        {% endfor %}
-      </div>
+    <div>
+      {% for message in messages %}
+      <p style="color: red;">{{ message }}</p>
+      {% endfor %}
+    </div>
     {% endif %}
 
     <div style="margin-bottom: 1rem;">
       {% if request.GET.sort == 'popular' %}
-        <strong>인기순</strong>
+      <strong>인기순</strong>
       {% else %}
-        <a href="?sort=popular">인기순</a>
+      <a href="?sort=popular">인기순</a>
       {% endif %}
 
       {% if request.GET.sort == 'recent' or not request.GET.sort %}
-        <strong>최신순</strong>
+      <strong>최신순</strong>
       {% else %}
-        <a href="?sort=recent">최신순</a>
+      <a href="?sort=recent">최신순</a>
       {% endif %}
     </div>
 
     {% for comment in comments %}
     <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
       <strong>{{ comment.user.username }}</strong>
-      <small>{% if comment.user.sex == 'M' %}(남성){% elif comment.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
+      <small>{% if comment.user.sex == 'M' %}(남성){% elif comment.user.sex == 'F' %}(여성){% else %}(기타){% endif
+        %}</small>:
 
       {% if editing_comment_id == comment.id %}
-        <form method="post" action="{% url 'articles:comment_update' article.id comment.id %}">
+      <!-- <form method="post" action="{% url 'articles:comment_update' article.id comment.id %}">
           {% csrf_token %}
           <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
           <button type="submit">수정 완료</button>
-        </form>
+        </form> -->
       {% else %}
-        <p>{{ comment.content }}</p>
-        {% if request.user == comment.user %}
-          <form method="get" action="">
+      <p>{{ comment.content }}</p>
+      {% if request.user == comment.user %}
+      <!-- <form method="get" action="">
             <input type="hidden" name="edit_comment" value="{{ comment.id }}">
             <button>수정</button>
-          </form>
-          <form method="post" action="{% url 'articles:comment_delete' article.id comment.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
-          </form>
-        {% endif %}
+          </form> -->
+      <form method="post" action="{% url 'articles:comment_delete' article.id comment.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
+      </form>
+      {% else %}
+      <button>신고하기</button>
+      {% endif %}
       {% endif %}
 
       <p>
-        {{ comment.created_at|date:"Y-m-d H:i" }}
+        {{ comment.created_at|date:"Y.m.d" }}
         <button onclick="toggleReply({{ comment.id }})">
           💬 대댓글 ({{ comment.article_replies.count }})
         </button>
@@ -231,79 +260,101 @@
       </p>
 
       {% if opened_reply_comment_id == comment.id %}
-        <div id="reply-section-{{ comment.id }}" style="display:block;">
-      {% else %}
+      <div id="reply-section-{{ comment.id }}" style="display:block;">
+        {% else %}
         <div id="reply-section-{{ comment.id }}" style="display:none;">
-      {% endif %}
+          {% endif %}
 
-        {% for reply in comment.article_replies.all %}
-        <div id="reply_{{ reply.id }}">
-          <strong>{{ reply.user.username }}</strong>
-          <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
+          {% for reply in comment.article_replies.all %}
+          <div id="reply_{{ reply.id }}">
+            <strong>{{ reply.user.username }}</strong>
+            <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif
+              %}</small>:
 
-          {% if editing_reply_id == reply.id %}
-            <form method="post" action="{% url 'articles:reply_update' article.id comment.id reply.id %}">
+            {% if editing_reply_id == reply.id %}
+            <!-- <form method="post" action="{% url 'articles:reply_update' article.id comment.id reply.id %}">
               {% csrf_token %}
               <textarea name="content" style="width:100%; height:60px;">{{ reply.content }}</textarea><br>
               <button type="submit">수정 완료</button>
-            </form>
-          {% else %}
+            </form> -->
+            {% else %}
             <p>{{ reply.content }}</p>
             {% if request.user == reply.user %}
-              <form method="get" action="">
+            <!-- <form method="get" action="">
                 <input type="hidden" name="edit_reply" value="{{ reply.id }}">
                 <input type="hidden" name="open_reply" value="{{ comment.id }}">
                 <button>수정</button>
-              </form>
-              <form method="post" action="{% url 'articles:reply_delete' article.id comment.id reply.id %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
-              </form>
+              </form> -->
+            <form method="post" action="{% url 'articles:reply_delete' article.id comment.id reply.id %}"
+              style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+            </form>
+            {% else %}
+            <button>신고하기</button>
             {% endif %}
-          {% endif %}
+            {% endif %}
 
-          <small>{{ reply.created_at|date:"Y-m-d H:i" }}</small>
-          <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
-        </div>
-        {% empty %}
+            <small>{{ reply.created_at|date:"Y.m.d" }}</small>
+            <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+          </div>
+          {% empty %}
           <p>대댓글이 없습니다.</p>
-        {% endfor %}
+          {% endfor %}
 
-        <form method="post" action="{% url 'articles:reply_create' article.id comment.id %}">
-          {% csrf_token %}
-          <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea><br>
-          <button type="submit">등록</button>
-        </form>
+          <form method="post" action="{% url 'articles:reply_create' article.id comment.id %}">
+            {% csrf_token %}
+            <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea><br>
+            <button type="submit">등록</button>
+          </form>
+        </div>
       </div>
-    </div>
-    {% empty %}
+      {% empty %}
       <p>아직 의견이 없습니다.</p>
-    {% endfor %}
+      {% endfor %}
 
-    <h3>댓글 작성</h3>
-    <form method="post" action="{% url 'articles:comment_create' article.id %}">
-      {% csrf_token %}
-      {{ comment_form.content }}
-      <button type="submit">등록</button>
-    </form>
-  </div>
+      <h3>댓글 작성</h3>
+      <form method="post" action="{% url 'articles:comment_create' article.id %}">
+        {% csrf_token %}
+        {{ comment_form.content }}
+        <button type="submit">등록</button>
+      </form>
+    </div>
 
-  <footer>
-    <div class="logo">더 커뮤니티</div>
-  </footer>
+    <hr>
+    <h3>관련 커뮤니티 게시글</h3>
+    <section class="grid" style="margin-bottom: 2rem;">
+      {% for post in related_posts %}
+      <a href="{% url 'community:detail' post.id %}" class="card-link">
+        <div class="card">
+          <div class="thumbnail"></div>
+          <div class="card-content">{{ post.title|truncatechars:30 }}</div>
+          <div class="meta">
+            투표수: {{ post.votes.count }} | 💬 {{ post.filtered_comments.count }}
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p style="color: #999;">이 아티클과 연결된 커뮤니티 게시글이 없습니다.</p>
+      {% endfor %}
+    </section>
 
-  <script>
-    function copyCurrentUrl() {
-      const url = window.location.href;
-      navigator.clipboard.writeText(url);
-      alert("링크가 복사되었습니다!");
-    }
+    <footer>
+      <div class="logo">더 커뮤니티</div>
+    </footer>
 
-    function toggleReply(commentId) {
-      const el = document.getElementById('reply-section-' + commentId);
-      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-    }
-  </script>
+    <script>
+      function copyCurrentUrl() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url);
+        alert("링크가 복사되었습니다!");
+      }
+
+      function toggleReply(commentId) {
+        const el = document.getElementById('reply-section-' + commentId);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+      }
+    </script>
 </body>
 
 </html>
