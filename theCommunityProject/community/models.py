@@ -16,6 +16,7 @@ class Post(models.Model):
     #filtered_comments = models.IntegerField(default=0)
 
     # article = models.ForeignKey(Article, on_delete = models.CASCADE)
+    scrapped = models.ManyToManyField(User, related_name='scrapped_community_posts', blank=True)
 
     def save(self, *args, **kwargs):
         # finish_at이 비어있으면, 생성일 기준으로 2주 뒤 자동 설정
