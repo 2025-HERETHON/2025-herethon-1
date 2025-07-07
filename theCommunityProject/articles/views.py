@@ -5,6 +5,8 @@ from django.contrib import messages
 from .models import Article, ArticleComment, ArticleReply
 from .forms import ArticleCommentForm, ArticleReplyForm
 
+from community.models import Post
+
 # 홈: 아티클 목록
 @login_required(login_url='accounts:login')
 def home(request):
@@ -12,9 +14,9 @@ def home(request):
     articles = Article.objects.all()
 
     if sort == 'popular':
-        articles = sorted(articles, key=lambda a: (a.liked.count() * 5 + a.article_comments.count() * 2), reverse=True)
+        articles = sorted(articles, key=lambda a: (a.liked.count() * 5 + a.article_comments.filter(created_at__isnull=False).count() * 2), reverse=True)
     else:
-        articles = articles.order_by('-created_at')
+        articles = articles.filter(created_at__isnull=False).order_by('-created_at')
 
     return render(request, 'article_home.html', {'articles': articles})
 
@@ -62,16 +64,23 @@ def detail(request, article_id):
             editing_reply_id = None
 
     sort = request.GET.get('sort', 'recent')
-    comments = article.article_comments.all()
+    comments = article.article_comments.filter(created_at__isnull=False)
     if sort == 'popular':
         comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
     else:
         comments = comments.order_by('-created_at')
 
+    #관련된 커뮤니티 게시글
+    related_posts = Post.objects.filter(related_article=article).order_by('-created_at')
+
+    for post in related_posts:
+        post.filtered_comments = post.comments.filter(created_at__isnull=False)
+
     context = {
         'article': article,
         'comments': comments,
         'comment_form': comment_form,
+        'related_posts': related_posts,
         'reply_form': reply_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,

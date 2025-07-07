@@ -14,6 +14,8 @@ from community.apis import get_gemini_response
 from community.forms import CommentForm, ReplyForm
 from community.models import Post, Comment, Reply, Vote, CommentEvidence
 
+from articles.models import Article
+
 
 # Create your views here.
 
@@ -52,7 +54,8 @@ def detail(request, post_id):
     """
     post = get_object_or_404(Post, id=post_id)
 
-
+    # 추천 아티클은 일단 임시로 최신순 5개로 정해둠
+    recommended_articles = Article.objects.all().order_by('-created_at')[:5]
 
     #댓글 수정 시, 수정할 댓글 id를 받아옴
     editing_comment_id = request.GET.get('edit_comment')
@@ -109,6 +112,8 @@ def detail(request, post_id):
     context = {
         'post': post,
         'comments' : post.comments.filter(created_at__isnull=False),
+        # 추천 아티클 추가
+        'recommended_articles': recommended_articles,
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
@@ -211,7 +216,10 @@ def detail_comment_like(request, post_id, comment_id):
         messages.error(request, "본인이 작성한 댓글은 추천할 수 없습니다.")
         return redirect('community:detail', post.pk)
     else:
-        comment.liked.add(request.user)
+        if request.user in comment.liked.all():
+            comment.liked.remove(request.user)
+        else:
+            comment.liked.add(request.user)
     return redirect('{}#comment_{}'.format(
         resolve_url('community:detail', post_id=post_id), comment_id
     ))
@@ -318,7 +326,10 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
         messages.error(request, "본인이 작성한 답글은 추천할 수 없습니다.")
         return redirect('community:detail', post.pk)
     else:
-        reply.liked.add(request.user)
+        if request.user in reply.liked.all():
+            reply.liked.remove(request.user)
+        else:
+            reply.liked.add(request.user)
     return redirect('{}#reply_{}'.format(
         resolve_url('community:detail', post_id=post_id), comment_id, reply_id
     ))

@@ -4,6 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ post.title }} - 더 커뮤니티</title>
+
+    <style>
+            .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: #1f1f1f;
+  padding: 1rem;
+  border-radius: 10px;
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+    .article-thumbnail {
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      background-color: #ccc;
+      object-fit: cover;
+    }
+    </style>
 </head>
 <body>
 
@@ -72,15 +96,15 @@
     <strong>{{ comment.user.username }}</strong>:
 
     {% if editing_comment_id == comment.id %}
-      <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
+      <!-- <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
         {% csrf_token %}
         <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
         <button type="submit">수정 완료</button>
-      </form>
+      </form> -->
     {% else %}
       <p>{{ comment.content }}</p>
       {% if request.user == comment.user %}
-        <a href="?edit_comment={{ comment.id }}">수정</a>
+        <!-- <a href="?edit_comment={{ comment.id }}">수정</a> -->
         <!-- 댓글 삭제 폼 -->
         <form method="post" action="{% url 'community:detail_comment_delete' comment.post.id comment.id %}" style="display:inline;">
           {% csrf_token %}
@@ -90,7 +114,7 @@
     {% endif %}
 
     <p>
-      {{ comment.created_at|date:"Y-m-d H:i" }}
+      {{ comment.created_at|date:"Y.m.d" }}
       <button onclick="toggleReply({{ comment.id }})">
         💬 답글 ({{ comment.replies.count }})
       </button>
@@ -109,6 +133,48 @@
   <button type="submit" id="submit-comment">댓글 작성</button>
   <button type="button" id="ai-button">AI</button>
 </form>
+
+<h3>관련 아티클</h3>
+{% if post.related_article %}
+  <a href="{% url 'articles:detail' post.related_article.id %}" class="card-link">
+    <div class="card">
+      <div class="article-thumbnail">
+        <img src="{{ post.related_article.image.url }}" alt="썸네일" style="width: 100%;">
+      </div>
+      <div class="card-content">
+        {{ post.related_article.title|truncatechars:30 }}
+      </div>
+      <div class="meta">
+        ❤️ {{ post.related_article.liked.count }} | 💬 {{ post.related_article.article_comments.count }}
+      </div>
+    </div>
+  </a>
+{% else %}
+  <p style="color: #999;">이 게시글과 연결된 아티클이 없습니다.</p>
+{% endif %}
+
+<hr>
+
+<h3>추천 아티클</h3>
+<section class="grid">
+  {% for article in recommended_articles %}
+    <a href="{% url 'articles:detail' article.id %}" class="card-link">
+      <div class="card">
+        <div class="article-thumbnail">
+          <img src="{{ article.image.url }}" alt="썸네일" style="width: 100%;">
+        </div>
+        <div class="card-content">
+          {{ article.title|truncatechars:30 }}
+        </div>
+        <div class="meta">
+          ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <p style="color: #999;">추천 아티클이 없습니다.</p>
+  {% endfor %}
+</section>
 
 <script>
   document.getElementById('ai-button').addEventListener('click', function() {

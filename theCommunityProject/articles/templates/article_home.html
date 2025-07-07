@@ -14,7 +14,8 @@
       color: white;
     }
 
-    header, footer {
+    header,
+    footer {
       background-color: #1f1f1f;
       padding: 1rem 2rem;
     }
@@ -99,14 +100,17 @@
     <nav>
       <div class="logo">더 커뮤니티</div>
       <ul>
-        <li style="color: #a57bff">아티클</li>
-        <li>커뮤니티</li>
-        <li>정책 제안</li>
+        <li><a href="/articles/" style="color: #a57bff">아티클</a></li>
+        <li><a href="/community/">커뮤니티</a></li>
+        <li><a href="/proposals/">정책 제안</a></li>
+        {% if user.is_authenticated %}
+        <li><a href="/">스크랩</a></li>
+        {% endif %}
       </ul>
       {% if user.is_authenticated %}
       <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
       {% else %}
-      <a href="{% url 'accounts:login' %}" class="auth-links">로그인 / 회원가입</a>
+      <a href="{% url 'accounts:login' %}" class="auth-links">로그인/회원가입</a>
       {% endif %}
     </nav>
   </header>
@@ -114,29 +118,29 @@
   <main>
     <div style="padding: 1rem 2rem;">
       {% if request.GET.sort == 'popular' %}
-        <strong>인기순</strong>
+      <strong>인기순</strong>
       {% else %}
-        <a href="?sort=popular">인기순</a>
+      <a href="?sort=popular">인기순</a>
       {% endif %}
 
       {% if request.GET.sort == 'recent' or not request.GET.sort %}
-        <strong>최신순</strong>
+      <strong>최신순</strong>
       {% else %}
-        <a href="?sort=recent">최신순</a>
+      <a href="?sort=recent">최신순</a>
       {% endif %}
     </div>
 
     <section class="article-list">
-    {% for article in articles %}
-    <a href="{% url 'articles:detail' article.id %}" class="article-item">
+      {% for article in articles %}
+      <a href="{% url 'articles:detail' article.id %}" class="article-item">
 
         <div class="article-info">
-        <div>{{ article.created_at|date:"Y-m-d" }}</div>
-        <h2>{{ article.title }}</h2>
-        <p class="summary">{{ article.sections.first.text|truncatechars:100 }}</p>
-        <div class="article-meta">
+          <div>{{ article.created_at|date:"Y.m.d" }}</div>
+          <h2>{{ article.title }}</h2>
+          <p class="summary">{{ article.sections.first.text|truncatechars:100 }}</p>
+          <div class="article-meta">
             ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}
-        </div>
+          </div>
         </div>
 
         {% if article.image %}
@@ -145,16 +149,19 @@
         <div class="article-thumbnail"></div>
         {% endif %}
 
-    </a>
-    {% empty %}
-        <p style="padding: 2rem;">아직 등록된 아티클이 없습니다.</p>
-    {% endfor %}
+      </a>
+      {% empty %}
+      <p style="padding: 2rem;">아직 등록된 아티클이 없습니다.</p>
+      {% endfor %}
     </section>
   </main>
 
   <footer>
     <div class="logo">더 커뮤니티</div>
-    <div><div>ABOUT</div><div>CONTACT US</div></div>
+    <div>
+      <div>ABOUT</div>
+      <div>CONTACT US</div>
+    </div>
   </footer>
 </body>
 
