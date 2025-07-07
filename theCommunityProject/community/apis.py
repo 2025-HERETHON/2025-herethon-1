@@ -11,6 +11,7 @@ load_dotenv()  # .env 파일에서 환경변수를 읽어옴
 GEMINI_KEY = os.getenv("GEMINI_KEY")
 DBPIA_KEY = os.getenv("DBPIA_KEY")
 KOSIS_KEY = os.getenv("KOSIS_KEY")
+LIB_KEY = os.getenv('LIB_KEY')
 search_word = ""
 
 def get_gemini_response(prompt):
@@ -45,15 +46,23 @@ def get_gemini_response(prompt):
     #title, link = get_dbpia_response(cleaned_text)
     #개발 중인 부분
     paper, link = get_dbpia_response(cleaned_text)
-    statistics_data = cleaned_text.replace("'", '"')
-    statistics_data = "'" + '"' + statistics_data + '"' + "'"
+    # statistics_data = cleaned_text.replace("'", '"')
+    # statistics_data = "'" + '"' + statistics_data + '"' + "'"
+    #
+    # print(statistics_data)
+    # print(json.loads(statistics_data))
+    # statistics_data = json.loads(statistics_data)
+    # statistics = get_kosis_response(statistics_data)
 
-    print(statistics_data)
-    print(json.loads(statistics_data))
-    statistics_data = json.loads(statistics_data)
-    statistics = get_kosis_response(statistics_data)
+    words = cleaned_text.split(',', 1)
 
-    check_prompt = paper + "이 논문의 내용이" + prompt + (" 라는 의견을 뒷받침할 수 있도록 논문을 인용해서 근거를 3줄 이내로 작성해 줘."
+    first = words[0].strip() if len(words) > 0 else ""
+    second = words[1].strip() if len(words) > 1 else ""
+
+    lib_title, lib_author, lib_year = get_library_response(first, second)
+
+
+    check_prompt = paper + "이건 dbpia에 등재된 논문이야. 이 논문을 인용해서" + prompt + (" 라는 의견을 뒷받침할 수 있도록 근거를 3개 작성해 줘. 논문의 어떤 부분을 인용했는지 각 근거 뒤에 써 줘."
                                                  " "
                                                    )
 
@@ -129,3 +138,39 @@ def get_kosis_response(search_word):
         except json.JSONDecodeError:
             print("응답 형식은 JSON이어야 합니다.", response.text)
             return {"error": "Invalid JSON response"}
+
+def get_library_response(first, second):
+    base_url = 'http://apis.data.go.kr/9720000/searchservice/basic'
+    # params = {
+    #     'serviceKey': LIB_KEY,
+    #     'query': search_word,
+    #     'pageNo': '1',
+    #     'numOfRows': '5'
+    # }
+    # 이미 인코딩된 키이므로 작성 방식 변경
+
+    search_word = first + " " + second
+    url = f"{base_url}?serviceKey={LIB_KEY}&query={search_word}&pageNo=1&numOfRows=5"
+    try:
+        response = requests.get(url, verify=False)
+    # response = requests.get(url, params=params, verify=False)
+    # response.encoding = 'utf-8'
+
+        if response.status_code == 200:
+            root = ET.fromstring(response.text)
+            # response 구조에 맞게 파싱 (예시는 일반적인 구조)
+            items = root.findall('.//item')  # 'item' 태그 위치는 실제 응답 따라 달라질 수 있음
+            for item in items:
+                title = item.find('title').text if item.find('title') is not None else "제목 없음"
+                author = item.find('author').text if item.find('author') is not None else "저자 없음"
+                pub_year = item.find('pubYear').text if item.find('pubYear') is not None else "발행년도 없음"
+                print(f"제목: {title}\n 저자: {author}\n 발행년도: {pub_year}\n")
+                return title, author, pub_year
+        print(f" 응답 실패: status={response.status_code}")
+        return "응답 실패", "응답 실패", "응답 실패"
+    except requests.exceptions.RequestException as e:
+        print("API 요청 실패", e)
+        return '실패', '실패', '실패'
+
+
+

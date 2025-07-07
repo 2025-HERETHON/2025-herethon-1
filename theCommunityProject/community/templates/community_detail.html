@@ -68,7 +68,7 @@
 
 <hr>
   <div style="display:flex; justify-content:space-between; align-items:center;">
-    <div>💬 {{ post.comments.count }}</div>
+    <div>💬 {{ comments.count }}</div>
     <div>
       {% if request.user in post.scrapped.all %}
       <a style="color: #a57bff;" href="{% url 'community:detail_post_scrap' post.id %}">스크랩</a>
@@ -89,8 +89,8 @@
 </script>
 
 <h2>의견</h2>
-
-{% for comment in comments.all %}
+{% load extra_dict %}
+{% for comment in comments %}
   <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
     <img src="{{ comment.image }}" width="50" height="50">
     <strong>{{ comment.user.username }}</strong>:
@@ -134,47 +134,7 @@
   <button type="button" id="ai-button">AI</button>
 </form>
 
-<h3>관련 아티클</h3>
-{% if post.related_article %}
-  <a href="{% url 'articles:detail' post.related_article.id %}" class="card-link">
-    <div class="card">
-      <div class="article-thumbnail">
-        <img src="{{ post.related_article.image.url }}" alt="썸네일" style="width: 100%;">
-      </div>
-      <div class="card-content">
-        {{ post.related_article.title|truncatechars:30 }}
-      </div>
-      <div class="meta">
-        ❤️ {{ post.related_article.liked.count }} | 💬 {{ post.related_article.article_comments.count }}
-      </div>
-    </div>
-  </a>
-{% else %}
-  <p style="color: #999;">이 게시글과 연결된 아티클이 없습니다.</p>
-{% endif %}
 
-<hr>
-
-<h3>추천 아티클</h3>
-<section class="grid">
-  {% for article in recommended_articles %}
-    <a href="{% url 'articles:detail' article.id %}" class="card-link">
-      <div class="card">
-        <div class="article-thumbnail">
-          <img src="{{ article.image.url }}" alt="썸네일" style="width: 100%;">
-        </div>
-        <div class="card-content">
-          {{ article.title|truncatechars:30 }}
-        </div>
-        <div class="meta">
-          ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}
-        </div>
-      </div>
-    </a>
-  {% empty %}
-    <p style="color: #999;">추천 아티클이 없습니다.</p>
-  {% endfor %}
-</section>
 
 <script>
   document.getElementById('ai-button').addEventListener('click', function() {
@@ -224,8 +184,48 @@
     }
   }
 </script>
+<h3>관련 아티클</h3>
+{% if post.related_article %}
+  <a href="{% url 'articles:detail' post.related_article.id %}" class="card-link">
+    <div class="card">
+      <div class="article-thumbnail">
+        <img src="{{ post.related_article.image.url }}" alt="썸네일" style="width: 100%;">
+      </div>
+      <div class="card-content">
+        {{ post.related_article.title|truncatechars:30 }}
+      </div>
+      <div class="meta">
+        ❤️ {{ post.related_article.liked.count }} | 💬 {{ post.related_article.article_comments.count }}
+      </div>
+    </div>
+  </a>
+{% else %}
+  <p style="color: #999;">이 게시글과 연결된 아티클이 없습니다.</p>
+{% endif %}
 
-<a href="{% url 'community:detail_comment_detail' post.id %}">← 커뮤니티 홈으로</a>
+<hr>
+
+<h3>추천 아티클</h3>
+<section class="grid">
+  {% for article in recommended_articles %}
+    <a href="{% url 'articles:detail' article.id %}" class="card-link">
+      <div class="card">
+        <div class="article-thumbnail">
+          <img src="{{ article.image.url }}" alt="썸네일" style="width: 100%;">
+        </div>
+        <div class="card-content">
+          {{ article.title|truncatechars:30 }}
+        </div>
+        <div class="meta">
+          ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <p style="color: #999;">추천 아티클이 없습니다.</p>
+  {% endfor %}
+</section>
+<a href="{% url 'community:detail_comment_detail' post.id %}">댓글 상세</a>
 
 </body>
 </html>

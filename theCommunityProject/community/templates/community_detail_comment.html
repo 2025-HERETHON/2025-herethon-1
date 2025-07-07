@@ -92,15 +92,15 @@
       <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
     </p>
 
-    {% if comment.id == opened_reply_comment_id %}
+<!--    {% if comment.id == opened_reply_comment_id %}-->
         <div id="reply-section-{{ comment.id }}" style="display:block;">
-    {% else %}
-        <div id="reply-section-{{ comment.id }}" style="display:none;">
-    {% endif %}
+<!--    {% else %}-->
+<!--        <div id="reply-section-{{ comment.id }}" style="display:none;">-->
+<!--    {% endif %}-->
 
       {% for reply in comment.replies.all %}
       <div id="reply_{{ reply.id }}">
-       <img src="{{ user_profile_image }}" width="50" height="50">
+       <img src="{{ reply.image }}" width="50" height="50">
         <strong>{{ reply.user.username }}</strong>:
 
         {% if editing_reply_id == reply.id %}
@@ -175,6 +175,27 @@
     </div>
   </div>
 {% endif %}
+
+    <h3>추천 아티클</h3>
+<section class="grid">
+  {% for article in recommended_articles %}
+    <a href="{% url 'articles:detail' article.id %}" class="card-link">
+      <div class="card">
+        <div class="article-thumbnail">
+          <img src="{{ article.image.url }}" alt="썸네일" style="width: 100%;">
+        </div>
+        <div class="card-content">
+          {{ article.title|truncatechars:30 }}
+        </div>
+        <div class="meta">
+          ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <p style="color: #999;">추천 아티클이 없습니다.</p>
+  {% endfor %}
+</section>
 
 <script>
   const aiBtn = document.getElementById('aiBtn');
