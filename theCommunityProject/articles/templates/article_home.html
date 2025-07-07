@@ -117,13 +117,13 @@
 
   <main>
     <div style="padding: 1rem 2rem;">
-      {% if request.GET.sort == 'popular' %}
+      {% if request.GET.sort == 'popular' or not request.GET.sort %}
       <strong>인기순</strong>
       {% else %}
       <a href="?sort=popular">인기순</a>
       {% endif %}
 
-      {% if request.GET.sort == 'recent' or not request.GET.sort %}
+      {% if request.GET.sort == 'recent' %}
       <strong>최신순</strong>
       {% else %}
       <a href="?sort=recent">최신순</a>

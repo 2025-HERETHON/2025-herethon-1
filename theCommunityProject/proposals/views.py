@@ -15,7 +15,7 @@ def home(request):
     proposals = ProposalPost.objects.all()
 
     # 정렬 추가
-    sort = request.GET.get('sort', 'recent')
+    sort = request.GET.get('sort', 'popular')
 
     if sort == 'popular':
         # 인기 점수: (좋아요 수 * 5) + (댓글 수 * 2)
@@ -86,11 +86,11 @@ def detail(request, post_id):
             editing_reply_id = None
 
     # 정렬/필터 파라미터 받기
-    sort = request.GET.get('sort', 'recent')  # 기본값: 최신순
+    sort = request.GET.get('sort', 'popular')  # 기본값: 인기순
     petition_filter = request.GET.get('filter', '')  # 기본값: 필터링 안 함
 
     # 기본 쿼리셋
-    comments = ProposalComment.objects.filter(proposal=post, created_at__isnull=False)
+    comments = post.proposal_comments.all().prefetch_related('proposal_replies', 'user')
 
     # 필터 적용
     if petition_filter == 'petition':
@@ -102,7 +102,35 @@ def detail(request, post_id):
     else:  # 최신순
         comments = comments.order_by('-created_at')
 
-    # 추천 아티클은 일단 임시로 최신순 5개로 정해둠
+    # Bets 기준(좋아요*5 + 답댓*2 >= 100)
+    for comment in comments:
+        likes = comment.liked.count()
+        replies = comment.proposal_replies.count()
+        comment.is_best = (likes * 5 + replies * 2) >= 100
+
+    # 익명 이름 부여(정책 제안의 경우 답글만)
+    all_reply_entries = []
+    for comment in comments:
+        for reply in comment.proposal_replies.all():
+            if reply.created_at:  # created_at이 있는 답글만
+                all_reply_entries.append((reply.user.id, reply.created_at))
+
+    all_reply_entries.sort(key=lambda x: x[1])
+
+    # 익명 번호 매핑 (댓글 작성자는 제외해도 상관 없음)
+    anon_map = {}
+    counter = 1
+    for user_id, _ in all_reply_entries:
+        if user_id not in anon_map:
+            anon_map[user_id] = f"익명{counter}"
+            counter += 1
+
+    # reply 객체에 익명 이름 부여
+    for comment in comments:
+        for reply in comment.proposal_replies.all():
+            reply.anonymous_name = anon_map.get(reply.user.id, None)
+
+    # 추천 아티클은 최신순 5개
     recommended_articles = Article.objects.order_by('-created_at')[:5]
 
     context = {
