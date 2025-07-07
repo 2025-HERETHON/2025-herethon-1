@@ -163,13 +163,13 @@
   <hr>
   <h3>제안 ({{ post.proposal_comments.count }})</h3>
   <!-- 정렬 -->
-  {% if request.GET.sort == 'popular' %}
+  {% if request.GET.sort == 'popular' or not request.GET.sort %}
   <strong>인기순</strong>
   {% else %}
   <a href="?sort=popular{% if request.GET.filter == 'petition' %}&filter=petition{% endif %}">인기순</a>
   {% endif %}
 
-  {% if request.GET.sort == 'recent' or not request.GET.sort %}
+  {% if request.GET.sort == 'recent' %}
   <strong>최신순</strong>
   {% else %}
   <a href="?sort=recent{% if request.GET.filter == 'petition' %}&filter=petition{% endif %}">최신순</a>
@@ -178,10 +178,11 @@
   <!-- 청원 24 필터 -->
   <form method="get" style="display:inline;">
     {% if request.GET.sort %}
-    <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+      <input type="hidden" name="sort" value="{{ request.GET.sort }}">
     {% endif %}
     <label>
-      <input type="checkbox" name="filter" value="petition" {% if request.GET.filter=='petition' %}checked{% endif %}
+      <input type="checkbox" name="filter" value="petition" 
+        {% if request.GET.filter == 'petition' %}checked{% endif %}
         onchange="this.form.submit()">
       청원 24에 올라간 제안
     </label>
@@ -193,7 +194,7 @@
       {% if comment.link_url %}
       <span style="background-color: #a57bff;">국민청원등록</span>
       {% endif %}
-      {% if comment.liked.count >= 100 %}
+      {% if comment.is_best %}
       <span style="background-color: gray">Best</span>
       {% endif %}
     </div>
@@ -203,20 +204,20 @@
     <p><b>개선 방안:</b> {{ comment.solution }}</p>
     <p><b>기대 효과:</b> {{ comment.effect }}</p>
     {% if request.user == comment.user %}
-    <!-- <button
-      onclick="openEditCommentModal('{{ comment.title|escapejs }}', '{{ comment.problem|escapejs }}', '{{ comment.solution|escapejs }}', '{{ comment.effect|escapejs }}', '{% url 'proposals:detail_comment_update' post.id comment.id %}')">수정</button> -->
+      <!-- <button
+        onclick="openEditCommentModal('{{ comment.title|escapejs }}', '{{ comment.problem|escapejs }}', '{{ comment.solution|escapejs }}', '{{ comment.effect|escapejs }}', '{% url 'proposals:detail_comment_update' post.id comment.id %}')">수정</button> -->
 
-    <form method="post" action="{% url 'proposals:detail_comment_delete' post.id comment.id %}" style="display:inline;">
-      {% csrf_token %}
-      <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
-    </form>
+      <form method="post" action="{% url 'proposals:detail_comment_delete' post.id comment.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
+      </form>
 
-    {% if comment.link_url %}
-    <button
-      onclick="openLinkModal('{{ comment.link_url }}', '{% url 'proposals:detail_comment_link' post.id comment.id %}')">링크편집</button>
-    {% else %}
-    <button onclick="openLinkModal('', '{% url 'proposals:detail_comment_link' post.id comment.id %}')">링크추가</button>
-    {% endif %}
+      {% if comment.link_url %}
+      <button
+        onclick="openLinkModal('{{ comment.link_url }}', '{% url 'proposals:detail_comment_link' post.id comment.id %}')">링크편집</button>
+      {% else %}
+      <button onclick="openLinkModal('', '{% url 'proposals:detail_comment_link' post.id comment.id %}')">링크추가</button>
+      {% endif %}
 
     {% else %}
     <button>신고하기</button>
@@ -235,15 +236,14 @@
 
     {% if comment.id == opened_reply_comment_id %}
     <div id="reply-section-{{ comment.id }}" style="display:block;">
-      {% else %}
-      <div id="reply-section-{{ comment.id }}" style="display:none;">
-        {% endif %}
-        {% for reply in comment.proposal_replies.all %}
+    {% else %}
+    <div id="reply-section-{{ comment.id }}" style="display:none;">
+    {% endif %}
+      {% for reply in comment.proposal_replies.all %}
         <div id="reply_{{ reply.id }}">
           <strong>{{ reply.user.username }}{% if reply.user == comment.user %} (글쓴이){% endif %}</strong>
           <!-- 성별 출력 추가 -->
-          <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif
-            %}</small>:
+          <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
           {% if editing_reply_id == reply.id %}
           <!-- <form method="post" action="{% url 'proposals:detail_reply_update' post.id comment.id reply.id %}">
             {% csrf_token %}
@@ -253,25 +253,25 @@
             <a href="{% url 'proposals:detail' post.id %}?open_reply={{ comment.id }}">취소</a>
           </form> -->
           {% else %}
-          <p>{{ reply.content }}</p>
-          <small>{{ reply.created_at|date:"Y.m.d" }}</small>
-          <a href="{% url 'proposals:detail_reply_like' post.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
-          {% if request.user == reply.user %}
-          <!-- <a
-            href="{% url 'proposals:detail' post.id %}?edit_reply={{ reply.id }}&open_reply={{ comment.id }}#reply_{{ reply.id }}">수정</a> -->
-          <form method="post" action="{% url 'proposals:detail_reply_delete' post.id comment.id reply.id %}"
-            style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
-          </form>
-          {% else %}
-          <button>신고하기</button>
-          {% endif %}
+            <p>{{ reply.content }}</p>
+            <small>{{ reply.created_at|date:"Y.m.d" }}</small>
+            <a href="{% url 'proposals:detail_reply_like' post.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+            {% if request.user == reply.user %}
+            <!-- <a
+              href="{% url 'proposals:detail' post.id %}?edit_reply={{ reply.id }}&open_reply={{ comment.id }}#reply_{{ reply.id }}">수정</a> -->
+            <form method="post" action="{% url 'proposals:detail_reply_delete' post.id comment.id reply.id %}"
+              style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+            </form>
+            {% else %}
+            <button>신고하기</button>
+            {% endif %}
           {% endif %}
         </div>
-        {% empty %}
-        <p>대댓글이 없습니다.</p>
-        {% endfor %}
+      {% empty %}
+      <p>대댓글이 없습니다.</p>
+      {% endfor %}
 
         <form method="post" action="{% url 'proposals:detail_reply_create' post.id comment.id %}">
           {% csrf_token %}
@@ -280,9 +280,9 @@
         </form>
       </div>
     </div>
-    {% empty %}
-    <p>아직 제안이 없습니다.</p>
-    {% endfor %}
+  {% empty %}
+  <p>아직 제안이 없습니다.</p>
+  {% endfor %}
 
     <h3>관련 아티클</h3>
     {% if post.community_post.related_article %}
@@ -295,8 +295,7 @@
           {{ post.community_post.related_article.title|truncatechars:30 }}
         </div>
         <div class="meta">
-          ❤️ {{ post.community_post.related_article.liked.count }} | 💬 {{
-          post.community_post.related_article.article_comments.count }}
+          ❤️ {{ post.community_post.related_article.liked.count }} | 💬 {{ post.community_post.related_article.article_comments.count }}
         </div>
       </div>
     </a>

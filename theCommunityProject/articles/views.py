@@ -10,7 +10,7 @@ from community.models import Post
 # 홈: 아티클 목록
 @login_required(login_url='accounts:login')
 def home(request):
-    sort = request.GET.get('sort', 'recent')
+    sort = request.GET.get('sort', 'popular')
     articles = Article.objects.all()
 
     if sort == 'popular':
@@ -63,7 +63,7 @@ def detail(request, article_id):
         except ArticleReply.DoesNotExist:
             editing_reply_id = None
 
-    sort = request.GET.get('sort', 'recent')
+    sort = request.GET.get('sort', 'popular')
     comments = article.article_comments.filter(created_at__isnull=False)
     if sort == 'popular':
         comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)

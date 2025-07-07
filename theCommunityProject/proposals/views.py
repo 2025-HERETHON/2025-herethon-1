@@ -15,7 +15,7 @@ def home(request):
     proposals = ProposalPost.objects.all()
 
     # 정렬 추가
-    sort = request.GET.get('sort', 'recent')
+    sort = request.GET.get('sort', 'popular')
 
     if sort == 'popular':
         # 인기 점수: (좋아요 수 * 5) + (댓글 수 * 2)
@@ -86,7 +86,7 @@ def detail(request, post_id):
             editing_reply_id = None
 
     # 정렬/필터 파라미터 받기
-    sort = request.GET.get('sort', 'recent')  # 기본값: 최신순
+    sort = request.GET.get('sort', 'popular')  # 기본값: 인기순
     petition_filter = request.GET.get('filter', '')  # 기본값: 필터링 안 함
 
     # 기본 쿼리셋
@@ -101,6 +101,12 @@ def detail(request, post_id):
         comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
     else:  # 최신순
         comments = comments.order_by('-created_at')
+
+    # Bets 기준(좋아요*5 + 답댓*2 >= 100)
+    for comment in comments:
+        likes = comment.liked.count()
+        replies = comment.proposal_replies.count()
+        comment.is_best = (likes * 5 + replies * 2) >= 100
 
     # 추천 아티클은 일단 임시로 최신순 5개로 정해둠
     recommended_articles = Article.objects.order_by('-created_at')[:5]
