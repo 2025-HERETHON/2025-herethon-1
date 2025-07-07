@@ -383,10 +383,10 @@ def detail_comment_ai_response(request, post_id):
     else:
         comment = Comment(user=request.user, content=content, post=post, created_at=None)
         comment.save()
-        extra_text = ' 이 글의 주제 키워드를 하나만 찾아 줘 그리고 그 키워드에 대해 긍정적인 의견이라면 찬성, 그렇지 않으면 반대라고 덧붙여 줘 추가 텍스트 없이 키워드, 의견 형식으로 보내 줘.'
+        extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
         full_prompt = content + extra_text
-        evidence, link = get_gemini_response(full_prompt)
-        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, evidence=link)
+        evidence, link1, link2 = get_gemini_response(full_prompt)
+        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, link1=link1, link2=link2)
 
         comment_form = CommentForm(initial={'content': content})
 

@@ -39,7 +39,7 @@
 
 <hr>
   <div style="display:flex; justify-content:space-between; align-items:center;">
-    <div>💬 {{ post.comments.count }}</div>
+    <div>💬 {{ comments.count }}</div>
     <div>
       {% if request.user in post.scrapped.all %}
       <a style="color: #a57bff;" href="{% url 'community:detail_post_scrap' post.id %}">스크랩</a>
