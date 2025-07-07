@@ -4,6 +4,8 @@ from django.db import models
 
 from accounts.models import User
 
+from articles.models import Article
+
 
 # Create your models here.
 class Post(models.Model):
@@ -15,7 +17,7 @@ class Post(models.Model):
     finish_at = models.DateTimeField(blank=True, null=True)
     #filtered_comments = models.IntegerField(default=0)
 
-    # article = models.ForeignKey(Article, on_delete = models.CASCADE)
+    related_article = models.ForeignKey(Article, on_delete=models.SET_NULL, null=True, blank=True, related_name='related_posts')
     scrapped = models.ManyToManyField(User, related_name='scrapped_community_posts', blank=True)
 
     def save(self, *args, **kwargs):

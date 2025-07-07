@@ -5,12 +5,14 @@ from django.contrib import messages
 from proposals.forms import ProposalCommentForm, ProposalReplyForm
 from proposals.models import ProposalPost, ProposalComment, ProposalReply
 
+from articles.models import Article
+
 # @login_required(login_url='accounts:login')
 def home(request):
     """
     정책 제안 게시글 리스트 출력
     """
-    proposals = ProposalPost.objects.all().order_by('-created_at')
+    proposals = ProposalPost.objects.all()
 
     # 정렬 추가
     sort = request.GET.get('sort', 'recent')
@@ -19,11 +21,11 @@ def home(request):
         # 인기 점수: (좋아요 수 * 5) + (댓글 수 * 2)
         proposals = sorted(
             proposals,
-            key=lambda post: (post.liked.count() * 5 + post.proposal_comments.count() * 2),
+            key=lambda post: (post.liked.count() * 5 + post.proposal_comments.filter(created_at__isnull=False).count() * 2),
             reverse=True
         )
     else:  # 최신순
-        proposals = proposals.order_by('-created_at')
+        proposals = proposals.filter(created_at__isnull=False).order_by('-created_at')
 
     return render(request, 'proposals_home.html', {'proposals': proposals})
 
@@ -88,7 +90,7 @@ def detail(request, post_id):
     petition_filter = request.GET.get('filter', '')  # 기본값: 필터링 안 함
 
     # 기본 쿼리셋
-    comments = ProposalComment.objects.filter(proposal=post)
+    comments = ProposalComment.objects.filter(proposal=post, created_at__isnull=False)
 
     # 필터 적용
     if petition_filter == 'petition':
@@ -100,10 +102,15 @@ def detail(request, post_id):
     else:  # 최신순
         comments = comments.order_by('-created_at')
 
+    # 추천 아티클은 일단 임시로 최신순 5개로 정해둠
+    recommended_articles = Article.objects.order_by('-created_at')[:5]
+
     context = {
         'post': post,
         # 정렬/필터링된 댓글 목록 comments 추가
         'comments' : comments,
+        # 추천 아티클 추가
+        'recommended_articles': recommended_articles,
         'comment_form': comment_form,
         'reply_form': reply_form,
         'editing_comment_id': editing_comment_id,
