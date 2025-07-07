@@ -225,7 +225,7 @@
 
     {% for comment in comments %}
     <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
-      <strong>{{ comment.user.username }}</strong>
+      <strong>{{ comment.anonymous_name }}</strong>
       <small>{% if comment.user.sex == 'M' %}(남성){% elif comment.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
 
       {% if editing_comment_id == comment.id %}
@@ -266,7 +266,7 @@
 
         {% for reply in comment.article_replies.all %}
           <div id="reply_{{ reply.id }}">
-            <strong>{{ reply.user.username }}</strong>
+            <strong>{{ reply.anonymous_name }}</strong>
             <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
 
           {% if editing_reply_id == reply.id %}

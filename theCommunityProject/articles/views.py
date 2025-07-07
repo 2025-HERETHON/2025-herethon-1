@@ -63,15 +63,44 @@ def detail(request, article_id):
         except ArticleReply.DoesNotExist:
             editing_reply_id = None
 
+    # 댓글 목록 가져오기(답글까지 같이 가져옴)        
+    comments = article.article_comments.all().prefetch_related('article_replies', 'user')
+    
     sort = request.GET.get('sort', 'popular')
-    comments = article.article_comments.filter(created_at__isnull=False)
+    
     if sort == 'popular':
         comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
     else:
         comments = comments.order_by('-created_at')
 
-    #관련된 커뮤니티 게시글
-    related_posts = Post.objects.filter(related_article=article).order_by('-created_at')
+    # 익명 이름 부여
+    all_entries = []
+    for comment in comments:
+        # 더미 코멘트 포함 안 함
+        if comment.created_at:
+            all_entries.append((comment.user.id, comment.created_at))
+        for reply in comment.article_replies.all():
+            # 더미 코멘트 포함 안 함
+            if reply.created_at:
+                all_entries.append((reply.user.id, reply.created_at))
+    
+    # 작성 시간 순 정렬
+    all_entries.sort(key=lambda x: x[1])
+    # 익명 번호 매핑
+    anon_map = {}
+    counter = 1
+    for user_id, _ in all_entries:
+        if user_id not in anon_map:
+            anon_map[user_id] = f"익명{counter}"
+            counter += 1
+    # 객체에 익명 번호 부여
+    for comment in comments:
+        comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
+        for reply in comment.article_replies.all():
+            reply.anonymous_name = anon_map.get(reply.user.id, "익명?")
+
+    #관련된 커뮤니티 게시글(3개까지만 출력)
+    related_posts = Post.objects.filter(related_article=article).order_by('-created_at')[:3]
 
     for post in related_posts:
         post.filtered_comments = post.comments.filter(created_at__isnull=False)

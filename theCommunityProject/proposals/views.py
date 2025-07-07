@@ -90,7 +90,7 @@ def detail(request, post_id):
     petition_filter = request.GET.get('filter', '')  # 기본값: 필터링 안 함
 
     # 기본 쿼리셋
-    comments = ProposalComment.objects.filter(proposal=post, created_at__isnull=False)
+    comments = post.proposal_comments.all().prefetch_related('proposal_replies', 'user')
 
     # 필터 적용
     if petition_filter == 'petition':
@@ -108,7 +108,29 @@ def detail(request, post_id):
         replies = comment.proposal_replies.count()
         comment.is_best = (likes * 5 + replies * 2) >= 100
 
-    # 추천 아티클은 일단 임시로 최신순 5개로 정해둠
+    # 익명 이름 부여(정책 제안의 경우 답글만)
+    all_reply_entries = []
+    for comment in comments:
+        for reply in comment.proposal_replies.all():
+            if reply.created_at:  # created_at이 있는 답글만
+                all_reply_entries.append((reply.user.id, reply.created_at))
+
+    all_reply_entries.sort(key=lambda x: x[1])
+
+    # 익명 번호 매핑 (댓글 작성자는 제외해도 상관 없음)
+    anon_map = {}
+    counter = 1
+    for user_id, _ in all_reply_entries:
+        if user_id not in anon_map:
+            anon_map[user_id] = f"익명{counter}"
+            counter += 1
+
+    # reply 객체에 익명 이름 부여
+    for comment in comments:
+        for reply in comment.proposal_replies.all():
+            reply.anonymous_name = anon_map.get(reply.user.id, None)
+
+    # 추천 아티클은 최신순 5개
     recommended_articles = Article.objects.order_by('-created_at')[:5]
 
     context = {

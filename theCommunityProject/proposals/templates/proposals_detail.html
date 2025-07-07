@@ -198,7 +198,7 @@
       <span style="background-color: gray">Best</span>
       {% endif %}
     </div>
-    <strong>{{ comment.user.username }}</strong>:
+    <!-- 제안 작성자의 아이디는 띄우지 않음 -->
     <p><strong>{{ comment.title }}</strong></p>
     <p><b>현황 및 문제점:</b> {{ comment.problem }}</p>
     <p><b>개선 방안:</b> {{ comment.solution }}</p>
@@ -241,7 +241,13 @@
     {% endif %}
       {% for reply in comment.proposal_replies.all %}
         <div id="reply_{{ reply.id }}">
-          <strong>{{ reply.user.username }}{% if reply.user == comment.user %} (글쓴이){% endif %}</strong>
+          <strong>
+            {% if reply.user == comment.user %}
+              글쓴이
+            {% else %}
+              {{ reply.anonymous_name }}
+            {% endif %}
+          </strong>
           <!-- 성별 출력 추가 -->
           <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
           {% if editing_reply_id == reply.id %}
