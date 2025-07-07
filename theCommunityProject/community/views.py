@@ -109,9 +109,24 @@ def detail(request, post_id):
     #투표 수(전달 형태: {1: 0, 2: 0, 3: 2})
     print(post.count_votes())
 
+    #투표 항목에 따른 댓글 필터링(아마 detail에서는 쓸 일 없을 것 같은데 혹시 몰라 남겨둡니다)
+    comments_modifing = post.comments.filter(created_at__isnull=False)
+    vote_choices = [1, 2, 3]
+    comments_by_choice = {}
+
+    for choice in vote_choices:
+        comments_modifing = comments_modifing.filter(
+            post=post,
+            user__vote__post=post,
+            user__vote__choice=choice,
+        ).distinct()  # 중복 방지 distinct()
+        #프론트 전달용 딕셔너리 - comments_by_choice
+        comments_by_choice[choice] = comments_modifing
+
     context = {
         'post': post,
         'comments' : post.comments.filter(created_at__isnull=False),
+        'comments_by_choice' : comments_by_choice,
         # 추천 아티클 추가
         'recommended_articles': recommended_articles,
         'comment_form': comment_form,
@@ -242,9 +257,9 @@ def detail_reply_create(request, post_id, comment_id):
                 vote = Vote.objects.filter(post=reply.comment.post, user=request.user).first()
                 if vote:
                     voted_choice = vote.choice
-                else:
-                    messages.error(request, "투표하지 않은 사용자는 답글을 작성할 수 없습니다. ")
-                    return redirect('community:detail', post_id=post_id)
+                # else:
+                #     messages.error(request, "투표하지 않은 사용자는 답글을 작성할 수 없습니다. ")
+                #     return redirect('community:detail_comment_detail', post_id=post_id)
 
             profile_images = {
                 1: '/media/profile_image/A.jpg',
@@ -254,14 +269,14 @@ def detail_reply_create(request, post_id, comment_id):
 
             reply.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
             reply.save()
-            return redirect('community:detail', post_id=post_id)
+            return redirect('community:detail_comment_detail', post_id=post_id)
     else:
         form = ReplyForm()
 
     context = {
         'form': form,
     }
-    return render(request, 'community_detail.html', context)
+    return render(request, 'community_detail_comment.html', context)
 
 @login_required(login_url='accounts:login')
 def detail_reply_update(request, post_id, comment_id, reply_id):
@@ -274,7 +289,7 @@ def detail_reply_update(request, post_id, comment_id, reply_id):
 
     if request.user != reply.user:
         messages.error(request, '수정 권한이 없습니다.')
-        return redirect('community:detail', post.pk)
+        return redirect('community:detail_comment_detail', post.pk)
 
     if request.method == 'POST':
         if request.POST.get("form_type") == "reply_update":
@@ -294,7 +309,7 @@ def detail_reply_update(request, post_id, comment_id, reply_id):
         'editing_reply_id': reply.id,
         'reply_form': form,
     }
-    return render(request, 'community_detail.html', context)
+    return render(request, 'community_detail_comment.html', context)
 
 @login_required(login_url='accounts:login')
 def detail_reply_delete(request, post_id, comment_id, reply_id):
@@ -311,7 +326,7 @@ def detail_reply_delete(request, post_id, comment_id, reply_id):
     if request.method == 'POST':
         reply.delete()
 
-    return redirect('community:detail', post.pk)
+    return redirect('community:detail_comment_detail', post.pk)
 
 @login_required(login_url='accounts:login')
 def detail_reply_like(request, post_id, comment_id, reply_id):
@@ -324,14 +339,14 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
 
     if request.user == reply.user:
         messages.error(request, "본인이 작성한 답글은 추천할 수 없습니다.")
-        return redirect('community:detail', post.pk)
+        return redirect('community:detail_comment_detail', post.pk)
     else:
         if request.user in reply.liked.all():
             reply.liked.remove(request.user)
         else:
             reply.liked.add(request.user)
     return redirect('{}#reply_{}'.format(
-        resolve_url('community:detail', post_id=post_id), comment_id, reply_id
+        resolve_url('community:detail_comment_detail', post_id=post_id), comment_id, reply_id
     ))
 
 @login_required(login_url='accounts:login')
@@ -368,10 +383,10 @@ def detail_comment_ai_response(request, post_id):
     else:
         comment = Comment(user=request.user, content=content, post=post, created_at=None)
         comment.save()
-        extra_text = ' 이 글의 주제 키워드를 하나만 찾아 줘 그리고 그 키워드에 대해 긍정적인 의견이라면 찬성, 그렇지 않으면 반대라고 덧붙여 줘 추가 텍스트 없이 키워드 - 의견 형식으로 보내 줘.'
+        extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
         full_prompt = content + extra_text
-        evidence, link = get_gemini_response(full_prompt)
-        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, evidence=link)
+        evidence, link1, link2 = get_gemini_response(full_prompt)
+        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, link1=link1, link2=link2)
 
         comment_form = CommentForm(initial={'content': content})
 
@@ -394,3 +409,87 @@ def detail_post_scrap(request, post_id):
         post.scrapped.add(request.user)
 
     return redirect('community:detail', post_id)
+
+def detail_comment_detail(request, post_id):
+    """
+    댓글 상세 페이지 출력
+    """
+    post = get_object_or_404(Post, id=post_id)
+    # 댓글 수정 시, 수정할 댓글 id를 받아옴
+    editing_comment_id = request.GET.get('edit_comment')
+    # 답글 수정 시, 수정할 답글 id를 받아옴
+    editing_reply_id = request.GET.get('edit_reply')
+    # 답글 수정 완료 시, 답글 창 열린 상태 유지하기 위해서 답글이 달린 댓글의 id를 받아옴
+    open_reply_comment_id = request.GET.get('open_reply')
+
+    # 답글 수정 완료 시 수정 완료한 답글 위치로 스크롤 하기 위해 검사
+    opened_reply_comment_id = None
+    if editing_reply_id:  # 수정했거나 수정 예정인 답글이 있는 경우
+        editing_reply_id = int(editing_reply_id)
+        try:  # 답글 토글 열림 상태
+            reply = Reply.objects.get(pk=editing_reply_id)
+            opened_reply_comment_id = reply.comment.id
+        except Reply.DoesNotExist:
+            editing_reply_id = None
+            pass
+    elif open_reply_comment_id:  # 답글 창이 열려 있었던 경우
+        try:
+            opened_reply_comment_id = int(open_reply_comment_id)  # 답글 토글이 열려있던 댓글 id 정보 저장
+        except ValueError:
+            opened_reply_comment_id = None
+
+    # 답글 수정 관련 시도 없음, 답글 토글 닫혀있던 경우
+    else:
+        opened_reply_comment_id = None
+        open_reply_comment_id = None
+
+    if (request.method == 'POST'):
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
+            return redirect('community:detail_comment_detail', post_id=post_id)
+        else:
+            messages.error(request, "댓글 내용을 확인해 주세요. ")
+    else:
+        comment_form = CommentForm()
+
+    reply_form = None
+    if editing_reply_id:
+        try:
+            reply_obj = Reply.objects.get(id=editing_reply_id)
+            reply_form = ReplyForm(instance=reply_obj)
+        except Reply.DoesNotExist:
+            editing_reply_id = None
+
+    recommended_articles = Article.objects.all().order_by('-created_at')[:5]
+
+    # 투표 항목에 따른 댓글 필터링
+    comments_modifing = post.comments.filter(created_at__isnull=False)
+    vote_choices = [1, 2, 3]
+    comments_by_choice = {}
+
+    for choice in vote_choices:
+        comments_modifing = comments_modifing.filter(
+            post=post,
+            user__vote__post=post,
+            user__vote__choice=choice,
+        ).distinct()  # 중복 방지 distinct()
+        # 프론트 전달용 딕셔너리 - comments_by_choice
+        comments_by_choice[choice] = comments_modifing
+
+    context = {
+        'post': post,
+        'comments': post.comments.filter(created_at__isnull=False),
+        'comments_by_choice' : comments_by_choice,
+        'replies' : Reply.objects.all(),
+        'comment_form': comment_form,
+        'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
+        'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
+        'opened_reply_comment_id': opened_reply_comment_id,
+        'reply_form': reply_form,
+        'recommended_articles': recommended_articles,
+    }
+    return render(request, 'community_detail_comment.html', context)

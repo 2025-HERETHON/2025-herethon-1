@@ -89,7 +89,8 @@ class Reply(models.Model):
 class CommentEvidence(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_evidence')
     keyword = models.CharField(max_length=100)
-    evidence = models.URLField(max_length=500, blank=True, null=True)
+    link1 = models.URLField(max_length=500, blank=True, null=True)
+    link2 = models.URLField(max_length=500, blank=True, null=True)
 
 class ReplyEvidence(models.Model):
     reply = models.ForeignKey(Reply, on_delete=models.CASCADE, related_name='reply_evidence')
