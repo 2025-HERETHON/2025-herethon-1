@@ -15,7 +15,7 @@ class Post(models.Model):
     option3 = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     finish_at = models.DateTimeField(blank=True, null=True)
-    #filtered_comments = models.IntegerField(default=0)
+    #image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
     related_article = models.ForeignKey(Article, on_delete=models.SET_NULL, null=True, blank=True, related_name='related_posts')
     scrapped = models.ManyToManyField(User, related_name='scrapped_community_posts', blank=True)

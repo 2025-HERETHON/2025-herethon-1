@@ -79,12 +79,12 @@
   <h2>스크랩</h2>
 
   <div class="tabs">
-    <a href="#" class="active">아티클</a>
-    <a href="#">커뮤니티</a>
-    <a href="#">정책 제안</a>
+    <a href="{% url 'scraps:scraps_article' %}" class="active">아티클</a>
+    <a href="{% url 'scraps:scraps_community' %}">커뮤니티</a>
+    <a href="{% url 'scraps:scraps_proposal' %}">정책 제안</a>
   </div>
 
-  {% for post in posts %}
+  {% for post in article_posts %}
   <div class="post">
     <div class="post-info">
       <div class="post-meta">{{ post.created_at|date:"Y.m.d" }}</div>
@@ -96,6 +96,7 @@
   </div>
   {% empty %}
   <p>스크랩한 글이 없습니다.</p>
+  <a href="{% url 'articles:home' %}" class="active">아티클바로가기</a>
   {% endfor %}
 </div>
 
