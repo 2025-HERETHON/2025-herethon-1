@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>회원가입</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <style>
     body {
       margin: 0;
@@ -51,21 +52,6 @@
     h2 {
       text-align: center;
     }
-    .step-indicator {
-      display: flex;
-      justify-content: space-between;
-      margin: 1rem 0;
-      font-size: 0.9rem;
-    }
-    .step {
-      flex: 1;
-      text-align: center;
-      color: #888;
-    }
-    .step.active {
-      font-weight: bold;
-      color: white;
-    }
     label {
       margin-top: 1rem;
       display: block;
@@ -79,22 +65,8 @@
       border-radius: 4px;
       color: white;
     }
-    .check-btn {
-      margin-top: 6px;
-      width: 100%;
-      padding: 8px;
-      background: #444;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .error {
-      color: red;
-      font-size: 0.8rem;
-    }
-    .next-btn {
-      margin-top: 20px;
+    .check-btn, .next-btn {
+      margin-top: 10px;
       width: 100%;
       padding: 10px;
       background: white;
@@ -105,12 +77,11 @@
     }
     .gender-options {
       display: flex;
-      justify-content: space-between;
-      margin-top: 8px;
+      gap: 10px;
+      margin-top: 10px;
     }
     .gender-btn {
       flex: 1;
-      margin-right: 6px;
       padding: 10px;
       background: #2b2b2b;
       color: white;
@@ -122,22 +93,10 @@
       background: white;
       color: black;
     }
-    .complete-msg {
-      text-align: center;
-      margin-top: 40px;
-    }
-    .complete-msg p {
-      font-size: 1.2rem;
-      margin-bottom: 20px;
-    }
-    .login-link-btn {
-      padding: 10px 20px;
-      background: white;
-      color: black;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-decoration: none;
+    .error {
+      color: red;
+      font-size: 0.85rem;
+      margin-top: 5px;
     }
     .modal {
       display: none;
@@ -173,52 +132,10 @@
     }
   </style>
   <script>
-    function goToStep2(e) {
-      e.preventDefault();
-      const pwd = document.getElementById("password").value;
-      const repeat = document.getElementById("repeat").value;
-      const step1 = document.getElementById("step1");
-      const step2 = document.getElementById("step2");
-      const pwError = document.getElementById("pw-error");
-      const repeatError = document.getElementById("repeat-error");
-      pwError.style.display = "none";
-      repeatError.style.display = "none";
-      const pattern = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
-      if (!pattern.test(pwd)) {
-        pwError.style.display = "block";
-        return;
-      }
-      if (pwd !== repeat) {
-        repeatError.style.display = "block";
-        return;
-      }
-      step1.style.display = "none";
-      step2.style.display = "block";
-      document.getElementById("step-label-1").classList.remove("active");
-      document.getElementById("step-label-2").classList.add("active");
-    }
-
     function selectGender(value) {
       document.getElementById("sex").value = value;
       document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('selected'));
       document.getElementById("gender-" + value).classList.add('selected');
-    }
-
-    function checkUsername() {
-      const username = document.getElementById("username").value;
-      if (!username) {
-        showModal("아이디를 입력해주세요.");
-        return;
-      }
-      fetch(`/accounts/check_username/?username=${encodeURIComponent(username)}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.is_taken) {
-            showModal("이미 사용 중인 아이디입니다.");
-          } else {
-            showModal("사용 가능한 아이디입니다.");
-          }
-        });
     }
 
     function showModal(message) {
@@ -229,9 +146,15 @@
     function closeModal() {
       document.getElementById("alertModal").style.display = "none";
     }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const modalMessage = "{{ modal_message|escapejs }}";
+      if (modalMessage) {
+        showModal(modalMessage);
+      }
+    });
   </script>
 </head>
-
 <body>
   <header>
     <nav>
@@ -252,32 +175,37 @@
   <main>
     <div class="container">
       <h2>회원가입</h2>
-      <div class="step-indicator">
-        <div id="step-label-1" class="step active">계정 정보</div>
-        <div id="step-label-2" class="step">프로필 정보</div>
-        <div id="step-label-3" class="step">완료</div>
-      </div>
-
-      <form method="POST" action="{% url 'accounts:signup' %}">
-        {% csrf_token %}
-
-        <div id="step1">
+      {% if step == '1' %}
+        <form method="GET" action="{% url 'accounts:signup' %}">
+          <input type="hidden" name="step" value="1">
           <label for="username">아이디</label>
-          <input type="text" id="username" name="username" placeholder="아이디" required>
-          <button type="button" class="check-btn" onclick="checkUsername()">중복 확인</button>
-
+          <input type="text" id="username" name="username" placeholder="아이디" value="{{ request.GET.username|default:'' }}">
+          <button type="submit" class="check-btn" name="check" value="1">중복 확인</button>
+        </form>
+        <form method="POST" action="{% url 'accounts:signup' %}?step=1">
+          {% csrf_token %}
+          <input type="hidden" name="username" value="{{ request.GET.username|default:'' }}">
+          {% if field_errors.username %}
+            <div class="error">{{ field_errors.username }}</div>
+          {% endif %}
           <label for="password">비밀번호</label>
-          <input type="password" id="password" name="password" placeholder="영문+숫자+특수기호 8자 이상" required>
-          <div id="pw-error" class="error" style="display:none">비밀번호 형식이 올바르지 않습니다.</div>
+          <input type="password" id="password" name="password" placeholder="영문+숫자+특수기호 8자 이상">
+          {% if field_errors.password %}
+          <div class="error">{{ field_errors.password }}</div>
+          {% endif %}
 
           <label for="repeat">비밀번호 확인</label>
-          <input type="password" id="repeat" name="repeat" placeholder="비밀번호 다시 입력" required>
-          <div id="repeat-error" class="error" style="display:none">비밀번호가 일치하지 않습니다.</div>
+          <input type="password" id="repeat" name="repeat" placeholder="비밀번호 다시 입력">
+          {% if field_errors.repeat %}
+          <div class="error">{{ field_errors.repeat }}</div>
+          {% endif %}
 
-          <button onclick="goToStep2(event)" class="next-btn">다음</button>
-        </div>
+          <button type="submit" class="next-btn" name="next" value="1">다음</button>
+        </form>
 
-        <div id="step2" style="display:none">
+      {% elif step == '2' %}
+        <form method="POST" action="{% url 'accounts:signup' %}?step=2">
+          {% csrf_token %}
           <label>성별</label>
           <input type="hidden" id="sex" name="sex" value="">
           <div class="gender-options">
@@ -287,25 +215,30 @@
           </div>
 
           <label for="birth_year">출생연도</label>
-          <input type="number" id="birth_year" name="birth_year" placeholder="출생연도" min="1900" max="2025" required>
+          <input type="number" id="birth_year" name="birth_year" placeholder="출생연도" min="1900" max="2010">
+
+          <input type="hidden" name="username" value="{{ username }}">
+          <input type="hidden" name="password" value="{{ password }}">
 
           <button type="submit" class="next-btn">가입하기</button>
-        </div>
+        </form>
 
-        <div id="step3" style="display:none" class="complete-msg">
-          <p>회원가입 완료!</p>
-          <a href="{% url 'accounts:login' %}" class="login-link-btn">로그인하기</a>
+        
+      {% elif step == '3' %}
+        <div class="success-message">
+          <p>회원가입이 완료되었습니다!</p>
+          <a href="{% url 'accounts:login' %}" class="login-link">로그인하러 가기 →</a>
         </div>
-      </form>
+      {% endif %}
+    </div>
+
+    <div id="alertModal" class="modal">
+      <div class="modal-content">
+        <p id="modal-message"></p>
+        <button class="close-modal" onclick="closeModal()">닫기</button>
+      </div>
     </div>
   </main>
-
-  <div id="alertModal" class="modal">
-    <div class="modal-content">
-      <p id="modal-message"></p>
-      <button class="close-modal" onclick="closeModal()">닫기</button>
-    </div>
-  </div>
 
   <footer>
     <div class="logo">더 커뮤니티</div>
