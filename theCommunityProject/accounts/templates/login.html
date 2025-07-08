@@ -1,250 +1,912 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>로그인</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Pretendard', sans-serif;
-      background-color: #121212;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    header, footer {
-      background-color: #1f1f1f;
-      padding: 1rem 2rem;
-    }
-
-    .logo {
-      font-size: 1.5rem;
-      color: #a57bff;
-      font-weight: bold;
-    }
-
-    nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    nav ul {
-      display: flex;
-      list-style: none;
-      gap: 2rem;
-      margin: 0;
-      padding: 0;
-    }
-
-    nav ul li {
-      cursor: pointer;
-    }
-
-    .auth-links {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      background-color: #1f1f1f;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 400px;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    label {
-      display: block;
-      margin-top: 1rem;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
-      background-color: #2b2b2b;
-      border: none;
-      border-radius: 5px;
-      color: white;
-    }
-
-    .error {
-      color: red;
-      font-size: 0.85rem;
-      margin-top: 0.3rem;
-    }
-
-    .login-btn {
-      margin-top: 1.5rem;
-      width: 100%;
-      padding: 0.7rem;
-      background-color: white;
-      color: black;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .login-links {
-      margin-top: 1rem;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-    }
-
-    .login-links a {
-      color: #aaa;
-      text-decoration: none;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background-color: #1f1f1f;
-      padding: 2rem;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    .close-modal {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background-color: white;
-      color: black;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    footer {
-      font-size: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  </style>
-  <script>
-    function validateForm() {
-      const username = document.getElementById("username");
-      const password = document.getElementById("password");
-      let valid = true;
-
-      if (!username.value) {
-        document.getElementById("username-error").style.display = "block";
-        username.placeholder = "아이디를 입력해주세요.";
-        valid = false;
-      } else {
-        document.getElementById("username-error").style.display = "none";
+  <head>
+    <meta charset="UTF-8" />
+    <title>로그인</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Pretendard", sans-serif;
+        background-color: #171717;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
       }
 
-      if (!password.value) {
-        document.getElementById("password-error").style.display = "block";
-        password.placeholder = "비밀번호를 입력해주세요.";
-        valid = false;
-      } else {
-        document.getElementById("password-error").style.display = "none";
+      header {
+        width: 120rem;
+        height: 5rem;
+        background-color: #171717;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
       }
 
-      return valid;
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const errorDiv = document.getElementById("error-flag");
-      if (errorDiv && errorDiv.dataset.error === "true") {
-        document.getElementById("loginModal").style.display = "flex";
+      .gnb {
+        width: 88.5rem;
+        height: 2.25rem;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 27.2rem;
+        margin: 0 15.75rem;
       }
-    });
 
-    function closeModal() {
-      document.getElementById("loginModal").style.display = "none";
-    }
-  </script>
-</head>
-<body>
-  <header>
-    <nav>
-      <div class="logo">더 커뮤니티</div>
-      <ul>
-        <li>아티클</li>
-        <li>커뮤니티</li>
-        <li>정책 제안</li>
-      </ul>
-      {% if user.is_authenticated %}
-      <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
-      {% else %}
-      <a href="{% url 'accounts:login' %}" class="auth-links">로그인 / 회원가입</a>
+      header .logo {
+        width: 6.875rem;
+        height: 1.25rem;
+        padding: 0.5rem 0;
+      }
+
+      .menu {
+        width: 25rem;
+        height: 2.25rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3.25rem;
+      }
+
+      .article,
+      .community,
+      .policy {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #a3a3a3;
+        padding: 0.375rem 0;
+      }
+
+      .login {
+        width: 8.5625rem;
+        height: 2.25rem;
+        background-color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 6.25rem;
+      }
+      .join {
+        color: #262626;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+      a {
+        text-decoration: none;
+        cursor: pointer;
+      }
+      footer {
+        width: 120rem;
+        height: 16rem;
+        background-color: #171717;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      .section_1,
+      .section_2 {
+        width: 120rem;
+        display: flex;
+        justify-content: space-between;
+      }
+      .section_1 {
+        height: 10.5rem;
+        padding-top: 2rem;
+      }
+      .section_2 {
+        margin-top: 1rem;
+        height: 5.5rem;
+        padding: 0 16rem;
+      }
+      footer .logo {
+        width: 6.875rem;
+        height: 1.25rem;
+        padding: 0.5rem 0;
+        margin-left: 16rem;
+      }
+      .info {
+        width: 16rem;
+        height: 6.5rem;
+        display: flex;
+        margin-right: 19rem;
+      }
+      .about {
+        width: 8rem;
+        height: 17.33rem;
+        margin-left: 2.5rem;
+      }
+      .contact {
+        width: 8rem;
+        height: 6rem;
+        margin-left: 2.5rem;
+      }
+      .box_1,
+      .box_2,
+      .box_3,
+      .box_4 {
+        display: flex;
+        justify-content: space-between;
+        width: 6.25rem;
+        height: 2rem;
+        margin: 0;
+      }
+      .box_1 {
+        width: 8.3rem;
+      }
+      .box_2 {
+        margin-top: 1.2rem;
+        width: 8.3rem;
+      }
+      .arrow {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 1.25rem;
+      }
+      .ab,
+      .co {
+        font-weight: 500;
+        color: #a3a3a3;
+        margin: 0;
+      }
+      .p1 a,
+      .p2 a,
+      .p3 a {
+        font-weight: 400;
+        color: #a3a3a3;
+      }
+      .copyright {
+        font-weight: 400;
+        color: #737373;
+      }
+      .box_5 {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .copyright a {
+        font-weight: 400;
+        color: #737373;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .container {
+        display: flex;
+        width: 32.5rem;
+        padding: 4rem;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        border-radius: 1rem;
+      }
+
+      h2 {
+        color: #fff;
+        text-align: center;
+        /* Headline */
+        font-size: 1.5rem;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 2.25rem; /* 150% */
+        letter-spacing: -0.03rem;
+      }
+
+      label {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        align-self: stretch;
+      }
+
+      input {
+        width: 23rem;
+        height: 1.25rem;
+        color: #404040;
+        background-color: #f5f5f5;
+        font-size: 0.875rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.25rem; /* 142.857% */
+        letter-spacing: -0.0125rem;
+        border: none;
+      }
+
+      .id-inputfield,
+      .password-inputfield {
+        display: flex;
+        margin-top: 0.25rem;
+        background-color: #f5f5f5;
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        justify-items: center;
+        gap: 0.25rem;
+        align-self: stretch;
+        border-radius: 0.5rem;
+        flex-direction: row;
+      }
+      input::placeholder {
+        color: #a3a3a3;
+      }
+
+      input:focus {
+        outline: none;
+      }
+      #see-password {
+        border: none;
+        background-color: transparent;
+        padding: 0rem;
+        cursor: pointer;
+      }
+
+      .id-inputfield.active,
+      .password-inputfield.active {
+        border: #f72c2c 1px solid;
+      }
+
+      .error {
+        display: none;
+        color: red;
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+        vertical-align: middle;
+        margin-top: 0.5rem;
+        gap: 0.25rem;
+      }
+
+      .login-btn {
+        display: flex;
+        width: 25rem;
+        height: 3rem;
+        justify-content: center;
+        align-items: center;
+        align-self: stretch;
+        border-radius: 0.5rem;
+        background: #9d78ed;
+        margin-top: 1.75rem;
+        color: #fff;
+        text-align: center;
+        font-family: Pretendard;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.5rem; /* 150% */
+        letter-spacing: 0rem;
+        border: none;
+        cursor: pointer;
+      }
+
+      .login-btn:hover {
+        background-color: #ad97f6;
+      }
+
+      .login-links {
+        margin-top: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+      }
+
+      .login-links a {
+        color: #aaa;
+        text-decoration: none;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        display: flex;
+        width: 18.75rem;
+        padding-top: 2.25rem;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        background-color: #fff;
+        color: #000;
+        border-radius: 0.75rem;
+        border: 1px solid #eceef0;
+        background: #fff;
+        /* Modal */
+        box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.04);
+      }
+
+      .close-modal {
+        margin-top: 0.5rem;
+        width: 100%;
+        background-color: white;
+        color: #56585a;
+        border: none;
+        border-top: 1px solid #e5e5e5;
+        border-radius: 0rem 0rem 0.75rem 0.75rem;
+        cursor: pointer;
+        padding: 1rem;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.5rem; /* 150% */
+        letter-spacing: -0.02rem;
+      }
+      .none-info {
+        align-self: stretch;
+        color: #404040;
+        text-align: center;
+
+        /* Body/lg/medium */
+        font-family: Pretendard;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.5rem; /* 150% */
+        letter-spacing: 0rem;
+      }
+      .check-info {
+        align-self: stretch;
+        color: #737373;
+        text-align: center;
+
+        /* Body/md/medium */
+        font-size: 0.875rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.25rem; /* 142.857% */
+        letter-spacing: -0.0125rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="gnb">
+        <div class="logo">
+          <a href="{% url 'articles:home' %}">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="98"
+              height="24"
+              viewBox="0 0 98 24"
+              fill="none"
+            >
+              <path
+                d="M85.0554 23.9984C76.5099 23.9984 72.1108 18.4765 72.1108 12.1147C72.1108 6.40377 76.2784 0 85.0554 0C93.8324 0 97.9999 6.40377 97.9999 12.1147C97.9999 18.4765 93.6009 23.9984 85.0554 23.9984ZM85.0554 18.2245C88.4862 18.2245 91.1593 15.705 91.1593 12.0097C91.1593 8.31441 88.7598 5.79489 85.0554 5.79489C81.3509 5.79489 78.9514 8.3774 78.9514 12.0097C78.9514 15.642 81.6246 18.2245 85.0554 18.2245Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M24.0158 0.0405237L12.0184 12.0082L0 23.9969H12.0184L24.0158 12.0292V12.0082H24.0369V0.0195312L24.0158 0.0405237Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M36.0555 0.0195312H24.0371V12.0082L30.0568 6.02437L36.0555 0.0195312Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M18.0386 23.997H24.0373V17.9922L18.0386 23.997Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M42.0539 12.0292V12.0082H42.0749V0.0195312L42.0539 0.0405237L36.0552 6.00338V17.9921L42.0539 12.0292Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M36.0555 6.00391L30.0568 12.0088L24.0371 17.9926V23.9975H30.0568L36.0555 17.9926V6.00391Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M42.0752 12.0082L48.0949 6.02437L54.0936 0.0195312H42.0752V12.0082Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M60.0714 0.0405237L54.0938 6.00338V17.9921L60.0714 12.0292V12.0082H60.0924V0.0195312L60.0714 0.0405237Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M36.0552 23.997H42.0749V17.9922L36.0552 23.997Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M48.0739 12.0088L42.0752 17.9926V23.9975H48.0739L54.0936 17.9926V6.00391L48.0739 12.0088Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M66.112 6.02437L72.1107 0.0195312H60.0923V12.0082L66.112 6.02437Z"
+                fill="#AD97F6"
+              /></svg
+          ></a>
+        </div>
+        <div class="menu">
+          <a href="{% url 'articles:home' %}" class="article">아티클</a>
+          <a href="{% url 'articles:home' %}" class="community">커뮤니티</a>
+          <a href="{% url 'articles:home' %}" class="policy">정책제안</a>
+          <a href="{% url 'scraps:scraps_article' %}" class="policy">스크랩</a>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="login">
+          <a href="{% url 'accounts:logout' %}" class="join">로그아웃</a>
+        </div>
+        {% else %}
+        <div class="login">
+          <a href="{% url 'accounts:login' %}" class="join"
+            >로그인/회원가입</a
+          >
+        </div>
+        {% endif %}
+      </nav>
+    </header>
+
+    <main>
+      <div class="container">
+        <h2>로그인</h2>
+        <form method="POST" onsubmit="return validateForm()">
+          {% csrf_token %}
+          <label for="username">아이디</label>
+          <div class="id-inputfield">
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="아이디"
+              value="{{ request.POST.username }}"
+            />
+          </div>
+          <div id="username-error" class="error" style="display: none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <mask
+                id="mask0_435_21771"
+                style="mask-type: alpha"
+                maskUnits="userSpaceOnUse"
+                x="0"
+                y="0"
+                width="16"
+                height="16"
+              >
+                <rect width="16" height="16" fill="#D9D9D9" />
+              </mask>
+              <g mask="url(#mask0_435_21771)">
+                <path
+                  d="M7.99676 11.0208C8.12943 11.0208 8.24182 10.9759 8.33393 10.8861C8.42604 10.7963 8.47209 10.6851 8.47209 10.5524C8.47209 10.4198 8.42721 10.3074 8.33743 10.2153C8.24765 10.1233 8.13643 10.0773 8.00376 10.0773C7.87109 10.0773 7.75871 10.1221 7.66659 10.2118C7.57448 10.3015 7.52843 10.4128 7.52843 10.5454C7.52843 10.6781 7.57332 10.7905 7.66309 10.8826C7.75287 10.9747 7.86409 11.0208 7.99676 11.0208ZM7.99693 8.85159C8.11882 8.85159 8.22204 8.81004 8.30659 8.72693C8.39126 8.64393 8.43359 8.54104 8.43359 8.41826V5.28493C8.43359 5.16215 8.39237 5.0592 8.30993 4.97609C8.22748 4.89309 8.12537 4.85159 8.00359 4.85159C7.88171 4.85159 7.77848 4.89309 7.69393 4.97609C7.60926 5.0592 7.56693 5.16215 7.56693 5.28493V8.41826C7.56693 8.54104 7.60815 8.64393 7.69059 8.72693C7.77304 8.81004 7.87515 8.85159 7.99693 8.85159ZM8.00593 14.0669C7.17137 14.0669 6.38537 13.909 5.64793 13.5933C4.91048 13.2775 4.26504 12.843 3.71159 12.2898C3.15815 11.7365 2.72343 11.0916 2.40743 10.3549C2.09154 9.61837 1.93359 8.83132 1.93359 7.99376C1.93359 7.1562 2.09148 6.37148 2.40726 5.63959C2.72304 4.9077 3.15754 4.26504 3.71076 3.71159C4.26398 3.15815 4.90893 2.72343 5.64559 2.40743C6.38215 2.09154 7.16921 1.93359 8.00676 1.93359C8.84432 1.93359 9.62904 2.09148 10.3609 2.40726C11.0928 2.72304 11.7355 3.15754 12.2889 3.71076C12.8424 4.26398 13.2771 4.90759 13.5931 5.64159C13.909 6.3757 14.0669 7.16004 14.0669 7.99459C14.0669 8.82915 13.909 9.61515 13.5933 10.3526C13.2775 11.09 12.843 11.7355 12.2898 12.2889C11.7365 12.8424 11.0929 13.2771 10.3589 13.5931C9.62482 13.909 8.84048 14.0669 8.00593 14.0669Z"
+                  fill="#F72C2C"
+                />
+              </g></svg
+            >아이디를 입력해주세요.
+          </div>
+          <label for="password" style="margin-top: 1rem">비밀번호</label>
+          <div class="password-inputfield">
+            <input
+              style="width: 19.125rem; margin-right: 2.75rem"
+              type="password"
+              id="password"
+              name="password"
+              placeholder="비밀번호"
+            />
+            <button id="see-password" type="button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+              >
+                <mask
+                  id="mask0_1104_7187"
+                  style="mask-type: alpha"
+                  maskUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="18"
+                  height="18"
+                >
+                  <rect width="18" height="18" fill="#D9D9D9" />
+                </mask>
+                <g mask="url(#mask0_1104_7187)">
+                  <path
+                    d="M9.00162 11.8333C9.78899 11.8333 10.4577 11.5578 11.0077 11.0066C11.5577 10.4555 11.8327 9.78627 11.8327 8.9989C11.8327 8.21152 11.5571 7.54284 11.006 6.99284C10.4549 6.44284 9.78562 6.16784 8.99824 6.16784C8.21087 6.16784 7.54218 6.4434 6.99218 6.99452C6.44218 7.54565 6.16718 8.2149 6.16718 9.00227C6.16718 9.78965 6.44274 10.4583 6.99387 11.0083C7.54499 11.5583 8.21424 11.8333 9.00162 11.8333ZM8.99993 10.8006C8.49993 10.8006 8.07493 10.6256 7.72493 10.2756C7.37493 9.92559 7.19993 9.50059 7.19993 9.00059C7.19993 8.50059 7.37493 8.07559 7.72493 7.72559C8.07493 7.37559 8.49993 7.20059 8.99993 7.20059C9.49993 7.20059 9.92493 7.37559 10.2749 7.72559C10.6249 8.07559 10.7999 8.50059 10.7999 9.00059C10.7999 9.50059 10.6249 9.92559 10.2749 10.2756C9.92493 10.6256 9.49993 10.8006 8.99993 10.8006ZM8.99993 14.0256C7.47105 14.0256 6.06143 13.62 4.77105 12.8089C3.48068 11.9979 2.44512 10.9304 1.66437 9.6064C1.60187 9.51115 1.5593 9.4134 1.53668 9.31315C1.51418 9.2129 1.50293 9.11002 1.50293 9.00452C1.50293 8.89902 1.51418 8.79484 1.53668 8.69196C1.5593 8.58909 1.60187 8.49002 1.66437 8.39477C2.44512 7.07077 3.48068 6.00327 4.77105 5.19227C6.06143 4.38115 7.47105 3.97559 8.99993 3.97559C10.5288 3.97559 11.9384 4.38115 13.2288 5.19227C14.5192 6.00327 15.5547 7.07077 16.3355 8.39477C16.398 8.49002 16.4406 8.58777 16.4632 8.68802C16.4857 8.78827 16.4969 8.89115 16.4969 8.99665C16.4969 9.10215 16.4857 9.20634 16.4632 9.30921C16.4406 9.41209 16.398 9.51115 16.3355 9.6064C15.5547 10.9304 14.5192 11.9979 13.2288 12.8089C11.9384 13.62 10.5288 14.0256 8.99993 14.0256Z"
+                    fill="#D4D4D4"
+                  />
+                </g>
+              </svg>
+            </button>
+          </div>
+          <div id="password-error" class="error">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <mask
+                id="mask0_435_21771"
+                style="mask-type: alpha"
+                maskUnits="userSpaceOnUse"
+                x="0"
+                y="0"
+                width="16"
+                height="16"
+              >
+                <rect width="16" height="16" fill="#D9D9D9" />
+              </mask>
+              <g mask="url(#mask0_435_21771)">
+                <path
+                  d="M7.99676 11.0208C8.12943 11.0208 8.24182 10.9759 8.33393 10.8861C8.42604 10.7963 8.47209 10.6851 8.47209 10.5524C8.47209 10.4198 8.42721 10.3074 8.33743 10.2153C8.24765 10.1233 8.13643 10.0773 8.00376 10.0773C7.87109 10.0773 7.75871 10.1221 7.66659 10.2118C7.57448 10.3015 7.52843 10.4128 7.52843 10.5454C7.52843 10.6781 7.57332 10.7905 7.66309 10.8826C7.75287 10.9747 7.86409 11.0208 7.99676 11.0208ZM7.99693 8.85159C8.11882 8.85159 8.22204 8.81004 8.30659 8.72693C8.39126 8.64393 8.43359 8.54104 8.43359 8.41826V5.28493C8.43359 5.16215 8.39237 5.0592 8.30993 4.97609C8.22748 4.89309 8.12537 4.85159 8.00359 4.85159C7.88171 4.85159 7.77848 4.89309 7.69393 4.97609C7.60926 5.0592 7.56693 5.16215 7.56693 5.28493V8.41826C7.56693 8.54104 7.60815 8.64393 7.69059 8.72693C7.77304 8.81004 7.87515 8.85159 7.99693 8.85159ZM8.00593 14.0669C7.17137 14.0669 6.38537 13.909 5.64793 13.5933C4.91048 13.2775 4.26504 12.843 3.71159 12.2898C3.15815 11.7365 2.72343 11.0916 2.40743 10.3549C2.09154 9.61837 1.93359 8.83132 1.93359 7.99376C1.93359 7.1562 2.09148 6.37148 2.40726 5.63959C2.72304 4.9077 3.15754 4.26504 3.71076 3.71159C4.26398 3.15815 4.90893 2.72343 5.64559 2.40743C6.38215 2.09154 7.16921 1.93359 8.00676 1.93359C8.84432 1.93359 9.62904 2.09148 10.3609 2.40726C11.0928 2.72304 11.7355 3.15754 12.2889 3.71076C12.8424 4.26398 13.2771 4.90759 13.5931 5.64159C13.909 6.3757 14.0669 7.16004 14.0669 7.99459C14.0669 8.82915 13.909 9.61515 13.5933 10.3526C13.2775 11.09 12.843 11.7355 12.2898 12.2889C11.7365 12.8424 11.0929 13.2771 10.3589 13.5931C9.62482 13.909 8.84048 14.0669 8.00593 14.0669Z"
+                  fill="#F72C2C"
+                />
+              </g>
+            </svg>
+            비밀번호를 입력해주세요.
+          </div>
+
+          <button type="submit" class="login-btn">로그인</button>
+        </form>
+
+        <div class="login-links">
+          <a href="{% url 'accounts:signup' %}">회원가입</a>
+        </div>
+      </div>
+
+      {% if error_message %}
+      <div id="error-flag" data-error="true" style="display: none"></div>
       {% endif %}
-    </nav>
-  </header>
 
-  <main>
-    <div class="container">
-      <h2>로그인</h2>
-      <form method="POST" onsubmit="return validateForm()">
-        {% csrf_token %}
-        <label for="username">아이디</label>
-        <input type="text" id="username" name="username" placeholder="아이디" value="{{ request.POST.username }}">
-        <div id="username-error" class="error" style="display:none">!아이디를 입력해주세요.</div>
-
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" name="password" placeholder="비밀번호">
-        <div id="password-error" class="error" style="display:none">!비밀번호를 입력해주세요.</div>
-
-        <button type="submit" class="login-btn">로그인</button>
-      </form>
-
-      <div class="login-links">
-        <a href="{% url 'accounts:signup' %}">회원가입</a>
+      <div id="loginModal" class="modal">
+        <div class="modal-content">
+          <div class="none-info">사용자 정보가 없습니다.</div>
+          <div class="check-info">입력하신 정보를 다시 확인해 주세요.</div>
+          <button class="close-modal" onclick="closeModal()">닫기</button>
+        </div>
       </div>
-    </div>
+    </main>
 
-    {% if error_message %}
-    <div id="error-flag" data-error="true" style="display: none;"></div>
-    {% endif %}
-
-    <div id="loginModal" class="modal">
-      <div class="modal-content">
-        <p>사용자 정보가 없습니다.<br>입력하신 정보를 다시 확인해 주세요.</p>
-        <button class="close-modal" onclick="closeModal()">닫기</button>
+    <!-- footer 영역은 포함된 SVG 코드가 많아 다소 길어졌습니다. SVG는 별도 static 처리가 필요 없는 인라인 코드라서, 따로 코드 확인은 안 하셔도 괜찮을 것 같아요! -->
+    <footer>
+      <div class="section_1">
+        <div class="logo">
+          <a href="/"
+            ><svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="94"
+              height="52"
+              viewBox="0 0 94 52"
+              fill="none"
+            >
+              <path
+                d="M4.01999 47.4765C4.97932 46.3059 5.77876 45.2148 6.39832 44.1633C7.01789 43.1713 7.49756 42.1 7.87729 40.9493C8.21705 39.8581 8.47687 38.6083 8.61678 37.2592C8.73669 35.9299 8.77667 34.3626 8.77667 32.5374H13.0137C13.0137 34.7197 12.9138 36.6243 12.7739 38.2512C12.6739 39.0646 12.554 39.8383 12.4141 40.5724C13.4934 41.6635 14.4527 42.7349 15.2921 43.7863C16.1515 44.937 16.931 46.1274 17.5905 47.3574L14.5726 50.0556C14.2129 49.381 13.8531 48.7462 13.4734 48.151C13.0937 47.5757 12.6739 47.04 12.2542 46.4845C11.8545 45.9885 11.3948 45.4528 10.9751 44.9569C10.7153 45.5322 10.4155 46.048 10.1157 46.5837C9.35626 47.7939 8.41692 49.0438 7.25773 50.3135L4 47.4566L4.01999 47.4765ZM26.0246 38.4892V42.6158C25.6449 42.6158 25.1452 42.6555 24.5656 42.715C24.046 42.7944 23.5264 42.8737 23.0867 42.9928V51.3055H18.6498V32.1406H23.0867V38.9257C23.5464 38.7868 24.046 38.6678 24.6056 38.5884C25.2052 38.5487 25.6849 38.4892 26.0446 38.4892H26.0246Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M26.564 39.9772C28.2828 39.0646 29.5219 38.0329 30.2814 36.8426C31.0209 35.6522 31.3806 34.1444 31.3406 32.3192H35.4578C35.4777 33.6683 35.3578 34.8983 35.098 35.9895C35.8974 36.4458 36.6369 36.9219 37.3564 37.4576C38.2158 38.1718 39.0752 39.0051 39.9146 39.997L36.8968 42.6952C36.1573 41.7429 35.4178 40.9295 34.6983 40.3145C34.3185 39.997 33.8988 39.7193 33.4791 39.4415C32.3799 40.9096 30.861 42.1 29.0023 42.9531L26.584 39.9772H26.564ZM37.4963 51.9998C35.8375 51.9998 34.4784 51.8808 33.3992 51.6824C32.3 51.4642 31.4006 51.1864 30.781 50.8095C30.1015 50.4325 29.6618 49.9762 29.422 49.4207C29.1422 48.9049 29.0222 48.3296 29.0222 47.655C29.0222 47.0598 29.1422 46.4845 29.422 45.9687C29.6818 45.4528 30.1415 44.9965 30.821 44.5799C31.4605 44.203 32.3399 43.8855 33.4392 43.6475C34.5184 43.4292 35.8775 43.3102 37.5163 43.3102C39.1552 43.3102 40.4743 43.4292 41.5735 43.6475C42.6527 43.8855 43.5121 44.203 44.1917 44.5799C44.8312 44.9767 45.3109 45.433 45.6107 45.9687C45.8705 46.4845 46.0104 47.0598 46.0104 47.655C46.0104 48.3296 45.8705 48.8851 45.6107 49.4207C45.3309 49.9762 44.8712 50.4127 44.2116 50.8095C43.5721 51.1864 42.6927 51.484 41.6334 51.6824C40.5342 51.8808 39.1552 51.9998 37.5363 51.9998H37.4963ZM37.4963 48.8057C38.2558 48.8057 38.8954 48.7859 39.395 48.7263C39.8747 48.6867 40.2544 48.6073 40.5542 48.5081C40.854 48.4089 41.0339 48.2899 41.1538 48.151C41.2537 48.0121 41.2937 47.8336 41.2937 47.655C41.2937 47.4963 41.2537 47.3177 41.1538 47.1789C41.0339 47.04 40.834 46.921 40.5542 46.8218C40.2744 46.7226 39.8747 46.6631 39.395 46.5837C38.8954 46.544 38.2758 46.5043 37.4963 46.5043C36.7169 46.5043 36.0573 46.5242 35.5777 46.5837C35.078 46.6631 34.6983 46.7226 34.4185 46.8218C34.1387 46.921 33.9388 47.04 33.8389 47.1789C33.739 47.3177 33.699 47.4963 33.699 47.655C33.699 47.8534 33.739 48.0121 33.8389 48.151C33.9388 48.2899 34.1187 48.4089 34.4185 48.5081C34.6783 48.6073 35.058 48.6668 35.5777 48.7263C36.0573 48.766 36.6969 48.8057 37.4963 48.8057ZM48.3488 34.938V39.0646C48.1489 39.0646 47.9091 39.0844 47.6492 39.0844C47.3694 39.1042 47.0696 39.1241 46.8098 39.1836C46.53 39.2233 46.2502 39.263 46.0104 39.3026C45.8505 39.3423 45.7306 39.4018 45.6306 39.4415V42.8936H41.4536V32.1406H45.6306V35.4935C45.8905 35.3348 46.2102 35.2157 46.61 35.0967C47.0497 34.9975 47.6093 34.9578 48.3288 34.9578L48.3488 34.938Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M48.6284 47.4765C49.5877 46.3059 50.3872 45.2148 51.0067 44.1633C51.6263 43.1713 52.106 42.1 52.4857 40.9493C52.8255 39.8581 53.0853 38.6083 53.2252 37.2592C53.3451 35.9299 53.3851 34.3626 53.3851 32.5374H57.6221C57.6221 34.7197 57.5222 36.6243 57.3823 38.2512C57.2823 39.0646 57.1624 39.8383 57.0225 40.5724C58.1018 41.6635 59.0611 42.7349 59.9005 43.7863C60.7599 44.937 61.5394 46.1274 62.1989 47.3574L59.181 50.0556C58.8213 49.381 58.4615 48.7462 58.0818 48.151C57.702 47.5757 57.2823 47.04 56.8626 46.4845C56.4629 45.9885 56.0032 45.4528 55.5835 44.9569C55.3237 45.5322 55.0239 46.048 54.7241 46.5837C53.9647 47.7939 53.0253 49.0438 51.8661 50.3135L48.6084 47.4566L48.6284 47.4765ZM70.633 38.4892V42.6158C70.2533 42.6158 69.7536 42.6555 69.174 42.715C68.6544 42.7944 68.1348 42.8737 67.6951 42.9928V51.3055H63.2582V32.1406H67.6951V38.9257C68.1547 38.7868 68.6544 38.6678 69.214 38.5884C69.8136 38.5487 70.2933 38.4892 70.653 38.4892H70.633Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M77.8084 32C78.7278 32 79.5272 32.1587 80.2867 32.496C81.0062 32.8531 81.6058 33.4086 82.1254 34.1427C82.6251 34.8965 83.0448 35.8488 83.3246 37.0194C83.5844 38.2097 83.7243 39.6382 83.7243 41.3047C83.7243 42.9712 83.5844 44.4393 83.3246 45.6098C83.0448 46.8002 82.6251 47.7525 82.1254 48.4865C81.6058 49.2404 81.0062 49.7761 80.2867 50.1134C79.5472 50.4506 78.7278 50.6093 77.8084 50.6093C76.8891 50.6093 76.0496 50.4506 75.3301 50.1134C74.5907 49.7761 73.9711 49.2603 73.4515 48.4865C72.9318 47.7525 72.5321 46.8002 72.2723 45.6098C71.9925 44.4393 71.8726 43.0109 71.8726 41.3047C71.8726 39.5985 71.9925 38.2097 72.2723 37.0194C72.5321 35.8488 72.9118 34.8965 73.4515 34.1427C73.9511 33.4086 74.5707 32.8531 75.3301 32.496C76.0496 32.1587 76.8691 32 77.8084 32ZM77.8084 35.9282C77.5686 35.9282 77.3287 36.0076 77.1089 36.1266C76.8691 36.2655 76.6692 36.5035 76.5093 36.8805C76.3494 37.2574 76.2295 37.8129 76.1296 38.5073C76.0097 39.2215 75.9697 40.1738 75.9697 41.3245C75.9697 42.4752 76.0097 43.4473 76.1296 44.1417C76.2295 44.8559 76.3494 45.4114 76.5093 45.7884C76.6692 46.1653 76.8691 46.4232 77.1089 46.5224C77.3287 46.6613 77.5686 46.7208 77.8084 46.7208C78.0283 46.7208 78.2481 46.6811 78.4879 46.5224C78.7078 46.4232 78.8877 46.1653 79.0875 45.7884C79.2274 45.4114 79.3673 44.8559 79.4872 44.1417C79.5872 43.4473 79.6471 42.5149 79.6471 41.3245C79.6471 40.1341 79.5672 39.2215 79.4872 38.5073C79.3673 37.8129 79.2274 37.2773 79.0875 36.8805C78.8877 36.5035 78.7078 36.2655 78.4879 36.1266C78.2481 36.0076 78.0283 35.9282 77.8084 35.9282ZM85.563 51.2839V32.119H89.9999V51.2839H85.563Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M81.5837 24C73.387 24 69.1675 18.4777 69.1675 12.1155C69.1675 6.4042 73.1649 0 81.5837 0C90.0025 0 93.9999 6.4042 93.9999 12.1155C93.9999 18.4777 89.7804 24 81.5837 24ZM81.5837 18.2047C84.8745 18.2047 87.4385 15.685 87.4385 11.9895C87.4385 8.29396 85.137 5.77428 81.5837 5.77428C78.0304 5.77428 75.7289 8.35695 75.7289 11.9895C75.7289 15.622 78.2929 18.2047 81.5837 18.2047Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M23.0356 0.0209979L11.5279 11.9895L0 23.979H11.5279L23.0356 12.0105V11.9895H23.0558V0L23.0356 0.0209979Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M34.5831 0H23.0552V11.9895L28.8292 6.00525L34.5831 0Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M17.3018 23.9803H23.0556V17.9961L17.3018 23.9803Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M40.3378 12.0105V11.9895H40.358V0L40.3378 0.0209979L34.584 6.00525V17.9947L40.3378 12.0105Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M34.5831 6.00391L28.8292 11.9882L23.0552 17.9934V23.9777H28.8292L34.5831 17.9934V6.00391Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M40.3579 11.9895L46.132 6.00525L51.8858 0H40.3579V11.9895Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M57.6189 0.0209979L51.8853 6.00525V17.9947L57.6189 12.0105V11.9895H57.6391V0L57.6189 0.0209979Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M34.584 23.9803H40.358V17.9961L34.584 23.9803Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M46.1118 11.9882L40.3579 17.9934V23.9777H46.1118L51.8858 17.9934V6.00391L46.1118 11.9882Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M63.4127 6.00525L69.1666 0H57.6387V11.9895L63.4127 6.00525Z"
+                fill="#AD97F6"
+              /></svg
+          ></a>
+        </div>
+        <div class="info">
+          <div class="about">
+            <p class="ab">ABOUT</p>
+            <div class="box_1">
+              <p class="p1">
+                <a href="https://youtu.be/eVObLrm8Whs?si=FY_UZV0F5iMvH8az"
+                  >더 커뮤니티 소개</a
+                >
+              </p>
+              <a
+                href="https://youtu.be/eVObLrm8Whs?si=FY_UZV0F5iMvH8az"
+                class="arrow"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask
+                    id="mask0_346_3167"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                  >
+                    <rect width="20" height="20" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_346_3167)">
+                    <path
+                      d="M17.4246 9.99935L11.1473 3.72206C10.9818 3.5565 10.9011 3.35942 10.9054 3.13081C10.9097 2.9022 10.9947 2.70504 11.1602 2.53935C11.3258 2.37379 11.5229 2.29102 11.7515 2.29102C11.9801 2.29102 12.1772 2.37379 12.3429 2.53935L18.7227 8.93206C18.8733 9.08275 18.9849 9.25157 19.0575 9.43852C19.1303 9.62546 19.1667 9.8124 19.1667 9.99935C19.1667 10.1863 19.1303 10.3732 19.0575 10.5602C18.9849 10.7471 18.8733 10.9159 18.7227 11.0666L12.33 17.4593C12.1645 17.6249 11.9695 17.7055 11.7452 17.7012C11.5208 17.6969 11.3258 17.612 11.1602 17.4464C10.9947 17.2809 10.9119 17.0838 10.9119 16.8552C10.9119 16.6266 10.9947 16.4294 11.1602 16.2637L17.4246 9.99935Z"
+                      fill="#A3A3A3"
+                    />
+                  </g></svg
+              ></a>
+            </div>
+            <div class="box_2">
+              <a href="https://www.instagram.com/ivestarship/">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 28 28"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M0 14C0 6.26801 6.26801 0 14 0C21.732 0 28 6.26801 28 14C28 21.732 21.732 28 14 28C6.26801 28 0 21.732 0 14Z"
+                    fill="#262626"
+                  />
+                  <g clip-path="url(#clip0_312_3602)">
+                    <path
+                      d="M10.2726 5.06294C9.31498 5.10812 8.66103 5.26094 8.08935 5.48558C7.49769 5.71616 6.99621 6.02558 6.49725 6.52634C5.99829 7.0271 5.69103 7.52894 5.46207 8.1215C5.24049 8.69444 5.09037 9.34892 5.04807 10.3071C5.00577 11.2652 4.99641 11.5732 5.00109 14.0172C5.00577 16.4613 5.01657 16.7676 5.06301 17.7277C5.10873 18.6852 5.26101 19.3389 5.48565 19.9108C5.71659 20.5024 6.02565 21.0037 6.52659 21.5029C7.02753 22.002 7.52901 22.3086 8.12301 22.5379C8.69541 22.7591 9.35008 22.9099 10.308 22.9519C11.266 22.9938 11.5743 23.0035 14.0177 22.9989C16.461 22.9942 16.7686 22.9834 17.7285 22.9378C18.6885 22.8923 19.3388 22.7389 19.9109 22.5154C20.5025 22.2839 21.0042 21.9754 21.503 21.4743C22.0017 20.9731 22.3088 20.4709 22.5376 19.878C22.7594 19.3056 22.91 18.651 22.9516 17.6937C22.9935 16.7331 23.0034 16.4263 22.9988 13.9827C22.9941 11.539 22.9831 11.2326 22.9376 10.2729C22.892 9.3131 22.7396 8.66132 22.5151 8.0891C22.2838 7.49744 21.9751 6.9965 21.4743 6.497C20.9736 5.9975 20.471 5.6906 19.8783 5.46236C19.3055 5.24078 18.6512 5.08976 17.6933 5.04836C16.7353 5.00696 16.427 4.99634 13.9827 5.00102C11.5385 5.0057 11.2325 5.01614 10.2726 5.06294ZM10.3777 21.3328C9.5002 21.2946 9.02373 21.1488 8.70621 21.0268C8.28573 20.8648 7.98621 20.6689 7.66977 20.3556C7.35333 20.0422 7.15893 19.7416 6.99477 19.322C6.87147 19.0045 6.72297 18.5286 6.68193 17.6511C6.63729 16.7026 6.62793 16.4179 6.62271 14.0151C6.61749 11.6122 6.62667 11.3278 6.66825 10.3791C6.70569 9.50228 6.85239 9.02528 6.97425 8.70794C7.13625 8.28692 7.33137 7.98794 7.64547 7.67168C7.95957 7.35542 8.25927 7.16066 8.67921 6.9965C8.99637 6.87266 9.4723 6.72542 10.3494 6.68366C11.2986 6.63866 11.583 6.62966 13.9854 6.62444C16.3879 6.61922 16.673 6.62822 17.6225 6.66998C18.4993 6.70814 18.9765 6.8534 19.2935 6.97598C19.7141 7.13798 20.0135 7.33256 20.3297 7.6472C20.646 7.96184 20.8409 8.26046 21.0051 8.6813C21.1291 8.99756 21.2763 9.4733 21.3177 10.351C21.3629 11.3001 21.3732 11.5847 21.3775 13.987C21.3818 16.3893 21.3734 16.6746 21.3318 17.623C21.2934 18.5005 21.148 18.9771 21.0258 19.295C20.8638 19.7153 20.6685 20.015 20.3542 20.3311C20.0399 20.6472 19.7406 20.8419 19.3205 21.0061C19.0037 21.1297 18.5272 21.2773 17.6508 21.3191C16.7016 21.3637 16.4172 21.3731 14.0139 21.3783C11.6105 21.3835 11.327 21.3738 10.3779 21.3328M17.7147 9.1898C17.715 9.40342 17.7787 9.61214 17.8977 9.78955C18.0167 9.96697 18.1856 10.1051 18.3831 10.1865C18.5806 10.2679 18.7978 10.2889 19.0073 10.2469C19.2167 10.2048 19.409 10.1016 19.5597 9.95028C19.7105 9.79895 19.813 9.60631 19.8543 9.39671C19.8956 9.18712 19.8738 8.96999 19.7917 8.77279C19.7095 8.57559 19.5708 8.40717 19.3929 8.28884C19.2151 8.17051 19.0061 8.10758 18.7925 8.108C18.5061 8.10858 18.2317 8.22286 18.0296 8.42573C17.8275 8.62859 17.7142 8.90343 17.7147 9.1898ZM9.37887 14.0089C9.38391 16.5613 11.4568 18.6258 14.0087 18.6209C16.5605 18.616 18.6264 16.5433 18.6215 13.9909C18.6167 11.4385 16.5432 9.37358 13.991 9.37862C11.4388 9.38366 9.37401 11.4569 9.37887 14.0089ZM11 14.0057C10.9988 13.4124 11.1736 12.832 11.5023 12.338C11.8309 11.844 12.2987 11.4585 12.8465 11.2304C13.3942 11.0022 13.9973 10.9416 14.5795 11.0562C15.1616 11.1708 15.6968 11.4555 16.1172 11.8742C16.5376 12.2929 16.8243 12.8269 16.9413 13.4087C17.0582 13.9904 17 14.5937 16.774 15.1424C16.548 15.691 16.1644 16.1603 15.6717 16.4909C15.179 16.8215 14.5993 16.9986 14.006 16.9998C13.612 17.0007 13.2217 16.9239 12.8574 16.7738C12.4931 16.6238 12.1619 16.4035 11.8827 16.1254C11.6036 15.8474 11.382 15.5171 11.2305 15.1534C11.079 14.7897 11.0007 14.3997 11 14.0057Z"
+                      fill="white"
+                    />
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_312_3602">
+                      <rect
+                        width="18"
+                        height="18"
+                        fill="white"
+                        transform="translate(5 5)"
+                      />
+                    </clipPath>
+                  </defs></svg
+              ></a>
+              <a
+                href="https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=bjky&x_csa=%7B%22fromUi%22%3A%22kb_artist%22%7D&pkid=1&os=24893563&qvt=0&query=%EC%95%84%EC%9D%B4%EB%B8%8C"
+                ><svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 28 28"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M0 14C0 6.26801 6.26801 0 14 0C21.732 0 28 6.26801 28 14C28 21.732 21.732 28 14 28C6.26801 28 0 21.732 0 14Z"
+                    fill="#262626"
+                  />
+                  <path
+                    d="M16.4927 14.493L11.3024 7H7V21H11.5073V13.507L16.6976 21H21V7H16.4927V14.493Z"
+                    fill="white"
+                  /></svg
+              ></a>
+              <a href="https://www.facebook.com/IVEstarship"
+                ><svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 28 28"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M0 14C0 6.26801 6.26801 0 14 0C21.732 0 28 6.26801 28 14C28 21.732 21.732 28 14 28C6.26801 28 0 21.732 0 14Z"
+                    fill="#262626"
+                  />
+                  <path
+                    d="M18.1571 15.0485L18.653 11.8155H15.551V9.71751C15.551 8.83302 15.9843 7.97087 17.3737 7.97087H18.784V5.21845C18.784 5.21845 17.5041 5 16.2804 5C13.7256 5 12.0559 6.54835 12.0559 9.35146V11.8155H9.21606V15.0485H12.0559V22.8641C12.6253 22.9535 13.2089 23 13.8034 23C14.398 23 14.9816 22.9535 15.551 22.8641V15.0485H18.1571Z"
+                    fill="white"
+                  /></svg
+              ></a>
+            </div>
+          </div>
+          <div class="contact">
+            <p class="co">CONTACT US</p>
+            <div class="box_3">
+              <p class="p2">
+                <a href="https://youtu.be/cU0JrSAyy7o?si=58BUzQMDrqKJMJsb"
+                  >광고·제휴</a
+                >
+              </p>
+              <a
+                href="https://youtu.be/cU0JrSAyy7o?si=58BUzQMDrqKJMJsb"
+                class="arrow"
+                ><svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask
+                    id="mask0_346_3167"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                  >
+                    <rect width="20" height="20" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_346_3167)">
+                    <path
+                      d="M17.4246 9.99935L11.1473 3.72206C10.9818 3.5565 10.9011 3.35942 10.9054 3.13081C10.9097 2.9022 10.9947 2.70504 11.1602 2.53935C11.3258 2.37379 11.5229 2.29102 11.7515 2.29102C11.9801 2.29102 12.1772 2.37379 12.3429 2.53935L18.7227 8.93206C18.8733 9.08275 18.9849 9.25157 19.0575 9.43852C19.1303 9.62546 19.1667 9.8124 19.1667 9.99935C19.1667 10.1863 19.1303 10.3732 19.0575 10.5602C18.9849 10.7471 18.8733 10.9159 18.7227 11.0666L12.33 17.4593C12.1645 17.6249 11.9695 17.7055 11.7452 17.7012C11.5208 17.6969 11.3258 17.612 11.1602 17.4464C10.9947 17.2809 10.9119 17.0838 10.9119 16.8552C10.9119 16.6266 10.9947 16.4294 11.1602 16.2637L17.4246 9.99935Z"
+                      fill="#A3A3A3"
+                    />
+                  </g></svg
+              ></a>
+            </div>
+            <div class="box_4">
+              <p class="p3">
+                <a href="https://youtu.be/XZrTB15l4yc?si=tCKkvQPpuWNqaEj4"
+                  >오류신고</a
+                >
+              </p>
+              <a
+                href="https://youtu.be/XZrTB15l4yc?si=tCKkvQPpuWNqaEj4"
+                class="arrow"
+                ><svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask
+                    id="mask0_346_3167"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                  >
+                    <rect width="20" height="20" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_346_3167)">
+                    <path
+                      d="M17.4246 9.99935L11.1473 3.72206C10.9818 3.5565 10.9011 3.35942 10.9054 3.13081C10.9097 2.9022 10.9947 2.70504 11.1602 2.53935C11.3258 2.37379 11.5229 2.29102 11.7515 2.29102C11.9801 2.29102 12.1772 2.37379 12.3429 2.53935L18.7227 8.93206C18.8733 9.08275 18.9849 9.25157 19.0575 9.43852C19.1303 9.62546 19.1667 9.8124 19.1667 9.99935C19.1667 10.1863 19.1303 10.3732 19.0575 10.5602C18.9849 10.7471 18.8733 10.9159 18.7227 11.0666L12.33 17.4593C12.1645 17.6249 11.9695 17.7055 11.7452 17.7012C11.5208 17.6969 11.3258 17.612 11.1602 17.4464C10.9947 17.2809 10.9119 17.0838 10.9119 16.8552C10.9119 16.6266 10.9947 16.4294 11.1602 16.2637L17.4246 9.99935Z"
+                      fill="#A3A3A3"
+                    />
+                  </g></svg
+              ></a>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </main>
+      <div class="section_2">
+        <p class="copyright">© 2025 더 커뮤니티. All rights reserved.</p>
+        <div class="box_5">
+          <p class="copyright">
+            <a href="https://youtu.be/MA2xJPy2GSM?si=yGdv8c0V_faFSSj4"
+              >이용약관</a
+            >
+          </p>
+          <p class="copyright">|</p>
+          <p class="copyright">
+            <a href="https://youtu.be/lfos88tJmew?si=zYWBOpKaS2hAzp-u"
+              >개인정보 처리방침</a
+            >
+          </p>
+        </div>
+      </div>
+    </footer>
+    <script>
+      function validateForm() {
+        const username = document.getElementById("username");
+        const password = document.getElementById("password");
+        let valid = true;
 
-  <footer>
-    <div class="logo">더 커뮤니티</div>
-    <div>
-      <div>ABOUT</div>
-      <div>CONTACT US</div>
-    </div>
-  </footer>
-</body>
+        if (!username.value) {
+          document.getElementById("username-error").style.display = "flex";
+          document.querySelector(".id-inputfield").classList.add("active");
+          username.placeholder = "아이디를 입력해주세요.";
+          valid = false;
+        } else {
+          document.getElementById("username-error").style.display = "none";
+          document.querySelector(".id-inputfield").classList.remove("active");
+        }
+
+        if (!password.value) {
+          document.getElementById("password-error").style.display = "flex";
+          document
+            .querySelector(".password-inputfield")
+            .classList.add("active");
+          password.placeholder = "비밀번호를 입력해주세요.";
+          valid = false;
+        } else {
+          document.getElementById("password-error").style.display = "none";
+          document
+            .querySelector(".password-inputfield")
+            .classList.remove("active");
+        }
+
+        return valid;
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const errorDiv = document.getElementById("error-flag");
+        if (errorDiv && errorDiv.dataset.error === "true") {
+          document.getElementById("loginModal").style.display = "flex";
+        }
+      });
+
+      function closeModal() {
+        document.getElementById("loginModal").style.display = "none";
+      }
+
+      document.getElementById("see-password").addEventListener("click", () => {
+        const passwordInput = document.getElementById("password");
+        const currentType = passwordInput.getAttribute("type");
+
+        if (currentType === "password") {
+          passwordInput.setAttribute("type", "text"); // 보이게
+        } else {
+          passwordInput.setAttribute("type", "password"); // 다시 숨김
+        }
+      });
+    </script>
+  </body>
 </html>
