@@ -317,7 +317,7 @@
       <a href="{% url 'articles:detail' article.id %}" class="card-link">
         <div class="card">
           <div class="article-thumbnail">
-            <img src="{{ article.image.url }}" alt="썸네일" style="width: 100%;">
+            <img src="{{ article.image }}" alt="썸네일" style="width: 100%;">
           </div>
           <div class="card-content">
             {{ article.title|truncatechars:30 }}

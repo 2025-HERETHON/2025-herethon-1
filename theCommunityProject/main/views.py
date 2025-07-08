@@ -3,8 +3,8 @@ from articles.models import Article
 from community.models import Post
 from proposals.models import ProposalPost
 
-# def home(request):
-#     return render(request, 'index.html')
+def home(request):
+    return render(request, 'index.html')
 
 def scrapped_article_posts(request):
     posts = request.user.scrapped_article_posts.all()

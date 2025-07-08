@@ -17,25 +17,30 @@
 
 <a href="{% url 'community:detail' post.id %}">← 이전</a>
 
-<form id="voteForm">
-  <label>
+<form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id %}">
+  {% csrf_token %}
+ <label>
     <input type="radio" name="selected" value="1"
            {% if voted_choice == 1 %}checked{% endif %}
-           disabled> {{ post.option1 }}
+           {% if voted_choice %}disabled{% endif %}
+           onchange="this.form.submit()"> {{ post.option1 }}
   </label><br>
 
   <label>
     <input type="radio" name="selected" value="2"
            {% if voted_choice == 2 %}checked{% endif %}
-           disabled> {{ post.option2 }}
+           {% if voted_choice %}disabled{% endif %}
+           onchange="this.form.submit()"> {{ post.option2 }}
   </label><br>
 
   <label>
     <input type="radio" name="selected" value="3"
            {% if voted_choice == 3 %}checked{% endif %}
-           disabled> {{ post.option3 }}
+           {% if voted_choice %}disabled{% endif %}
+           onchange="this.form.submit()"> {{ post.option3 }}
   </label><br>
 </form>
+
 
 <hr>
   <div style="display:flex; justify-content:space-between; align-items:center;">

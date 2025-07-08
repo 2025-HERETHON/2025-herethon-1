@@ -86,16 +86,16 @@
   <div class="tabs">
         <a href="{% url 'scraps:scraps_article' %}" class="active">아티클</a>
         <a href="{% url 'scraps:scraps_community' %}">커뮤니티</a>
-        <a href="{% url 'scraps:scraps_proposal' %}">정책 제안</a>>
+        <a href="{% url 'scraps:scraps_proposal' %}">정책 제안</a>
   </div>
 
   <div class="grid">
-    {% for post in community_posts %}
+    {% for post in proposal_posts %}
     <div class="card">
       <div class="thumbnail"></div>
-      <a href="{% url 'community:detail' post.id %}" style="text-decoration: none; color: inherit;">
-      {{ post.title|truncatechars:40 }}
-    </a>
+      <div class="title">
+        {{ post.title|truncatechars:40 }}
+      </div>
       <div class="stats">
 <!--        <span>👁 {{ post.image }}</span>-->
         <span>💬 {{ post.comment.count }}</span>
@@ -103,8 +103,8 @@
       </div>
     </div>
     {% empty %}
-    <p>스크랩한 커뮤니티 글이 없습니다.</p>
-      <a href="{% url 'community:home' %}" class="active">커뮤니티바로가기</a>
+    <p>스크랩한 정책제안 글이 없습니다.</p>
+      <a href="{% url 'proposals:home' %}" class="active">정책제안바로가기</a>
     {% endfor %}
   </div>
 </div>

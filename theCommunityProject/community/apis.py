@@ -85,10 +85,9 @@ def get_gemini_response(prompt):
         ],
     }
     response = requests.post(url, json=data, headers=headers)
-    print(response.text)
 
     # 응답을 JSON으로 파싱해서 출력
-    print(json.dumps(response.json(), indent=2, ensure_ascii=False))
+    #print(json.dumps(response.json(), indent=2, ensure_ascii=False))
 
     response_json = response.json()
     if 'candidates' in response_json and response_json['candidates']:
@@ -177,20 +176,21 @@ def get_kosis_response(search_word):
 
 def get_library_response(first, second):
     base_url = 'http://apis.data.go.kr/9720000/searchservice/basic'
-    # params = {
-    #     'serviceKey': LIB_KEY,
-    #     'query': search_word,
-    #     'pageNo': '1',
-    #     'numOfRows': '5'
-    # }
+    params = {
+        'serviceKey': LIB_KEY,
+        'query': first + ' ' + second,
+        'pageNo': '1',
+        'numOfRows': '5'
+    }
     # 이미 인코딩된 키이므로 작성 방식 변경
 
-    search_word = first + " " + second
-    url = f"{base_url}?serviceKey={LIB_KEY}&query={search_word}&pageNo=1&numOfRows=5"
+    #search_word = first + " " + second
+    #url = f"{base_url}?serviceKey={LIB_KEY}&query={search_word}&pageNo=1&numOfRows=5"
     try:
-        response = requests.get(url, verify=False)
-    # response = requests.get(url, params=params, verify=False)
-    # response.encoding = 'utf-8'
+        response = requests.get(base_url, params=params, verify=False)
+        response.encoding = 'utf-8'
+        print("요청 URL:", response.url)
+        print(response.text)
 
         if response.status_code == 200:
             root = ET.fromstring(response.text)
