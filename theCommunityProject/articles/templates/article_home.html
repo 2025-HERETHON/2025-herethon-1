@@ -100,11 +100,11 @@
     <nav>
       <div class="logo">더 커뮤니티</div>
       <ul>
-        <li><a href="/articles/" style="color: #a57bff">아티클</a></li>
-        <li><a href="/community/">커뮤니티</a></li>
-        <li><a href="/proposals/">정책 제안</a></li>
+        <li><a href="{% url 'articles:home' %}" style="color: #a57bff">아티클</a></li>
+        <li><a href="{% url 'community:home' %}">커뮤니티</a></li>
+        <li><a href="{% url 'proposals:home' %}">정책 제안</a></li>
         {% if user.is_authenticated %}
-        <li><a href="/">스크랩</a></li>
+        <li><a href="{% url 'scraps:scraps_article' %}">스크랩</a></li>
         {% endif %}
       </ul>
       {% if user.is_authenticated %}
