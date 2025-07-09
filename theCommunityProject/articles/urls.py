@@ -25,4 +25,8 @@ urlpatterns = [
     path('<int:article_id>/comment/<int:comment_id>/reply/<int:reply_id>/update/', views.reply_update, name='reply_update'),
     path('<int:article_id>/comment/<int:comment_id>/reply/<int:reply_id>/delete/', views.reply_delete, name='reply_delete'),
     path('<int:article_id>/comment/<int:comment_id>/reply/<int:reply_id>/like/', views.reply_like, name='reply_like'),
+
+    # ai 추가
+    path('<int:post_id>/comment/evidence/', views.detail_comment_ai_response, name='detail_comment_ai_response'),
+    path('<int:post_id>/detail/comment/<int:comment_id>/reply/evidence/', views.detail_reply_ai_response, name='detail_reply_ai_response'),
 ]
