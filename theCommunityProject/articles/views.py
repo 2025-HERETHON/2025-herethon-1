@@ -117,6 +117,8 @@ def detail(request, article_id):
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
         'opened_reply_comment_id': opened_reply_comment_id,
+        'replyEvidenceMap': {},
+        'commentEvidence': None,
     }
     return render(request, 'article_detail.html', context)
 
@@ -205,12 +207,11 @@ def detail_comment_ai_response(request, post_id):
         messages.error(request, "댓글 내용을 입력하세요.")
         return redirect(f"{reverse('articles:detail', args=[post_id])}#comment-form")
     else:
-        comment = ArticleComment(user=request.user, content=content, article=post, created_at=None)
-        comment.save()
+        comment = ArticleComment(user=request.user, content=content, article=post)
         extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
         full_prompt = content + extra_text
         evidence, link1, link2, link3, link4 = get_gemini_response(content, full_prompt)
-        commentEvidence = ArticleCommentEvidence.objects.create(comment=comment, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
+        commentEvidence = ArticleCommentEvidence(comment=comment, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
 
         comment_form = ArticleCommentForm(initial={'content': content})
 
@@ -273,7 +274,7 @@ def reply_like(request, article_id, comment_id, reply_id):
         messages.error(request, "본인 답글은 추천할 수 없습니다.")
     return redirect('{}?open_reply={}#reply_{}'.format(resolve_url('articles:detail', article_id=article_id), comment_id, reply_id))
 
-def detail_reply_ai_response(request, post_id, comment_id, reply_id):
+def detail_reply_ai_response(request, post_id, comment_id):
     """
     답글 AI 근거 자료 생성
     """
@@ -290,12 +291,11 @@ def detail_reply_ai_response(request, post_id, comment_id, reply_id):
         messages.error(request, "댓글 내용을 입력하세요.")
         return redirect(f"{reverse('articles:detail', args=[post_id])}#comment-form")
     else:
-        reply = ArticleReply(user=request.user, content=content, comment=comment, created_at=None)
-        reply.save()
+        reply = ArticleReply(user=request.user, content=content, comment=comment)
         extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
         full_prompt = content + extra_text
         evidence, link1, link2, link3, link4 = get_gemini_response(content, full_prompt)
-        replyEvidence = ArticleReplyEvidence.objects.create(reply=reply, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
+        replyEvidence = ArticleReplyEvidence(reply=reply, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
 
         reply_form = ArticleReplyForm(initial={'content': content})
 
@@ -303,9 +303,10 @@ def detail_reply_ai_response(request, post_id, comment_id, reply_id):
             'article': post,
             'comment' : reply.comment,
             'comments': post.article_comments.filter(created_at__isnull=False),
-            'reply_form': reply_form,
-            'replyEvidence': replyEvidence,
-            'opened_reply_section': comment.id,
+            'reply_form': ArticleReplyForm(initial={'content': content}),
+            'replyEvidenceMap': {comment.id: replyEvidence},
+            'opened_reply_comment_id': comment.id,
         }
         
         return render(request, 'article_detail.html', context)
+

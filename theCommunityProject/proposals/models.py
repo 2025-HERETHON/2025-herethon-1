@@ -7,6 +7,7 @@ class ProposalPost(models.Model):
     community_post = models.OneToOneField(CommunityPost, on_delete=models.CASCADE, related_name='proposal_post')
     title = models.CharField(max_length=100)
     question = models.TextField()  # 투표 질문
+    result_number = models.IntegerField(null=True, blank=True) # 썸네일 지정용
     result_choice = models.CharField(max_length=100)  # 가장 많이 선택된 항목
     result_percent = models.IntegerField()  # 해당 항목 퍼센트
     created_at = models.DateTimeField(auto_now_add=True)

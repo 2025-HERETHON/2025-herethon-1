@@ -119,7 +119,13 @@
             {% for post in proposals %}
             <a href="{% url 'proposals:detail' post.id %}" class="card-link">
                 <div class="card">
-                    <div class="thumbnail"></div>
+                    {% if post.result_number == 1 %}
+                    <img src="{% static 'thumbnail/agree.png' %}" id="thumbnail">
+                    {% elif post.result_number == 2 %}
+                    <img src="{% static 'thumbnail/disagree.png' %}" id="thumbnail">
+                    {% else %}
+                    <img src="{% static 'thumbnail/neutral.png' %}" id="thumbnail">
+                    {% endif %}
                     <div class="card-content">{{ post.title|truncatechars:30 }}</div>
                     <div class="meta">
                         ❤️ {{ post.liked.count }} | 💬 {{ post.proposal_comments.count }}
