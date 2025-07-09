@@ -106,6 +106,42 @@ def detail(request, post_id):
         except Reply.DoesNotExist:
             editing_reply_id = None
 
+    # 댓글 목록 가져오기(답글까지 같이 가져옴)
+    comments = post.comments.all().prefetch_related('replies', 'user').filter(created_at__isnull=False)
+
+    sort = request.GET.get('sort', 'popular')
+
+    if sort == 'popular':
+        comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
+    else:
+        comments = comments.order_by('-created_at')
+
+    # 익명 이름 부여
+    all_entries = []
+    for comment in comments:
+        # 더미 코멘트 포함 안 함
+        if comment.created_at:
+            all_entries.append((comment.user.id, comment.created_at))
+        for reply in comment.replies.all():
+            # 더미 코멘트 포함 안 함
+            if reply.created_at:
+                all_entries.append((reply.user.id, reply.created_at))
+
+    # 작성 시간 순 정렬
+    all_entries.sort(key=lambda x: x[1])
+    # 익명 번호 매핑
+    anon_map = {}
+    counter = 1
+    for user_id, _ in all_entries:
+        if user_id not in anon_map:
+            anon_map[user_id] = f"익명{counter}"
+            counter += 1
+    # 객체에 익명 번호 부여
+    for comment in comments:
+        comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
+        print(f"comment id={comment.id}, anonymous_name={comment.anonymous_name}")
+        for reply in comment.replies.all():
+            reply.anonymous_name = anon_map.get(reply.user.id, "익명?")
     #투표 수(전달 형태: {1: 0, 2: 0, 3: 2})
     print(post.count_votes())
 
@@ -125,7 +161,7 @@ def detail(request, post_id):
 
     context = {
         'post': post,
-        'comments' : post.comments.filter(created_at__isnull=False),
+        'comments' : comments,
         'comments_by_choice' : comments_by_choice,
         # 추천 아티클 추가
         'recommended_articles': recommended_articles,
