@@ -19,6 +19,7 @@ urlpatterns = [
     path('<int:post_id>/vote/', views.detail_vote, name='detail_vote'),
     path('<int:post_id>/comment/evidence/', views.detail_comment_ai_response, name='detail_comment_ai_response'),
     path('<int:post_id>/detail/', views.detail_comment_detail, name='detail_comment_detail'),
+    path('<int:post_id>/detail/comment/<int:comment_id>/reply/evidence/', views.detail_reply_ai_response, name='detail_reply_ai_response'),
     #스크랩 url 추가
     path('<int:post_id>/scrap/', views.detail_post_scrap, name='detail_post_scrap'),
 ]

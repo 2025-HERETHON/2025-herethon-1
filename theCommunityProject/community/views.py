@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 
 from community.apis import get_gemini_response
 from community.forms import CommentForm, ReplyForm
-from community.models import Post, Comment, Reply, Vote, CommentEvidence
+from community.models import Post, Comment, Reply, Vote, CommentEvidence, ReplyEvidence
 
 from articles.models import Article
 
@@ -367,7 +367,7 @@ def detail_vote(request, post_id):
 
 def detail_comment_ai_response(request, post_id):
     """
-    AI 근거 자료 생성
+    댓글 AI 근거 자료 생성
     """
     if request.method != 'POST':
         messages.error(request, "잘못된 요청입니다.")
@@ -385,13 +385,14 @@ def detail_comment_ai_response(request, post_id):
         comment.save()
         extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
         full_prompt = content + extra_text
-        evidence, link1, link2 = get_gemini_response(full_prompt)
-        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, link1=link1, link2=link2)
+        evidence, link1, link2, link3, link4 = get_gemini_response(content, full_prompt)
+        commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
 
         comment_form = CommentForm(initial={'content': content})
 
         context = {
             'post': post,
+            'comments': post.comments.filter(created_at__isnull=False),
             'comment_form': comment_form,
             'commentEvidence': commentEvidence,
         }
@@ -484,7 +485,7 @@ def detail_comment_detail(request, post_id):
         'post': post,
         'comments': post.comments.filter(created_at__isnull=False),
         'comments_by_choice' : comments_by_choice,
-        'replies' : Reply.objects.all(),
+        'replies' : Reply.objects.filter(created_at__isnull=False),
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
@@ -493,3 +494,42 @@ def detail_comment_detail(request, post_id):
         'recommended_articles': recommended_articles,
     }
     return render(request, 'community_detail_comment.html', context)
+
+
+def detail_reply_ai_response(request, post_id, comment_id):
+    """
+    답글 AI 근거 자료 생성
+    """
+    if request.method != 'POST':
+        messages.error(request, "잘못된 요청입니다.")
+        return redirect ('community:detail_comment_detail', post_id=post_id)
+
+    post = get_object_or_404(Post, id=post_id)
+    comment = get_object_or_404(Comment, id=comment_id)
+    content = request.POST.get('content')
+
+    if not content:
+        messages.error(request, "답글 내용을 입력하세요.")
+        return redirect(f"{reverse('community:detail_comment_detail', args=[post_id])}#comment-form")
+    else:
+        reply = Reply(user=request.user, content=content, comment=comment, created_at=None)
+        reply.save()
+        extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
+        full_prompt = content + extra_text
+        evidence, link1, link2, link3, link4 = get_gemini_response(content, full_prompt)
+        replyEvidence = ReplyEvidence.objects.create(reply=reply, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
+        print('테스트' + replyEvidence.keyword)
+        reply_form = ReplyForm(initial={'content': content})
+        comment_form = CommentForm()
+
+        context = {
+            'post': comment.post,
+            'comment': reply.comment,
+            'comments': reply.comment.post.comments.filter(created_at__isnull=False),
+            'reply_form': reply_form,
+            'comment_form':comment_form,
+            'replyEvidence': replyEvidence,
+            'opened_reply_section': comment.id,
+        }
+
+        return render(request, 'community_detail_comment.html', context)
