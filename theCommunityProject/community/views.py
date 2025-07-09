@@ -24,9 +24,14 @@ def home(request):
     """
     커뮤니티 게시글 리스트 출력
     """
-    #kw = 검색어 받아서 게시글 필터링
-    kw = request.GET.get('kw', '')
-    post_list = Post.objects.order_by('-created_at')
+
+    post_list = Post.objects.all()
+
+    sort = request.GET.get('sort', 'popular')
+    if sort == 'popular':
+        post_list = sorted(post_list, key=lambda a: (a.votes.count() * 5 + a.comments.filter(created_at__isnull=False).count() * 2), reverse=True)
+    else:
+        post_list = post_list.filter(created_at__isnull=False).order_by('-created_at')
 
     if post_list:
         for post in post_list:
@@ -34,13 +39,6 @@ def home(request):
             post.filtered_comments = post.comments.filter(created_at__isnull=False)
             print(post.title, post.filtered_comments.count())
 
-
-    if kw:
-        post_list = post_list.filter(
-            Q(title__icontains=kw) |
-            Q(option1__icontains=kw) |
-            Q(option2__icontains=kw) |
-            Q(option3__icontains=kw)).distinct()
 
     context = {
         'post_list': post_list,
@@ -417,7 +415,11 @@ def detail_vote(request, post_id, now):
 
     if Vote.objects.filter(post=post, user=request.user).exists():
         messages.error(request, "이미 투표하셨습니다.")
-        return redirect('community:detail', post_id=post.pk)
+
+        if (now == 1):
+            return redirect('community:detail_comment_detail', post_id=post_id)
+        else:
+            return redirect('community:detail', post.pk)
 
     selected = int(request.POST.get('selected'))
     if selected not in dict(Vote.choices):
@@ -501,25 +503,25 @@ def detail_comment_detail(request, post_id):
     open_reply_comment_id = request.GET.get('open_reply')
 
     # 답글 수정 완료 시 수정 완료한 답글 위치로 스크롤 하기 위해 검사
-    opened_reply_comment_id = None
-    if editing_reply_id:  # 수정했거나 수정 예정인 답글이 있는 경우
-        editing_reply_id = int(editing_reply_id)
-        try:  # 답글 토글 열림 상태
-            reply = Reply.objects.get(pk=editing_reply_id)
-            opened_reply_comment_id = reply.comment.id
-        except Reply.DoesNotExist:
-            editing_reply_id = None
-            pass
-    elif open_reply_comment_id:  # 답글 창이 열려 있었던 경우
-        try:
-            opened_reply_comment_id = int(open_reply_comment_id)  # 답글 토글이 열려있던 댓글 id 정보 저장
-        except ValueError:
-            opened_reply_comment_id = None
-
-    # 답글 수정 관련 시도 없음, 답글 토글 닫혀있던 경우
-    else:
-        opened_reply_comment_id = None
-        open_reply_comment_id = None
+    # opened_reply_comment_id = None
+    # if editing_reply_id:  # 수정했거나 수정 예정인 답글이 있는 경우
+    #     editing_reply_id = int(editing_reply_id)
+    #     try:  # 답글 토글 열림 상태
+    #         reply = Reply.objects.get(pk=editing_reply_id)
+    #         opened_reply_comment_id = reply.comment.id
+    #     except Reply.DoesNotExist:
+    #         editing_reply_id = None
+    #         pass
+    # elif open_reply_comment_id:  # 답글 창이 열려 있었던 경우
+    #     try:
+    #         opened_reply_comment_id = int(open_reply_comment_id)  # 답글 토글이 열려있던 댓글 id 정보 저장
+    #     except ValueError:
+    #         opened_reply_comment_id = None
+    #
+    # # 답글 수정 관련 시도 없음, 답글 토글 닫혀있던 경우
+    # else:
+    #     opened_reply_comment_id = None
+    #     open_reply_comment_id = None
 
     if (request.method == 'POST'):
         comment_form = CommentForm(request.POST)
@@ -589,13 +591,18 @@ def detail_comment_detail(request, post_id):
     comments_by_choice = {}
 
     for choice in vote_choices:
-        comments_modifing = comments_modifing.filter(
-            post=post,
+        filtered_comments = comments_modifing.filter(
             user__vote__post=post,
             user__vote__choice=choice,
-        ).distinct()  # 중복 방지 distinct()
-        # 프론트 전달용 딕셔너리 - comments_by_choice
-        comments_by_choice[choice] = comments_modifing
+        ).distinct()
+        comments_by_choice[choice] = filtered_comments
+
+        for comment in filtered_comments:
+            comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
+        comments_by_choice[choice] = filtered_comments
+
+    print(f"open_reply_comment_id from GET: {open_reply_comment_id}")
+    print(f"passed to context: {int(open_reply_comment_id) if open_reply_comment_id else None}")
 
     context = {
         'post': post,
@@ -605,7 +612,7 @@ def detail_comment_detail(request, post_id):
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
-        'opened_reply_comment_id': opened_reply_comment_id,
+        'opened_reply_comment_id': int(open_reply_comment_id) if open_reply_comment_id else None,
         'reply_form': reply_form,
         'recommended_articles': recommended_articles,
         'now':1,
