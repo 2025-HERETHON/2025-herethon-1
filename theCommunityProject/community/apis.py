@@ -35,6 +35,7 @@ def get_gemini_response(content, prompt):
         ],
     }
     response = requests.post(url, json=data, headers=headers)
+    print('제미나이 응답', response.text)
     response_json = response.json()
     text = response_json['candidates'][0]['content']['parts'][0]['text']
 
@@ -49,47 +50,47 @@ def get_gemini_response(content, prompt):
     first = words[0].strip() if len(words) > 0 else ""
     second = words[1].strip() if len(words) > 1 else ""
 
-    # KOSIS 통계
-    kosis_data = get_kosis_response(first)
-    # 만약 kosis_data가 dict이면 문자열로 변환
-    if isinstance(kosis_data, dict):
-        # 예: JSON 문자열로 변환
-        kosis_data = json.dumps(kosis_data, ensure_ascii=False)
-    else:
-        kosis_data = str(kosis_data)
-    check_prompt = "다음은 kosis 통계 자료입니다:" + kosis_data + ',' + "그리고 다음은 어떤 주제에 대한 사용자의 글입니다." + content + (
-        "글 전문을 기반으로, 글에서 드러난 핵심 키워드 1순위와 입장(찬성, 반대, 중립), "
-        "질문 여부를 직접 파악하여 해당 입장을 지지하거나 분석적으로 설명할 수 있는 자료 기반 근거 1가지를 작성해 주세요. "
-        "조건은 다음과 같습니다: (1) 댓글이 찬성 또는 반대 입장일 경우 해당 입장을 지지하는 근거 1가지를 작성해 주세요. "
-        "(2) 댓글이 중립 입장이거나 질문 형태일 경우, 분석적이거나 객관적인 관점을 제공하는 근거 1가지를 작성해 주세요. "
-        "(3) 각 근거는 반드시 다음 3가지 요소를 포함해야 합니다: ① 간결한 요지(2문장 이내), ② 해당 자료 제목 "
-        "주의: 반드시 위 자료를 기반으로만 인용해 주세요. 외부 지식, 요약, 상식, 주관적 해석 등은 절대 사용하지 마세요. "
-        "출력 형식: 1. 근거 요지 문장 → 출처: 『자료 제목』"
-        "위 조건을 만족하는 응답이 불가능한 경우, '적절한 근거를 찾을 수 없습니다.'라고만 작성해 주세요.")
-
-    data = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": check_prompt}
-                ]
-            }
-        ],
-    }
-
-    # 근거 문장 받기
-    kosis_response = requests.post(url, json=data, headers=headers)
-    kosis_response_json = kosis_response.json()
-
-    if 'candidates' in kosis_response_json and kosis_response_json['candidates']:
-        text = kosis_response_json['candidates'][0]['content']['parts'][0]['text']
-        print(" Gemini 응답 내용:", text)
-    else:
-        print(" Gemini 응답 실패: candidates 없음")
-
-    # 텍스트 변환
-    kosis_response = text.replace('**', '')  # 볼드 제거
-    kosis_response = kosis_response.replace('*', '')
+    # # KOSIS 통계
+    # kosis_data = get_kosis_response(first)
+    # # 만약 kosis_data가 dict이면 문자열로 변환
+    # if isinstance(kosis_data, dict):
+    #     # 예: JSON 문자열로 변환
+    #     kosis_data = json.dumps(kosis_data, ensure_ascii=False)
+    # else:
+    #     kosis_data = str(kosis_data)
+    # check_prompt = "다음은 kosis 통계 자료입니다:" + kosis_data + ',' + "그리고 다음은 어떤 주제에 대한 사용자의 글입니다." + content + (
+    #     "글 전문을 기반으로, 글에서 드러난 핵심 키워드 1순위와 입장(찬성, 반대, 중립), "
+    #     "질문 여부를 직접 파악하여 해당 입장을 지지하거나 분석적으로 설명할 수 있는 자료 기반 근거 1가지를 작성해 주세요. "
+    #     "조건은 다음과 같습니다: (1) 댓글이 찬성 또는 반대 입장일 경우 해당 입장을 지지하는 근거 1가지를 작성해 주세요. "
+    #     "(2) 댓글이 중립 입장이거나 질문 형태일 경우, 분석적이거나 객관적인 관점을 제공하는 근거 1가지를 작성해 주세요. "
+    #     "(3) 각 근거는 반드시 다음 3가지 요소를 포함해야 합니다: ① 간결한 요지(2문장 이내), ② 해당 자료 제목 "
+    #     "주의: 반드시 위 자료를 기반으로만 인용해 주세요. 외부 지식, 요약, 상식, 주관적 해석 등은 절대 사용하지 마세요. "
+    #     "출력 형식: 1. 근거 요지 문장 → 출처: 『자료 제목』"
+    #     "위 조건을 만족하는 응답이 불가능한 경우, '적절한 근거를 찾을 수 없습니다.'라고만 작성해 주세요.")
+    #
+    # data = {
+    #     "contents": [
+    #         {
+    #             "parts": [
+    #                 {"text": check_prompt}
+    #             ]
+    #         }
+    #     ],
+    # }
+    #
+    # # 근거 문장 받기
+    # kosis_response = requests.post(url, json=data, headers=headers)
+    # kosis_response_json = kosis_response.json()
+    #
+    # if 'candidates' in kosis_response_json and kosis_response_json['candidates']:
+    #     text = kosis_response_json['candidates'][0]['content']['parts'][0]['text']
+    #     print(" Gemini 응답 내용:", text)
+    # else:
+    #     print(" Gemini 응답 실패: candidates 없음")
+    #
+    # # 텍스트 변환
+    # kosis_response = text.replace('**', '')  # 볼드 제거
+    # kosis_response = kosis_response.replace('*', '')
 
 
     # 국회도서관 검색
@@ -97,14 +98,32 @@ def get_gemini_response(content, prompt):
 
     print(lib_title, lib_author, lib_year, lib_link)
 
-    check_prompt = "다음은 국회도서관 자료입니다:" + lib_title + ',' + lib_author + ',' +  "그리고 다음은 어떤 주제에 대한 사용자의 글입니다." + content + ("글 전문을 기반으로, 글에서 드러난 핵심 키워드 1순위와 입장(찬성, 반대, 중립), "
-                                                        "질문 여부를 직접 파악하여 해당 입장을 지지하거나 분석적으로 설명할 수 있는 자료 기반 근거 1가지를 작성해 주세요. "
-                                                        "조건은 다음과 같습니다: (1) 댓글이 찬성 또는 반대 입장일 경우 해당 입장을 지지하는 근거 1가지를 작성해 주세요. "
-                                                        "(2) 댓글이 중립 입장이거나 질문 형태일 경우, 분석적이거나 객관적인 관점을 제공하는 근거 1가지를 작성해 주세요. "
-                                                        "(3) 각 근거는 반드시 다음 3가지 요소를 포함해야 합니다: ① 간결한 요지(2문장 이내), ② 해당 자료 제목 "
-                                                        "주의: 반드시 위 자료를 기반으로만 인용해 주세요. 외부 지식, 요약, 상식, 주관적 해석 등은 절대 사용하지 마세요. "
-                                                        "출력 형식: 1. 근거 요지 문장 → 출처: 『자료 제목』"
-                                                        "위 조건을 만족하는 응답이 불가능한 경우, '적절한 근거를 찾을 수 없습니다.'라고만 작성해 주세요.")
+    check_prompt = (
+        f"다음은 국회도서관 자료입니다:\n"
+        f"제목: {lib_title or '제목 없음'}\n"
+        f"저자: {lib_author or '저자 미상'}\n"
+        f"연도: {lib_year or '연도 미상'}\n"
+        f"링크: {lib_link or '링크 없음'}\n\n"
+        f"다음은 사용자 글입니다:\n{content}\n\n"
+
+        "다음 조건에 따라, 사용자 글의 입장을 파악하고 위 자료를 기반으로 근거 1가지를 작성해 주세요.\n\n"
+
+        "작성 조건:\n"
+        "1. 사용자 글의 핵심 키워드와 입장(찬성/반대/중립/질문)을 파악하세요.\n"
+        "2. 반드시 위에 제공된 국회도서관 자료만을 근거로 사용하세요.\n"
+        "3. 자료에 해당 주제에 대한 직접적인 언급이 없더라도, 관련 개념(예: 성차별, 혐오, 인권 등)이 등장하면\n"
+        "   그것을 바탕으로 사용자의 입장을 지지하거나 분석할 수 있습니다.\n"
+        "4. 외부 지식, 일반 상식, 요약, 추론, 주관적 해석은 사용하지 마세요.\n"
+        "5. 아래 형식을 지켜 주세요:\n"
+        "   - 간결한 요지: 2문장 이내\n"
+        "   - 출처 표기: → 출처: 『자료 제목』\n\n"
+
+        "출력 예시:\n"
+        "성차별은 제도적 방식으로도 나타날 수 있다. 본 자료는 온라인 남성 커뮤니티의 여성혐오적 담론을 분석한다. → 출처: 『온라인 청년 극우의 성차별 연구』\n\n"
+
+        "※ 주의: 자료에서 관련된 개념조차 없거나 주제와의 연결이 불가능한 경우,\n"
+        "'적절한 근거를 찾을 수 없습니다.' 라고만 작성해 주세요."
+    )
 
     data = {
         "contents": [
@@ -166,7 +185,7 @@ def get_gemini_response(content, prompt):
     dbpia_response = text.replace('**', '')  # 볼드 제거
     dbpia_response = dbpia_response.replace('*', '')
 
-    total_text = dbpia_response + lib_response + kosis_response
+    total_text = dbpia_response + lib_response # + kosis_response
 
     return total_text, links[0], links[1], links[2], lib_link
 
@@ -242,14 +261,14 @@ def get_kosis_response(search_word):
 
 def get_library_response(first, second):
     """
-    공공도서관 api
+    국회도서관 api
     """
     base_url = 'http://apis.data.go.kr/9720000/searchservice/basic'
     params = {
         'serviceKey': LIB_KEY,
         'pageNo': '1',
         'displayLine': '10',
-        'search': '자료명,' + second,
+        'search': '자료명,' + first,
     }
 
     try:
