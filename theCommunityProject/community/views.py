@@ -310,6 +310,7 @@ def detail_reply_create(request, post_id, comment_id):
             reply = form.save(commit=False)
             reply.user = request.user
             reply.comment = get_object_or_404(Comment, id=comment_id)
+            reply.created_at = timezone.now()
 
             # 투표 항목에 따른 프로필 이미지
             voted_choice = None
@@ -329,6 +330,7 @@ def detail_reply_create(request, post_id, comment_id):
 
             reply.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
             reply.save()
+            print(f"reply saved: {reply}, id: {reply.id}")
             return redirect('community:detail_comment_detail', post_id=post_id)
     else:
         form = ReplyForm()
@@ -501,6 +503,9 @@ def detail_comment_detail(request, post_id):
     editing_reply_id = request.GET.get('edit_reply')
     # 답글 수정 완료 시, 답글 창 열린 상태 유지하기 위해서 답글이 달린 댓글의 id를 받아옴
     open_reply_comment_id = request.GET.get('open_reply')
+    print('open_reply_comment_id', open_reply_comment_id)
+
+    replies = Reply.objects.filter(created_at__isnull=False)
 
     # 답글 수정 완료 시 수정 완료한 답글 위치로 스크롤 하기 위해 검사
     # opened_reply_comment_id = None
@@ -547,7 +552,8 @@ def detail_comment_detail(request, post_id):
     recommended_articles = Article.objects.all().order_by('-created_at')[:5]
 
     # # 댓글 목록 가져오기(답글까지 같이 가져옴)
-    comments = post.comments.all().prefetch_related('replies', 'user').filter(created_at__isnull=False)
+    comments = post.comments.select_related('user').prefetch_related('replies')
+
     #
     # sort = request.GET.get('sort', 'popular')
     #
@@ -580,8 +586,9 @@ def detail_comment_detail(request, post_id):
     for comment in comments:
         comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
         print(f"comment id={comment.id}, anonymous_name={comment.anonymous_name}")
-        for reply in comment.replies.all():
+        for reply in comment.replies.filter(created_at__isnull=False):
             reply.anonymous_name = anon_map.get(reply.user.id, "익명?")
+            print(reply.id, reply.anonymous_name)
     # 투표 수(전달 형태: {1: 0, 2: 0, 3: 2})
     print(post.count_votes())
 
@@ -599,20 +606,21 @@ def detail_comment_detail(request, post_id):
 
         for comment in filtered_comments:
             comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
-        comments_by_choice[choice] = filtered_comments
+        comments_by_choice[str(choice)] = filtered_comments
 
     print(f"open_reply_comment_id from GET: {open_reply_comment_id}")
     print(f"passed to context: {int(open_reply_comment_id) if open_reply_comment_id else None}")
+    opened_reply_comment_id = int(open_reply_comment_id) if open_reply_comment_id else None
 
     context = {
         'post': post,
         'comments': comments,
         'comments_by_choice' : comments_by_choice,
-        'replies' : Reply.objects.filter(created_at__isnull=False),
+        'replies' : replies,
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
-        'opened_reply_comment_id': int(open_reply_comment_id) if open_reply_comment_id else None,
+        'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': reply_form,
         'recommended_articles': recommended_articles,
         'now':1,
@@ -634,7 +642,7 @@ def detail_reply_ai_response(request, post_id, comment_id):
 
     if not content:
         messages.error(request, "답글 내용을 입력하세요.")
-        return redirect(f"{reverse('community:detail_comment_detail', args=[post_id])}#comment-form")
+        return redirect(f"{reverse('community:detail_comment_detail', args=[post_id])}#reply-form")
     else:
         reply = Reply(user=request.user, content=content, comment=comment, created_at=None)
         reply.save()
@@ -654,6 +662,7 @@ def detail_reply_ai_response(request, post_id, comment_id):
             'comment_form':comment_form,
             'replyEvidence': replyEvidence,
             'opened_reply_section': comment.id,
+            'now':1,
         }
 
         return render(request, 'community_detail_comment.html', context)
