@@ -149,18 +149,27 @@ def detail(request, post_id):
     comments_by_choice = {}
 
     for choice in vote_choices:
-        comments_modifing = comments_modifing.filter(
+        comments_opinion = comments_modifing.filter(
             post=post,
             user__vote__post=post,
             user__vote__choice=choice,
         ).distinct()  # 중복 방지 distinct()
         #프론트 전달용 딕셔너리 - comments_by_choice
-        comments_by_choice[choice] = comments_modifing
+        comments_by_choice[choice] = comments_opinion
+
+
+    comment_etc = comments_modifing.filter(
+        post=post,
+        user__vote__post=post,
+        image='/media/profile_image/D.jpg',
+    ).distinct()
+
 
     context = {
         'post': post,
         'comments' : comments,
         'comments_by_choice' : comments_by_choice,
+        'comment_etc' : comment_etc,
         # 추천 아티클 추가
         'recommended_articles': recommended_articles,
         'comment_form': comment_form,
@@ -615,7 +624,7 @@ def detail_comment_detail(request, post_id):
 
     context = {
         'post': post,
-        'comments': comments,
+        'comments': post.comments.filter(created_at__isnull=False),
         'comments_by_choice' : comments_by_choice,
         'replies' : replies,
         'comment_form': comment_form,
