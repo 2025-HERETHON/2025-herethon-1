@@ -23,7 +23,7 @@ from articles import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('community/', include('community.urls')),
-    path('', include('articles.urls')), #메인 페이지 변경
+    path('', views.home, name='home'), #메인 페이지 변경
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('proposals/', include('proposals.urls')),
     path('articles/', include('articles.urls')),
