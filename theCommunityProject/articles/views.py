@@ -117,6 +117,8 @@ def detail(request, article_id):
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
         'opened_reply_comment_id': opened_reply_comment_id,
+        'replyEvidenceMap': {},
+        'commentEvidence': None,
     }
     return render(request, 'article_detail.html', context)
 
@@ -273,7 +275,7 @@ def reply_like(request, article_id, comment_id, reply_id):
         messages.error(request, "본인 답글은 추천할 수 없습니다.")
     return redirect('{}?open_reply={}#reply_{}'.format(resolve_url('articles:detail', article_id=article_id), comment_id, reply_id))
 
-def detail_reply_ai_response(request, post_id, comment_id, reply_id):
+def detail_reply_ai_response(request, post_id, comment_id):
     """
     답글 AI 근거 자료 생성
     """
@@ -303,9 +305,10 @@ def detail_reply_ai_response(request, post_id, comment_id, reply_id):
             'article': post,
             'comment' : reply.comment,
             'comments': post.article_comments.filter(created_at__isnull=False),
-            'reply_form': reply_form,
-            'replyEvidence': replyEvidence,
-            'opened_reply_section': comment.id,
+            'reply_form': ArticleReplyForm(initial={'content': content}),
+            'replyEvidenceMap': {comment.id: replyEvidence},
+            'opened_reply_comment_id': comment.id,
         }
         
         return render(request, 'article_detail.html', context)
+
