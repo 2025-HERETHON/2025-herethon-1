@@ -13,8 +13,14 @@
         color: white;
         display: flex;
         flex-direction: column;
+        overflow-x: hidden;
         /*height: 100vh;*/
         /*overflow: hidden;*/
+      }
+      .article:hover,
+      .community:hover,
+      .policy:hover {
+        color: #fff;
       }
 
       header {
@@ -82,6 +88,7 @@
         width: 120rem;
         height: 16rem;
         background-color: #171717;
+        margin-top: 3rem;
       }
       * {
         box-sizing: border-box;
@@ -445,7 +452,7 @@
         {% else %}
         <div class="login">
           <a href="{% url 'accounts:login' %}" class="join"
-            >로그인/회원가입</a
+            >로그인</a
           >
         </div>
         {% endif %}
