@@ -18,11 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from articles import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('community/', include('community.urls')),
-    path('', include('articles.urls')), #메인 페이지 변경
+    path('', views.home, name='home'), #메인 페이지 변경
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('proposals/', include('proposals.urls')),
     path('articles/', include('articles.urls')),

@@ -40,3 +40,11 @@ class ProposalReply(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     liked = models.ManyToManyField(User, related_name='liked_proposal_reply')
+
+class ProposalReplyEvidence(models.Model):
+    reply = models.ForeignKey(ProposalReply, on_delete=models.CASCADE, related_name='proposal_reply_evidence')
+    keyword = models.CharField(max_length=100)
+    link1 = models.URLField(max_length=500, blank=True, null=True)
+    link2 = models.URLField(max_length=500, blank=True, null=True)
+    link3 = models.URLField(max_length=500, blank=True, null=True)
+    link4 = models.URLField(max_length=500, blank=True, null=True)
