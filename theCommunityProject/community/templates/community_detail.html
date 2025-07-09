@@ -39,9 +39,10 @@
   </div>
 {% endif %}
 
+
 <a href="{% url 'community:home' %}">← 커뮤니티 홈으로</a>
 
-<form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id %}">
+<form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id now %}">
   {% csrf_token %}
  <label>
     <input type="radio" name="selected" value="1"
@@ -71,9 +72,9 @@
     <div>💬 {{ comments.count }}</div>
     <div>
       {% if request.user in post.scrapped.all %}
-      <a style="color: #a57bff;" href="{% url 'community:detail_post_scrap' post.id %}">스크랩</a>
+      <a style="color: #a57bff;" href="{% url 'community:detail_post_scrap' post.id now %}">스크랩</a>
       {% else %}
-      <a style="color: #000;" href="{% url 'community:detail_post_scrap' post.id %}">스크랩</a>
+      <a style="color: #000;" href="{% url 'community:detail_post_scrap' post.id now %}">스크랩</a>
       {% endif %}
     </div>
     <div><button onclick="copyCurrentUrl()">공유</button></div>
@@ -97,19 +98,19 @@
     </div>
     {% endif %}
 
-    <div style="margin-bottom: 1rem;">
-      {% if request.GET.sort == 'popular' or not request.GET.sort %}
-      <strong>인기순</strong>
-      {% else %}
-      <a href="?sort=popular">인기순</a>
-      {% endif %}
+<!--    <div style="margin-bottom: 1rem;">-->
+<!--      {% if request.GET.sort == 'popular' or not request.GET.sort %}-->
+<!--      <strong>인기순</strong>-->
+<!--      {% else %}-->
+<!--      <a href="?sort=popular">인기순</a>-->
+<!--      {% endif %}-->
 
-      {% if request.GET.sort == 'recent' %}
-      <strong>최신순</strong>
-      {% else %}
-      <a href="?sort=recent">최신순</a>
-      {% endif %}
-    </div>
+<!--      {% if request.GET.sort == 'recent' %}-->
+<!--      <strong>최신순</strong>-->
+<!--      {% else %}-->
+<!--      <a href="?sort=recent">최신순</a>-->
+<!--      {% endif %}-->
+<!--    </div>-->
 <h2>의견</h2>
 {% load extra_dict %}
 {% for comment in comments %}
@@ -128,7 +129,7 @@
       {% if request.user == comment.user %}
         <!-- <a href="?edit_comment={{ comment.id }}">수정</a> -->
         <!-- 댓글 삭제 폼 -->
-        <form method="post" action="{% url 'community:detail_comment_delete' comment.post.id comment.id %}" style="display:inline;">
+        <form method="post" action="{% url 'community:detail_comment_delete' comment.post.id comment.id now %}" style="display:inline;">
           {% csrf_token %}
           <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
         </form>
@@ -140,7 +141,7 @@
       <button onclick="toggleReply({{ comment.id }})">
         💬 답글 ({{ comment.replies.count }})
       </button>
-      <a href="{% url 'community:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
+      <a href="{% url 'community:detail_comment_like' post.id comment.id now %}">❤️ {{ comment.liked.count }}</a>
     </p>
 
 {% empty %}
@@ -148,7 +149,7 @@
 {% endfor %}
 
 <h3>댓글 작성</h3>
-<form method="post" id="comment-form" action="{% url 'community:detail_comment_create' post.id %}">
+<form method="post" id="comment-form" action="{% url 'community:detail_comment_create' post.id now %}">
   {% csrf_token %}
   {{ comment_form.content }}
 
@@ -161,9 +162,9 @@
 <script>
   document.getElementById('ai-button').addEventListener('click', function() {
     const form = document.getElementById('comment-form');
-    form.action = "{% url 'community:detail_comment_ai_response' post.id %}";
+    form.action = "{% url 'community:detail_comment_ai_response' post.id now %}";
     form.submit();
-    form.action = "{% url 'community:detail_comment_create' post.id %}"; // 제출 후 다시 원복
+    form.action = "{% url 'community:detail_comment_create' post.id now %}"; // 제출 후 다시 원복
   });
 </script>
 

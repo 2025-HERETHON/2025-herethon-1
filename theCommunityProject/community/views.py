@@ -170,12 +170,13 @@ def detail(request, post_id):
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
         'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': reply_form,
+        'now' : 0,
     }
 
     return render(request, 'community_detail.html', context)
 
 @login_required(login_url='accounts:login')
-def detail_comment_create(request, post_id):
+def detail_comment_create(request, post_id, now):
     """
     댓글 등록
     """
@@ -203,16 +204,22 @@ def detail_comment_create(request, post_id):
             comment.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
 
             comment.save()
-            return redirect('community:detail', comment.post.pk)
+
+            if(now == 1):
+                return redirect('community:detail_comment_detail', post_id=post_id)
+            else:
+                return redirect('community:detail', comment.post.pk)
     else:
         form = CommentForm()
     context = {
         'form': form,
     }
+    if(now == 1):
+        return render(request, 'community_detail_comment.html', context)
     return render(request,'community_detail.html', context)
 
 @login_required(login_url='accounts:login')
-def detail_comment_update(request, post_id, comment_id):
+def detail_comment_update(request, post_id, comment_id, now):
     """
     댓글 수정
     """
@@ -221,13 +228,19 @@ def detail_comment_update(request, post_id, comment_id):
 
     if request.user != comment.user:
         messages.error(request, '수정 권한이 없습니다.')
-        return redirect('community:detail', post.pk)
+        if (now == 1):
+            return redirect('community:detail_comment_detail', post_id=post_id)
+        else:
+            return redirect('community:detail', comment.post.pk)
 
     if request.method == 'POST':
         form = CommentForm(request.POST, instance=comment)
         if form.is_valid():
             form.save()
-            return redirect('community:detail', post.pk)
+            if (now == 1):
+                return redirect('community:detail_comment_detail', post_id=post_id)
+            else:
+                return redirect('community:detail', comment.post.pk)
 
     else:
         form = CommentForm(instance=comment)
@@ -236,11 +249,13 @@ def detail_comment_update(request, post_id, comment_id):
         'comment_form': form,
         'editing_comment_id': comment.id,
     }
+    if (now == 1):
+        return render(request, 'community_detail_comment.html', context)
     return render(request, 'community_detail.html', context)
 
 
 @login_required(login_url='accounts:login')
-def detail_comment_delete(request, post_id, comment_id):
+def detail_comment_delete(request, post_id, comment_id, now):
     """
     댓글 삭제
     """
@@ -253,10 +268,13 @@ def detail_comment_delete(request, post_id, comment_id):
     if request.method == 'POST':
         comment.delete()
 
-    return redirect('community:detail', post.pk)
+    if (now == 1):
+        return redirect('community:detail_comment_detail', post_id=post_id)
+    else:
+        return redirect('community:detail', comment.post.pk)
 
 @login_required(login_url='accounts:login')
-def detail_comment_like(request, post_id, comment_id):
+def detail_comment_like(request, post_id, comment_id, now):
     """
     좋아요 기능
     """
@@ -265,15 +283,23 @@ def detail_comment_like(request, post_id, comment_id):
 
     if request.user == comment.user:
         messages.error(request, "본인이 작성한 댓글은 추천할 수 없습니다.")
-        return redirect('community:detail', post.pk)
+        if (now == 1):
+            return redirect('community:detail_comment_detail', post_id=post_id)
+        else:
+            return redirect('community:detail', comment.post.pk)
     else:
         if request.user in comment.liked.all():
             comment.liked.remove(request.user)
         else:
             comment.liked.add(request.user)
-    return redirect('{}#comment_{}'.format(
-        resolve_url('community:detail', post_id=post_id), comment_id
-    ))
+    if (now == 1):
+        return redirect('{}#comment_{}'.format(
+            resolve_url('community:detail_comment_detail', post_id=post_id), comment_id
+        ))
+    else:
+        return redirect('{}#comment_{}'.format(
+            resolve_url('community:detail', post_id=post_id), comment_id
+        ))
 
 @login_required(login_url='accounts:login')
 def detail_reply_create(request, post_id, comment_id):
@@ -386,7 +412,7 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
     ))
 
 @login_required(login_url='accounts:login')
-def detail_vote(request, post_id):
+def detail_vote(request, post_id, now):
     post = get_object_or_404(Post, id=post_id)
 
     if Vote.objects.filter(post=post, user=request.user).exists():
@@ -396,12 +422,18 @@ def detail_vote(request, post_id):
     selected = int(request.POST.get('selected'))
     if selected not in dict(Vote.choices):
         messages.error(request, "잘못된 선택입니다.")
-        return redirect('community:detail', post_id=post.pk)
+        if (now == 1):
+            return redirect('community:detail_comment_detail', post_id=post_id)
+        else:
+            return redirect('community:detail', post.pk)
 
     Vote.objects.create(post=post, user=request.user, choice=selected)
-    return redirect('community:detail', post_id=post.pk)
+    if (now == 1):
+        return redirect('community:detail_comment_detail', post_id=post_id)
+    else:
+        return redirect('community:detail', post.pk)
 
-def detail_comment_ai_response(request, post_id):
+def detail_comment_ai_response(request, post_id, now):
     """
     댓글 AI 근거 자료 생성
     """
@@ -415,7 +447,10 @@ def detail_comment_ai_response(request, post_id):
     if not content:
         commentKeyword = None
         messages.error(request, "댓글 내용을 입력하세요.")
-        return redirect(f"{reverse('community:detail', args=[post_id])}#comment-form")
+        if (now == 1):
+            return redirect(f"{reverse('community:detail_comment_detail', args=[post_id])}#comment-form")
+        else:
+            return redirect(f"{reverse('community:detail', args=[post_id])}#comment-form")                          #수정해야함
     else:
         comment = Comment(user=request.user, content=content, post=post, created_at=None)
         comment.save()
@@ -431,13 +466,16 @@ def detail_comment_ai_response(request, post_id):
             'comments': post.comments.filter(created_at__isnull=False),
             'comment_form': comment_form,
             'commentEvidence': commentEvidence,
+            'now': now,
         }
 
+        if(now == 1):
+            return  render(request, 'community_detail_comment.html', context)
         return render(request, 'community_detail.html', context)
 
 # 스크랩 함수 추가
 @login_required(login_url='accounts:login')
-def detail_post_scrap(request, post_id):
+def detail_post_scrap(request, post_id, now):
     post = get_object_or_404(Post, id=post_id)
 
     if request.user in post.scrapped.all():
@@ -445,7 +483,10 @@ def detail_post_scrap(request, post_id):
     else:
         post.scrapped.add(request.user)
 
-    return redirect('community:detail', post_id)
+    if (now == 1):
+        return redirect('community:detail_comment_detail', post_id=post_id)
+    else:
+        return redirect('community:detail', post.pk)
 
 def detail_comment_detail(request, post_id):
     """
@@ -503,6 +544,45 @@ def detail_comment_detail(request, post_id):
 
     recommended_articles = Article.objects.all().order_by('-created_at')[:5]
 
+    # # 댓글 목록 가져오기(답글까지 같이 가져옴)
+    comments = post.comments.all().prefetch_related('replies', 'user').filter(created_at__isnull=False)
+    #
+    # sort = request.GET.get('sort', 'popular')
+    #
+    # if sort == 'popular':
+    #     comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
+    # else:
+    #     comments = comments.order_by('-created_at')
+
+    # 익명 이름 부여
+    all_entries = []
+    for comment in comments :
+        # 더미 코멘트 포함 안 함
+        if comment.created_at:
+            all_entries.append((comment.user.id, comment.created_at))
+        for reply in comment.replies.all():
+            # 더미 코멘트 포함 안 함
+            if reply.created_at:
+                all_entries.append((reply.user.id, reply.created_at))
+
+    # 작성 시간 순 정렬
+    all_entries.sort(key=lambda x: x[1])
+    # 익명 번호 매핑
+    anon_map = {}
+    counter = 1
+    for user_id, _ in all_entries:
+        if user_id not in anon_map:
+            anon_map[user_id] = f"익명{counter}"
+            counter += 1
+    # 객체에 익명 번호 부여
+    for comment in comments:
+        comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
+        print(f"comment id={comment.id}, anonymous_name={comment.anonymous_name}")
+        for reply in comment.replies.all():
+            reply.anonymous_name = anon_map.get(reply.user.id, "익명?")
+    # 투표 수(전달 형태: {1: 0, 2: 0, 3: 2})
+    print(post.count_votes())
+
     # 투표 항목에 따른 댓글 필터링
     comments_modifing = post.comments.filter(created_at__isnull=False)
     vote_choices = [1, 2, 3]
@@ -519,7 +599,7 @@ def detail_comment_detail(request, post_id):
 
     context = {
         'post': post,
-        'comments': post.comments.filter(created_at__isnull=False),
+        'comments': comments,
         'comments_by_choice' : comments_by_choice,
         'replies' : Reply.objects.filter(created_at__isnull=False),
         'comment_form': comment_form,
@@ -528,6 +608,7 @@ def detail_comment_detail(request, post_id):
         'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': reply_form,
         'recommended_articles': recommended_articles,
+        'now':1,
     }
     return render(request, 'community_detail_comment.html', context)
 
