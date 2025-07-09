@@ -45,25 +45,23 @@
 <form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id now %}">
   {% csrf_token %}
  <label>
-    <input type="radio" name="selected" value="1"
+    <input type="radio" name="selected" href value="1"
            {% if voted_choice == 1 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}
-           onchange="this.form.submit()"> {{ post.option1 }}
+           {% if voted_choice %}disabled{% endif %}> {{ post.option1 }}
   </label><br>
 
   <label>
     <input type="radio" name="selected" value="2"
            {% if voted_choice == 2 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}
-           onchange="this.form.submit()"> {{ post.option2 }}
+           {% if voted_choice %}disabled{% endif %}> {{ post.option2 }}
   </label><br>
 
   <label>
     <input type="radio" name="selected" value="3"
            {% if voted_choice == 3 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}
-           onchange="this.form.submit()"> {{ post.option3 }}
+           {% if voted_choice %}disabled{% endif %}> {{ post.option3 }}
   </label><br>
+  <button type="submit">투표하기</button>
 </form>
 
 
@@ -98,19 +96,6 @@
     </div>
     {% endif %}
 
-<!--    <div style="margin-bottom: 1rem;">-->
-<!--      {% if request.GET.sort == 'popular' or not request.GET.sort %}-->
-<!--      <strong>인기순</strong>-->
-<!--      {% else %}-->
-<!--      <a href="?sort=popular">인기순</a>-->
-<!--      {% endif %}-->
-
-<!--      {% if request.GET.sort == 'recent' %}-->
-<!--      <strong>최신순</strong>-->
-<!--      {% else %}-->
-<!--      <a href="?sort=recent">최신순</a>-->
-<!--      {% endif %}-->
-<!--    </div>-->
 <h2>의견</h2>
 {% load extra_dict %}
 {% for comment in comments %}
@@ -119,20 +104,11 @@
     <strong>{{ comment.anonymous_name }}</strong>:
 
     {% if editing_comment_id == comment.id %}
-      <!-- <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
-        {% csrf_token %}
-        <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
-        <button type="submit">수정 완료</button>
-      </form> -->
     {% else %}
       <p>{{ comment.content }}</p>
       {% if request.user == comment.user %}
-        <!-- <a href="?edit_comment={{ comment.id }}">수정</a> -->
-        <!-- 댓글 삭제 폼 -->
-        <form method="post" action="{% url 'community:detail_comment_delete' comment.post.id comment.id now %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
-        </form>
+
+
       {% endif %}
     {% endif %}
 
@@ -151,8 +127,8 @@
 <h3>댓글 작성</h3>
 <form method="post" id="comment-form" action="{% url 'community:detail_comment_create' post.id now %}">
   {% csrf_token %}
-  {{ comment_form.content }}
 
+  <textarea name="content">{{ comment_form.content.value|default_if_none:'' }}</textarea>
   <button type="submit" id="submit-comment">댓글 작성</button>
   <button type="button" id="ai-button">AI</button>
 </form>

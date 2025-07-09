@@ -12,7 +12,7 @@ urlpatterns = [
     path('<int:post_id>/comment/<int:comment_id>/update/<int:now>/', views.detail_comment_update, name='detail_comment_update'),
     path('<int:post_id>/comment/<int:comment_id>/delete/<int:now>/', views.detail_comment_delete, name='detail_comment_delete'),
     path('<int:post_id>/comment/<int:comment_id>/like/<int:now>/', views.detail_comment_like, name='detail_comment_like'),
-    path('<int:post_id>/comment/<int:comment_id>/reply/create/<int:now>/', views.detail_reply_create, name='detail_reply_create'),
+    path('<int:post_id>/comment/<int:comment_id>/reply/create/', views.detail_reply_create, name='detail_reply_create'),
     path('<int:post_id>/comment/<int:comment_id>/reply/<int:reply_id>/update/', views.detail_reply_update, name='detail_reply_update'),
     path('<int:post_id>/comment/<int:comment_id>/reply/<int:reply_id>/delete/', views.detail_reply_delete, name='detail_reply_delete'),
     path('<int:post_id>/comment/<int:comment_id>/reply/<int:reply_id>/like/', views.detail_reply_like, name='detail_reply_like'),
@@ -21,7 +21,7 @@ urlpatterns = [
     path('<int:post_id>/detail/', views.detail_comment_detail, name='detail_comment_detail'),
     path('<int:post_id>/detail/comment/<int:comment_id>/reply/evidence/', views.detail_reply_ai_response, name='detail_reply_ai_response'),
     #스크랩 url 추가
-    path('<int:post_id>/scrap//<int:now>/', views.detail_post_scrap, name='detail_post_scrap'),
+    path('<int:post_id>/scrap/<int:now>/', views.detail_post_scrap, name='detail_post_scrap'),
 ]
 
 if settings.DEBUG:
