@@ -87,13 +87,35 @@
       alert("링크가 복사되었습니다!");
     }
 </script>
+<h3>댓글 {{ comments|length }}개</h3>
 
+    {% if messages %}
+    <div>
+      {% for message in messages %}
+      <p style="color: red;">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom: 1rem;">
+      {% if request.GET.sort == 'popular' or not request.GET.sort %}
+      <strong>인기순</strong>
+      {% else %}
+      <a href="?sort=popular">인기순</a>
+      {% endif %}
+
+      {% if request.GET.sort == 'recent' %}
+      <strong>최신순</strong>
+      {% else %}
+      <a href="?sort=recent">최신순</a>
+      {% endif %}
+    </div>
 <h2>의견</h2>
 {% load extra_dict %}
 {% for comment in comments %}
   <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
     <img src="{{ comment.image }}" width="50" height="50">
-    <strong>{{ comment.user.username }}</strong>:
+    <strong>{{ comment.anonymous_name }}</strong>:
 
     {% if editing_comment_id == comment.id %}
       <!-- <form method="post" action="{% url 'community:detail_comment_update' comment.post.id comment.id %}">
