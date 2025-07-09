@@ -10,15 +10,51 @@
   </head>
 
   <body>
-    <div id="header"></div>
+    <header>
+      <div class="gnb">
+      <div class="logo"><a href="/">
+        <svg xmlns="http://www.w3.org/2000/svg" width="98" height="24" viewBox="0 0 98 24" fill="none">
+  <path d="M85.0554 23.9984C76.5099 23.9984 72.1108 18.4765 72.1108 12.1147C72.1108 6.40377 76.2784 0 85.0554 0C93.8324 0 97.9999 6.40377 97.9999 12.1147C97.9999 18.4765 93.6009 23.9984 85.0554 23.9984ZM85.0554 18.2245C88.4862 18.2245 91.1593 15.705 91.1593 12.0097C91.1593 8.31441 88.7598 5.79489 85.0554 5.79489C81.3509 5.79489 78.9514 8.3774 78.9514 12.0097C78.9514 15.642 81.6246 18.2245 85.0554 18.2245Z" fill="#AD97F6"/>
+  <path d="M24.0158 0.0405237L12.0184 12.0082L0 23.9969H12.0184L24.0158 12.0292V12.0082H24.0369V0.0195312L24.0158 0.0405237Z" fill="#AD97F6"/>
+  <path d="M36.0555 0.0195312H24.0371V12.0082L30.0568 6.02437L36.0555 0.0195312Z" fill="#AD97F6"/>
+  <path d="M18.0386 23.997H24.0373V17.9922L18.0386 23.997Z" fill="#AD97F6"/>
+  <path d="M42.0539 12.0292V12.0082H42.0749V0.0195312L42.0539 0.0405237L36.0552 6.00338V17.9921L42.0539 12.0292Z" fill="#AD97F6"/>
+  <path d="M36.0555 6.00391L30.0568 12.0088L24.0371 17.9926V23.9975H30.0568L36.0555 17.9926V6.00391Z" fill="#AD97F6"/>
+  <path d="M42.0752 12.0082L48.0949 6.02437L54.0936 0.0195312H42.0752V12.0082Z" fill="#AD97F6"/>
+  <path d="M60.0714 0.0405237L54.0938 6.00338V17.9921L60.0714 12.0292V12.0082H60.0924V0.0195312L60.0714 0.0405237Z" fill="#AD97F6"/>
+  <path d="M36.0552 23.997H42.0749V17.9922L36.0552 23.997Z" fill="#AD97F6"/>
+  <path d="M48.0739 12.0088L42.0752 17.9926V23.9975H48.0739L54.0936 17.9926V6.00391L48.0739 12.0088Z" fill="#AD97F6"/>
+  <path d="M66.112 6.02437L72.1107 0.0195312H60.0923V12.0082L66.112 6.02437Z" fill="#AD97F6"/>
+</svg>
+</a>
+      </div>
+      <div class="menu">
+         <a href="{% url 'articles:home' %}">아티클</a>
+         <a href="{% url 'community:home' %}">커뮤니티</a>
+         <a href="{% url 'proposals:home' %}">정책 제안</a>
+        {% if user.is_authenticated %}
+         <a href="{% url 'scraps:scraps_article' %}">스크랩</a>
+         {% endif %}
+      </div>
+      <div class="login">
+         {% if user.is_authenticated %}
+         <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
+         {% else %}
+         <a href="{% url 'accounts:login' %}" class="auth-links">로그인/회원가입</a>
+         {% endif %}
+      </div>
+    </div>
+  </header>
+    
+  <div class="AH-wrap">
     <main id="AH-container">
       <div class="AH-page">아티클</div>
       <div class="AH-sort-div">
-        {% if request.GET.sort == 'popular' %}
+        {% if request.GET.sort == 'popular' or not request.GET.sort %}
         <div class="AH-popular active">인기순</div>
         {% else %}
         <a class="AH-popular" href="?sort=popular">인기순</a>
-        {% endif %} {% if request.GET.sort == 'recent' or not request.GET.sort%}
+        {% endif %} {% if request.GET.sort == 'recent' %}
         <div class="AH-latest active">최신순</div>
         {% else %}
         <a class="AH-latest" href="?sort=recent">최신순</a>
@@ -109,8 +145,8 @@
         {% endfor %}
       </section>
     </main>
-
+    </div>
     <div id="footer"></div>
-    <script src="{% static './js/HF.js' %}"></script>
+    <script src="{% static 'js/HF.js' %}"></script>
   </body>
 </html>

@@ -321,20 +321,22 @@
           </script>
           <!-- AI 결과 영역 (기본 숨김) -->
           {% if replyEvidenceMap %}
-          {% with replyEvidence=replyEvidenceMap|dict_get:comment.id %}
-          {% if replyEvidence %}
-            <div id="aiResultR" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
-              <div style="font-weight:bold; margin-bottom:6px;">result</div>
-              <div style="background:#555; padding:10px; border-radius:4px;">
-                자료 검색 결과<br>
+          {% with replyEvidenceList=replyEvidenceMap|dict_get:comment.id %}
+          {% if replyEvidenceList %}
+            {% for replyEvidence in replyEvidenceList %}
+              <div id="aiResultR" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
+                <div style="font-weight:bold; margin-bottom:6px;">result</div>
+                <div style="background:#555; padding:10px; border-radius:4px;">
+                  자료 검색 결과<br>
 
-                AI 주석<br>
-                {{ replyEvidence.keyword }}<br>
+                  AI 주석<br>
+                  {{ replyEvidence.keyword }}<br>
 
-                <a href="{{ replyEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-                <a href="{{ replyEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+                  <a href="{{ replyEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+                  <a href="{{ replyEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+                </div>
               </div>
-            </div>
+            {% endfor %}
           {% endif %}
           {% endwith %}
           {% endif %}
@@ -436,6 +438,16 @@
         el.style.display = (el.style.display === 'block') ? 'none' : 'block';
       }
     </script>
+{% if opened_reply_comment_id %}
+<script>
+  window.onload = function() {
+    const target = document.getElementById("reply-form-{{ opened_reply_comment_id }}");
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+</script>
+{% endif %}
 </body>
 
 </html>
