@@ -127,8 +127,8 @@
 <h3>댓글 작성</h3>
 <form method="post" id="comment-form" action="{% url 'community:detail_comment_create' post.id now %}">
   {% csrf_token %}
-  {{ comment_form.content }}
 
+  <textarea name="content">{{ comment_form.content.value|default_if_none:'' }}</textarea>
   <button type="submit" id="submit-comment">댓글 작성</button>
   <button type="button" id="ai-button">AI</button>
 </form>

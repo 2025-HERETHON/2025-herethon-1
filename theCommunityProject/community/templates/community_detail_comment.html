@@ -168,15 +168,16 @@
 {% endfor %}
 
 
-          <form method="post" id="reply-form" action="{% url 'community:detail_reply_create' post.id comment.id %}">
+          <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'community:detail_reply_create' post.id comment.id %}">
             {% csrf_token %}
-            <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea><br>
+
+            <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"> {{ reply_form.content }}</textarea><br>
             <button type="submit">등록</button>
-            <button type="button" id="ai-button-reply">AI</button>
+            <button type="button" id="ai-button-reply-{{ comment.id }}">AI</button>
           </form>
           <script>
-            document.getElementById('ai-button-reply').addEventListener('click', function() {
-              const form = document.getElementById('reply-form');
+            document.getElementById('ai-button-reply-{{ comment.id }}').addEventListener('click', function() {
+              const form = document.getElementById('reply-form-{{ comment.id }}');
               form.action = "{% url 'community:detail_reply_ai_response' post.id comment.id %}";
               form.submit();
               form.action = "{% url 'community:detail_reply_create' post.id comment.id %}"; // 제출 후 다시 원복

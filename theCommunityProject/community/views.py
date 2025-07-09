@@ -463,7 +463,8 @@ def detail_comment_ai_response(request, post_id, now):
         evidence, link1, link2, link3, link4 = get_gemini_response(content, full_prompt)
         commentEvidence = CommentEvidence.objects.create(comment=comment, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
 
-        comment_form = CommentForm(initial={'content': content})
+        comment_form = CommentForm(request.POST or None, initial={'content': content})
+
 
         context = {
             'post': post,
