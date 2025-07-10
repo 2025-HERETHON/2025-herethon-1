@@ -1,150 +1,197 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="ko">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>정책 제안</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Pretendard', sans-serif;
-            background-color: #121212;
-            color: white;
-        }
+    <link rel="stylesheet" href="{% static 'css/PolicyHome.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/HF.css' %}" />
+  </head>
 
-        header,
-        footer {
-            background-color: #1f1f1f;
-            padding: 1rem 2rem;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            color: #a57bff;
-            font-weight: bold;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-            margin: 0;
-            padding: 0;
-        }
-
-        nav ul li {
-            cursor: pointer;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1.5rem;
-            padding: 2rem;
-        }
-
-        .card {
-            background-color: #1e1e1e;
-            border-radius: 10px;
-            padding: 1rem;
-            min-height: 180px;
-        }
-
-        .thumbnail {
-            width: 100%;
-            height: 120px;
-            background-color: #ccc;
-            border-radius: 5px;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-content {
-            font-size: 0.85rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .meta {
-            margin-top: 0.5rem;
-            font-size: 0.75rem;
-            color: #aaa;
-        }
-    </style>
-</head>
-
-<body>
+  <body>
     <header>
-        <nav>
-            <div class="logo">더 커뮤니티</div>
-            <ul>
-                <li><a href="/articles/">아티클</a></li>
-                <li><a href="/community/">커뮤니티</a></li>
-                <li><a href="/proposals/" style="color: #a57bff">정책 제안</a></li>
-                {% if user.is_authenticated %}
-                <li><a href="/scraps/article">스크랩</a></li>
-                {% endif %}
-            </ul>
-            {% if user.is_authenticated %}
-            <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
-            {% else %}
-            <a href="{% url 'accounts:login' %}" class="auth-links">로그인/회원가입</a>
-            {% endif %}
-        </nav>
+      <div class="gnb">
+        <div class="logo">
+          <a href="/">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="98"
+              height="24"
+              viewBox="0 0 98 24"
+              fill="none"
+            >
+              <path
+                d="M85.0554 23.9984C76.5099 23.9984 72.1108 18.4765 72.1108 12.1147C72.1108 6.40377 76.2784 0 85.0554 0C93.8324 0 97.9999 6.40377 97.9999 12.1147C97.9999 18.4765 93.6009 23.9984 85.0554 23.9984ZM85.0554 18.2245C88.4862 18.2245 91.1593 15.705 91.1593 12.0097C91.1593 8.31441 88.7598 5.79489 85.0554 5.79489C81.3509 5.79489 78.9514 8.3774 78.9514 12.0097C78.9514 15.642 81.6246 18.2245 85.0554 18.2245Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M24.0158 0.0405237L12.0184 12.0082L0 23.9969H12.0184L24.0158 12.0292V12.0082H24.0369V0.0195312L24.0158 0.0405237Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M36.0555 0.0195312H24.0371V12.0082L30.0568 6.02437L36.0555 0.0195312Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M18.0386 23.997H24.0373V17.9922L18.0386 23.997Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M42.0539 12.0292V12.0082H42.0749V0.0195312L42.0539 0.0405237L36.0552 6.00338V17.9921L42.0539 12.0292Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M36.0555 6.00391L30.0568 12.0088L24.0371 17.9926V23.9975H30.0568L36.0555 17.9926V6.00391Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M42.0752 12.0082L48.0949 6.02437L54.0936 0.0195312H42.0752V12.0082Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M60.0714 0.0405237L54.0938 6.00338V17.9921L60.0714 12.0292V12.0082H60.0924V0.0195312L60.0714 0.0405237Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M36.0552 23.997H42.0749V17.9922L36.0552 23.997Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M48.0739 12.0088L42.0752 17.9926V23.9975H48.0739L54.0936 17.9926V6.00391L48.0739 12.0088Z"
+                fill="#AD97F6"
+              />
+              <path
+                d="M66.112 6.02437L72.1107 0.0195312H60.0923V12.0082L66.112 6.02437Z"
+                fill="#AD97F6"
+              />
+            </svg>
+          </a>
+        </div>
+        <div class="menu">
+          <a href="{% url 'articles:home' %}">아티클</a>
+          <a href="{% url 'community:home' %}">커뮤니티</a>
+          <a href="{% url 'proposals:home' %}">정책 제안</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'scraps:scraps_article' %}">스크랩</a>
+          {% endif %}
+        </div>
+        <div class="login">
+          {% if user.is_authenticated %}
+          <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
+          {% else %}
+          <a href="{% url 'accounts:login' %}" class="auth-links">로그인</a>
+          {% endif %}
+        </div>
+      </div>
     </header>
 
     <main>
-        <div style="padding: 1rem 2rem;">
-            {% if request.GET.sort == 'popular' or not request.GET.sort %}
-            <strong>인기순</strong>
+      <div class="PH-community-title">정책제안</div>
+      <div class="PH-community-description">
+        논제에 대한 토론 결과를 바탕으로 새로운 정책을 제안하는 공간입니다.
+      </div>
+
+      <div class="PH-comment-tab-div">
+        {% if request.GET.sort == 'popular' or not request.GET.sort %}
+        <div class="PH-popular active">인기순</div>
+        {% else %}
+        <a class="PH-popular" href="?sort=popular">인기순</a>
+        {% endif %} {% if request.GET.sort == 'recent' %}
+        <div class="PH-latest active">최신순</div>
+        {% else %}
+        <a class="PH-latest" href="?sort=recent">최신순</a>
+        {% endif %}
+      </div>
+
+      <section class="PH-community-card-div">
+        {% for post in proposals %}
+        <a href="{% url 'proposals:detail' post.id %}" class="PH-card-link">
+          <div class="PH-card">
+            {% if post.result_number == 1 %}
+            <img
+              src="{% static 'thumbnail/agree.png' %}"
+              class="PH-thumbnail"
+            />
+            {% elif post.result_number == 2 %}
+            <img
+              src="{% static 'thumbnail/disagree.png' %}"
+              class="PH-thumbnail"
+            />
             {% else %}
-            <a href="?sort=popular">인기순</a>
+            <img
+              src="{% static 'thumbnail/neutral.png' %}"
+              class="PH-thumbnail"
+            />
             {% endif %}
-            <!-- 기본 정렬 인기순으로 변경 -->
-            {% if request.GET.sort == 'recent' %}
-            <strong>최신순</strong>
-            {% else %}
-            <a href="?sort=recent">최신순</a>
-            {% endif %}
-        </div>
-        <section class="grid">
-            {% for post in proposals %}
-            <a href="{% url 'proposals:detail' post.id %}" class="card-link">
-                <div class="card">
-                    {% if post.result_number == 1 %}
-                    <img src="{% static 'thumbnail/agree.png' %}" id="thumbnail">
-                    {% elif post.result_number == 2 %}
-                    <img src="{% static 'thumbnail/disagree.png' %}" id="thumbnail">
-                    {% else %}
-                    <img src="{% static 'thumbnail/neutral.png' %}" id="thumbnail">
-                    {% endif %}
-                    <div class="card-content">{{ post.title|truncatechars:30 }}</div>
-                    <div class="meta">
-                        ❤️ {{ post.liked.count }} | 💬 {{ post.proposal_comments.count }}
-                    </div>
-                </div>
-            </a>
-            {% empty %}
-            <p>게시물이 없습니다.</p>
-            {% endfor %}
-        </section>
+            <div class="PH-card-content">{{ post.title|truncatechars:30 }}</div>
+            <div class="PH-meta">
+              <div>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask
+                    id="mask0_1347_6133"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                  >
+                    <rect width="20" height="20" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_1347_6133)">
+                    <path
+                      d="M16.5895 7.16826C16.9721 7.16826 17.31 7.31499 17.6033 7.60845C17.8968 7.90177 18.0435 8.23974 18.0435 8.62234V9.92159C18.0435 10.006 18.0327 10.0965 18.011 10.1931C17.9894 10.2895 17.9652 10.3795 17.9384 10.4631L15.6331 15.9026C15.5179 16.1599 15.3247 16.3772 15.0535 16.5546C14.7823 16.7319 14.4993 16.8206 14.2045 16.8206H5.74605V7.16826L10.4252 2.5293C10.5852 2.3695 10.7703 2.27412 10.9806 2.24315C11.191 2.21218 11.3925 2.24825 11.5853 2.35134C11.7782 2.45457 11.9195 2.60103 12.0092 2.79072C12.0989 2.98042 12.118 3.17688 12.0665 3.38012L11.2002 7.16826H16.5895ZM6.95259 7.68184V15.6141H14.2073C14.264 15.6141 14.322 15.5986 14.3813 15.5676C14.4407 15.5366 14.4858 15.4851 14.5168 15.413L16.837 9.98353V8.62234C16.837 8.55009 16.8138 8.49077 16.7674 8.44438C16.721 8.398 16.6617 8.3748 16.5895 8.3748H9.67516L10.6836 3.9663L6.95259 7.68184ZM3.41038 16.8206C3.01048 16.8206 2.66816 16.6782 2.38341 16.3935C2.09867 16.1087 1.9563 15.7664 1.9563 15.3665V8.62234C1.9563 8.22244 2.09867 7.88012 2.38341 7.59538C2.66816 7.31063 3.01048 7.16826 3.41038 7.16826H5.74605V8.3748H3.41038C3.33813 8.3748 3.2788 8.398 3.23242 8.44438C3.18603 8.49077 3.16284 8.55009 3.16284 8.62234V15.3665C3.16284 15.4388 3.18603 15.4981 3.23242 15.5445C3.2788 15.5909 3.33813 15.6141 3.41038 15.6141H5.74605V16.8206H3.41038Z"
+                      fill="#A3A3A3"
+                    />
+                  </g>
+                </svg>
+
+                {{ post.liked.count }}
+              </div>
+              <div>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask
+                    id="mask0_1347_6139"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="20"
+                    height="20"
+                  >
+                    <rect width="20" height="20" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_1347_6139)">
+                    <path
+                      d="M5.46453 14.8396L3.94142 16.3626C3.72497 16.5791 3.476 16.6282 3.19451 16.5098C2.91314 16.3912 2.77246 16.1778 2.77246 15.8696V4.80306C2.77246 4.41873 2.9056 4.09343 3.17188 3.82715C3.43816 3.56087 3.76346 3.42773 4.14779 3.42773H15.8522C16.2365 3.42773 16.5618 3.56087 16.8281 3.82715C17.0944 4.09343 17.2275 4.41873 17.2275 4.80306V13.4643C17.2275 13.8486 17.0944 14.1739 16.8281 14.4402C16.5618 14.7065 16.2365 14.8396 15.8522 14.8396H5.46453ZM4.97876 13.6984H15.8522C15.9108 13.6984 15.9644 13.674 16.0131 13.6252C16.0619 13.5765 16.0863 13.5229 16.0863 13.4643V4.80306C16.0863 4.74448 16.0619 4.69084 16.0131 4.64215C15.9644 4.59333 15.9108 4.56892 15.8522 4.56892H4.14779C4.0892 4.56892 4.03557 4.59333 3.98688 4.64215C3.93806 4.69084 3.91365 4.74448 3.91365 4.80306V14.752L4.97876 13.6984Z"
+                      fill="#A3A3A3"
+                    />
+                  </g>
+                </svg>
+                {{ post.proposal_comments.count }}
+              </div>
+            </div>
+          </div>
+        </a>
+        {% empty %}
+        <p>게시물이 없습니다.</p>
+        {% endfor %}
+      </section>
     </main>
 
-    <footer>
-        <div class="logo">더 커뮤니티</div>
-        <div>
-            <div>ABOUT</div>
-            <div>CONTACT US</div>
-        </div>
-    </footer>
-</body>
-
+    <div id="footer"></div>
+    <script src="{% static 'js/HF.js' %}"></script>
+  </body>
 </html>
