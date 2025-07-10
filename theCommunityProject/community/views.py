@@ -1,6 +1,7 @@
-
+import random
 from email.quoprimime import unquote
 from html.parser import tagfind_tolerant
+from random import shuffle
 from urllib import request
 from django.utils import timezone
 
@@ -115,75 +116,8 @@ def detail(request, post_id):
     else:
         comments = comments.order_by('-created_at')
 
-
-    #투표 항목에 따른 댓글 필터링(아마 detail에서는 쓸 일 없을 것 같은데 혹시 몰라 남겨둡니다)
-    comments_modifing = post.comments.filter(created_at__isnull=False)
-    vote_choices = [1, 2, 3]
-    comments_by_choice = {}
-
-    for choice in vote_choices:
-        comments_opinion = comments_modifing.filter(
-            post=post,
-            user__vote__post=post,
-            user__vote__choice=choice,
-        ).distinct()  # 중복 방지 distinct()
-        #프론트 전달용 딕셔너리 - comments_by_choice
-        comments_by_choice[choice] = comments_opinion
-
-
-    comment_etc = comments_modifing.filter(
-        post=post,
-        user__vote__post=post,
-        image='/media/profile_image/D.jpg',
-    ).distinct()
-
-    all_entries = []
-
-    # comments 전체
-    for comment in comments:
-        if comment.created_at:
-            all_entries.append((comment.user.id, comment.created_at))
-        for reply in comment.replies.all():
-            if reply.created_at:
-                all_entries.append((reply.user.id, reply.created_at))
-
-    # comments_by_choice 내 댓글과 답글
-    for choice, comment_qs in comments_by_choice.items():
-        for comment in comment_qs:
-            if comment.created_at:
-                all_entries.append((comment.user.id, comment.created_at))
-            for reply in comment.replies.all():
-                if reply.created_at:
-                    all_entries.append((reply.user.id, reply.created_at))
-
-    # comment_etc 내 댓글과 답글
-    for comment in comment_etc:
-        if comment.created_at:
-            all_entries.append((comment.user.id, comment.created_at))
-        for reply in comment.replies.all():
-            if reply.created_at:
-                all_entries.append((reply.user.id, reply.created_at))
-
-    # 2) 익명번호 부여
-    all_entries.sort(key=lambda x: x[1])  # 작성 시간 기준 정렬
-    anon_map = {}
-    counter = 1
-    for user_id, _ in all_entries:
-        if user_id not in anon_map:
-            anon_map[user_id] = f"익명{counter}"
-            counter += 1
-
-    # 3) 각 댓글과 답글에 익명번호 부여
-    def assign_anon(qs):
-        for comment in qs:
-            comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
-            for reply in comment.replies.all():
-                reply.anonymous_name = anon_map.get(reply.user.id, "익명?")
-
-    assign_anon(comments)
-    for choice_qs in comments_by_choice.values():
-        assign_anon(choice_qs)
-    assign_anon(comment_etc)
+    #댓글 필터링 및 익명번호 부여
+    comments, comments_by_choice, comment_etc = anonymous_function(post, comments)
 
     vote_choice = Vote.objects.filter(post=post, user=request.user).first()
     if vote_choice:
@@ -191,9 +125,7 @@ def detail(request, post_id):
     else:
         vote_choice = None
 
-    # per = {
-    #      post.count_votes(1)/post.count_votes()
-    # }
+
     votes_dict_raw = post.count_votes()
     votes_for_choice_1 = votes_dict_raw[1]
     votes_for_choice_2 = votes_dict_raw[2]
@@ -521,13 +453,41 @@ def detail_comment_ai_response(request, post_id, now):
 
         comment_form = CommentForm(request.POST or None, initial={'content': content})
 
+        vote_choice = Vote.objects.filter(post=post, user=request.user).first()
+        if vote_choice:
+            vote_choice = vote_choice.choice
+        else:
+            vote_choice = None
+
+        comments = post.comments.all().prefetch_related('replies', 'user').filter(created_at__isnull=False)
+        comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
+        comments, comments_by_choice, comment_etc = anonymous_function(post, comments)
+
+        votes_dict_raw = post.count_votes()
+        votes_for_choice_1 = votes_dict_raw[1]
+        votes_for_choice_2 = votes_dict_raw[2]
+        votes_for_choice_3 = votes_dict_raw[3]
+        total = votes_for_choice_1 + votes_for_choice_2 + votes_for_choice_3
+
+        # 0으로 나누는 에러 방지
+        if total == 0:
+            votes_percent = {1: 0, 2: 0, 3: 0}
+        else:
+            votes_percent = {
+                1: votes_for_choice_1 / total * 100,
+                2: votes_for_choice_2 / total * 100,
+                3: votes_for_choice_3 / total * 100,
+            }
 
         context = {
             'post': post,
-            'comments': post.comments.filter(created_at__isnull=False),
+            'comments': comments,
+            'comments_by_choice': comments_by_choice,
+            'comment_etc': comment_etc,
             'comment_form': comment_form,
             'commentEvidence': commentEvidence,
             'now': now,
+            'votes_dict': votes_percent,
         }
 
         if(now == 1):
@@ -727,3 +687,77 @@ def detail_reply_ai_response(request, post_id, comment_id):
         }
 
         return render(request, 'community_detail_comment.html', context)
+
+#댓글 필터링 및 익명번호 부여 매커니즘
+def anonymous_function (post, comments):
+    # 투표 항목에 따른 댓글 필터링
+    comments_modifing = post.comments.filter(created_at__isnull=False)
+    vote_choices = [1, 2, 3]
+    comments_by_choice = {}
+
+    for choice in vote_choices:
+        comments_opinion = comments_modifing.filter(
+            post=post,
+            user__vote__post=post,
+            user__vote__choice=choice,
+        ).distinct()  # 중복 방지 distinct()
+        # 프론트 전달용 딕셔너리 - comments_by_choice
+        comments_by_choice[choice] = comments_opinion
+
+    comment_etc = comments_modifing.filter(
+        post=post,
+        image='/media/profile_image/D.jpg',
+    ).distinct()
+
+
+    all_entries = []
+
+    # comments 전체
+    for comment in comments:
+        if comment.created_at:
+            all_entries.append((comment.user.id, comment.created_at))
+        for reply in comment.replies.all():
+            if reply.created_at:
+                all_entries.append((reply.user.id, reply.created_at))
+
+    # comments_by_choice 내 댓글과 답글
+    for choice, comment_qs in comments_by_choice.items():
+        for comment in comment_qs:
+            if comment.created_at:
+                all_entries.append((comment.user.id, comment.created_at))
+            for reply in comment.replies.all():
+                if reply.created_at:
+                    all_entries.append((reply.user.id, reply.created_at))
+
+    # comment_etc 내 댓글과 답글
+    for comment in comment_etc:
+        if comment.created_at:
+            all_entries.append((comment.user.id, comment.created_at))
+        for reply in comment.replies.all():
+            if reply.created_at:
+                all_entries.append((reply.user.id, reply.created_at))
+
+    # 2) 익명번호 부여
+    all_entries.sort(key=lambda x: x[1])  # 작성 시간 기준 정렬
+    anon_map = {}
+    counter = 1
+    for user_id, _ in all_entries:
+        if user_id not in anon_map:
+            anon_map[user_id] = f"익명{counter}"
+            counter += 1
+
+    # 3) 각 댓글과 답글에 익명번호 부여
+    def assign_anon(qs):
+        for comment in qs:
+            comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
+            for reply in comment.replies.all():
+                reply.anonymous_name = anon_map.get(reply.user.id, "익명?")
+
+    assign_anon(comments)
+    for choice_qs in comments_by_choice.values():
+        assign_anon(choice_qs)
+    assign_anon(comment_etc)
+    comment_etc = list(comment_etc)
+    random.shuffle(comment_etc)
+
+    return comments, comments_by_choice, comment_etc

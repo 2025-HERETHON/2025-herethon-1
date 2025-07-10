@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load extra_dict %}
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -521,11 +522,7 @@
                 {% load extra_dict %} {% for comment in comments_by_choice|dict_get:"1" %} {% if forloop.counter <= 3 %}
                 <!-- 댓글 출력 -->
                 <!-- width 값 조절한 부분 오류나면 참고하기 -->
-                <div
-                  id="comment_{{ comment.id }}"
-                  class="comment-reply-card"
-                  style="box-sizing: border-box; width: 20rem"
-                >
+                <div id="comment_{{ comment.id }}" class="comment-reply-card" style="box-sizing: border-box; width: 20rem">
                   <div class="comment-top">
                     <div class="profile">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -663,11 +660,7 @@
                 {% load extra_dict %} {% for comment in comments_by_choice|dict_get:"2" %} {% if forloop.counter <= 3 %}
                 <!-- 댓글 출력 -->
                 <!-- width 값 조절한 부분 오류나면 참고하기 -->
-                <div
-                  id="comment_{{ comment.id }}"
-                  class="comment-reply-card"
-                  style="box-sizing: border-box; width: 20rem"
-                >
+                <div id="comment_{{ comment.id }}" class="comment-reply-card" style="box-sizing: border-box; width: 20rem">
                   <div class="comment-top">
                     <div class="profile">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -805,11 +798,7 @@
                 {% load extra_dict %} {% for comment in comments_by_choice|dict_get:"3" %} {% if forloop.counter <= 3 %}
                 <!-- 댓글 출력 -->
                 <!-- width 값 조절한 부분 오류나면 참고하기 -->
-                <div
-                  id="comment_{{ comment.id }}"
-                  class="comment-reply-card"
-                  style="box-sizing: border-box; width: 20rem"
-                >
+                <div id="comment_{{ comment.id }}" class="comment-reply-card" style="box-sizing: border-box; width: 20rem">
                   <div class="comment-top">
                     <div class="profile">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -978,10 +967,7 @@
             <div class="another-opinion-section">
               <div style="width: 63rem">
                 <div class="comment-reply-card comment-background">
-                  <div
-                    class="comment-top"
-                    style="display: flex; justify-content: space-between"
-                  >
+                  <div class="comment-top" style="display: flex; justify-content: space-between">
                     <div class="div">
                       <div class="profile">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -1007,10 +993,7 @@
                         </div>
                       </div>
                     </div>
-                    <div
-                      class="icon-buttons1 comment-menu"
-                      style="cursor: pointer"
-                    >
+                    <div class="icon-buttons1 comment-menu" style="cursor: pointer">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="18"
@@ -1110,18 +1093,15 @@
             </div>
           </div>
         </div>
-        {% else %}
-        <p>아직 의견이 없습니다.</p>
         {% endif %}
+        {% empty %}
+        <p>아직 의견이 없습니다.</p>
         {% endfor %}
       </div>
       <div id="left">
         <h3>관련 아티클</h3>
         {% if post.related_article %}
-        <a
-          href="{% url 'articles:detail' post.related_article.id %}"
-          class="card-link"
-        >
+        <a href="{% url 'articles:detail' post.related_article.id %}" class="card-link">
           <div class="article-card">
             <img
               src="{{ post.related_article.image.url }}"
