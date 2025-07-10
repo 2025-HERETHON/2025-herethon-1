@@ -488,6 +488,7 @@ def detail_comment_ai_response(request, post_id, now):
             'commentEvidence': commentEvidence,
             'now': now,
             'votes_dict': votes_percent,
+            'voted_choice': vote_choice,
         }
 
         if(now == 1):
