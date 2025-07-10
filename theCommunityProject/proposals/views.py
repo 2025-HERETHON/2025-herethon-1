@@ -3,9 +3,12 @@ from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 from django.contrib import messages
 
 from proposals.forms import ProposalCommentForm, ProposalReplyForm
-from proposals.models import ProposalPost, ProposalComment, ProposalReply
+from proposals.models import ProposalPost, ProposalComment, ProposalReply, ProposalReplyEvidence
 
 from articles.models import Article
+
+from community.apis import get_gemini_response
+from django.urls import reverse
 
 # @login_required(login_url='accounts:login')
 def home(request):
@@ -366,3 +369,73 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
     return redirect('{}?open_reply={}#reply_{}'.format(
         resolve_url('proposals:detail', post_id=post_id), comment_id, reply_id
     ))
+
+def detail_reply_ai_response(request, post_id, comment_id):
+    """
+    답글 AI 근거 자료 생성
+    """
+    if request.method != 'POST':
+        messages.error(request, "잘못된 요청입니다.")
+        return redirect ('proposals:detail', post_id=post_id)
+
+    post = get_object_or_404(ProposalPost, id=post_id)
+    comment = get_object_or_404(ProposalComment, id=comment_id)
+    content = request.POST.get('content')
+
+    if not content:
+        commentKeyword = None
+        messages.error(request, "답글 내용을 입력하세요.")
+        return redirect(f"{reverse('proposals:detail', args=[post_id])}#reply-form")
+    else:
+        reply = ProposalReply(user=request.user, content=content, comment=comment)
+        extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
+        full_prompt = content + extra_text
+        evidence, link1, link2, link3, link4 = get_gemini_response(content, full_prompt)
+        replyEvidence = ProposalReplyEvidence(reply=reply, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
+
+        reply_form = ProposalReplyForm(initial={'content': content})
+
+        # 댓글 목록 가져오기
+        comments = post.proposal_comments.all().prefetch_related('proposal_replies', 'user')
+        replyEvidenceMap = {comment.id: [replyEvidence]}
+
+        # 익명 이름 부여
+        all_entries = []
+        for c in comments:
+            all_entries.append((c.user.id, c.created_at))
+            for r in c.proposal_replies.all():
+                all_entries.append((r.user.id, r.created_at))
+
+        all_entries.sort(key=lambda x: x[1])
+        anon_map = {}
+        counter = 1
+        for user_id, _ in all_entries:
+            if user_id not in anon_map:
+                anon_map[user_id] = f"익명{counter}"
+                counter += 1
+
+        for c in comments:
+            c.anonymous_name = anon_map.get(c.user.id, "익명?")
+            for r in c.proposal_replies.all():
+                r.anonymous_name = anon_map.get(r.user.id, "익명?")
+    
+        for c in comments:
+            c.is_best = (c.liked.count() * 5 + c.proposal_replies.count() * 2) >= 100
+
+    recommended_articles = Article.objects.order_by('-created_at')[:5]
+
+    comment_form = ProposalCommentForm()
+    
+    context = {
+        'post': post,
+        'community_post': post.community_post,
+        'comment' : reply.comment,
+        'comments': comments,
+        'comment_form': comment_form,
+        'reply_form': reply_form,
+        'replyEvidenceMap': replyEvidenceMap,
+        'recommended_articles': recommended_articles,
+        'opened_reply_comment_id': comment.id,
+    }
+        
+    return render(request, 'proposals_detail.html', context)
