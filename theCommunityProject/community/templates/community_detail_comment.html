@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 {% load static %}
+{% load extra_dict %}
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>{{ post.title }} - 더 커뮤니티</title>
-
-    <style>
-            .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.card {
-  background-color: #1f1f1f;
-  padding: 1rem;
-  border-radius: 10px;
-  color: white;
-  transition: transform 0.2s ease;
-}
-
+  <meta charset="UTF-8">
+  <title>{{ post.title }} - 더 커뮤니티</title>
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background-color: #1f1f1f;
+      padding: 1rem;
+      border-radius: 10px;
+      color: white;
+      transition: transform 0.2s ease;
+    }
     .article-thumbnail {
       width: 120px;
       height: 120px;
@@ -27,7 +25,7 @@
       background-color: #ccc;
       object-fit: cover;
     }
-    </style>
+  </style>
 </head>
 <body>
 
@@ -39,285 +37,128 @@
   </div>
 {% endif %}
 
-
-<a href="{% url 'community:detail' post.id %}">← 게시글 보기</a>
+<a href="{% url 'community:detail' post.id %}">← 게시\uuae00 보기</a>
 
 <form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id now %}">
   {% csrf_token %}
- <label>
-    <input type="radio" name="selected" href value="1"
-           {% if voted_choice == 1 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}> {{ post.option1 }}
-  </label><br>
-
-  <label>
-    <input type="radio" name="selected" value="2"
-           {% if voted_choice == 2 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}> {{ post.option2 }}
-  </label><br>
-
-  <label>
-    <input type="radio" name="selected" value="3"
-           {% if voted_choice == 3 %}checked{% endif %}
-           {% if voted_choice %}disabled{% endif %}> {{ post.option3 }}
-  </label><br>
-  <button onchange="this.form.submit()">투표하기</button>
+  <label><input type="radio" name="selected" value="1" {% if voted_choice == 1 %}checked{% endif %} {% if voted_choice %}disabled{% endif %}> {{ post.option1 }}</label><br>
+  <label><input type="radio" name="selected" value="2" {% if voted_choice == 2 %}checked{% endif %} {% if voted_choice %}disabled{% endif %}> {{ post.option2 }}</label><br>
+  <label><input type="radio" name="selected" value="3" {% if voted_choice == 3 %}checked{% endif %} {% if voted_choice %}disabled{% endif %}> {{ post.option3 }}</label><br>
+  <button type="submit">투표하기</button>
 </form>
 
-
 <hr>
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <div>💬 {{ comments.count }}</div>
-    <div>
-      {% if request.user in post.scrapped.all %}
-      <a style="color: #a57bff;" href="{% url 'community:detail_post_scrap' post.id now %}">스크랩</a>
-      {% else %}
-      <a style="color: #000;" href="{% url 'community:detail_post_scrap' post.id now %}">스크랩</a>
-      {% endif %}
-    </div>
-    <div><button onclick="copyCurrentUrl()">공유</button></div>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <div>💬 {{ comments.count }}</div>
+  <div>
+    {% if request.user in post.scrapped.all %}
+      <a style="color: #a57bff;" href="{% url 'community:detail_post_scrap' post.id now %}">스크래프</a>
+    {% else %}
+      <a style="color: #000;" href="{% url 'community:detail_post_scrap' post.id now %}">스크래프</a>
+    {% endif %}
   </div>
+  <div><button onclick="copyCurrentUrl()">공유</button></div>
+</div>
 <hr>
 
 <script>
-    function copyCurrentUrl() {
-      const url = window.location.href;
-      navigator.clipboard.writeText(url);
-      alert("링크가 복사되었습니다!");
-    }
+function copyCurrentUrl() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url);
+  alert("링크가 복사되었습니다!");
+}
 </script>
-<h3>댓글 {{ comments|length }}개</h3>
 
-    {% if messages %}
-    <div>
-      {% for message in messages %}
-      <p style="color: red;">{{ message }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
+<h3>댓글 {{ comments|length }}개</h3>
 
 <h2>의견</h2>
 <div style="margin-bottom: 1rem;">
   <span>입장별 필터: </span>
   <a href="?filter=all" {% if not request.GET.filter or request.GET.filter == 'all' %}style="font-weight:bold;"{% endif %}>전체</a> |
-  <a href="?filter=1" {% if request.GET.filter == 'pro' %}style="font-weight:bold;"{% endif %}>찬성</a> |
-  <a href="?filter=2" {% if request.GET.filter == 'con' %}style="font-weight:bold;"{% endif %}>반대</a> |
-  <a href="?filter=3" {% if request.GET.filter == 'neutral' %}style="font-weight:bold;"{% endif %}>중립</a>
+  <a href="?filter=1" {% if request.GET.filter == '1' %}style="font-weight:bold;"{% endif %}>찬성</a> |
+  <a href="?filter=2" {% if request.GET.filter == '2' %}style="font-weight:bold;"{% endif %}>반대</a> |
+  <a href="?filter=3" {% if request.GET.filter == '3' %}style="font-weight:bold;"{% endif %}>중립</a>
 </div>
 
-{% load extra_dict %}
-{% for comment in comments %}
-  <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
-    <img src="{{ comment.image }}" width="50" height="50">
-    <strong>{{ comment.anonymous_name }}</strong>:
+{% comment %}
+댓글 필터링 조건을 정리한 블록입니다.
+기존 else가 누락된 위치에 있었고, filter=all에 대한 처리 조건이 중첩 if/else 문법 때문에 작동 안했을 수 있음
+{% endcomment %}
 
-    {% if editing_comment_id == comment.id %}
-    {% else %}
-      <p>{{ comment.content }}</p>
-      {% if request.user == comment.user %}
-
-
-      {% endif %}
-    {% endif %}
-
-    <p>
-      {{ comment.created_at|date:"Y.m.d" }}
-      <button onclick="toggleReply({{ comment.id }})">
-        💬 답글 ({{ comment.replies.count }})
-      </button>
-      <a href="{% url 'community:detail_comment_like' post.id comment.id now %}">❤️ {{ comment.liked.count }}</a>
-    </p>
-{% if opened_reply_comment_id == comment.id %}
-        <div id="reply-section-{{ comment.id }}" style="display:block;">
-      {% else %}
-        <div id="reply-section-{{ comment.id }}" style="display:none;">
-      {% endif %}
-
-       {% for reply in comment.replies.all %}
-        {% if reply.created_at %}
-        <img src="{{ reply.image }}" width="50" height="50">
-        <div id="reply_{{ reply.id }}">
-          <strong>{{ reply.anonymous_name }}</strong>
-      <small>
-        {% if reply.user.sex == 'M' %}(남성)
-        {% elif reply.user.sex == 'F' %}(여성)
-        {% else %}(기타)
-        {% endif %}
-      </small>:
-
-      {% if editing_reply_id == reply.id %}
-        <!-- 수정 중인 답글 UI -->
-      {% else %}
-        <p>{{ reply.content }}</p>
-        {% if request.user == reply.user %}
-          <form method="post" action="{% url 'community:detail_reply_delete' reply.comment.post.id reply.comment.id reply.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
-          </form>
-        {% else %}
-          <button>신고하기</button>
-        {% endif %}
-      {% endif %}
-
-      <small>{{ reply.created_at|date:"Y.m.d" }}</small>
-      <a href="{% url 'community:detail_reply_like' reply.comment.post.id reply.comment.id reply.id %}">좋아요</a>
-    </div>
+{% with selected_stance=request.GET.filter|default:'all' %}
+  {% if selected_stance == 'all' %}
+    {% include '_comment_list.html' with comments=comments %}
+  {% elif comments_by_choice|dict_get:selected_stance %}
+    {% include '_comment_list.html' with comments=comments_by_choice|dict_get:selected_stance %}
+  {% else %}
+    <p>아직 의견이 없습니다.</p>
   {% endif %}
-{% empty %}
-  <p>대댓글이 없습니다.</p>
-{% endfor %}
-
-
-          <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'community:detail_reply_create' post.id comment.id %}">
-            {% csrf_token %}
-
-            <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"> {{ reply_form.content }}</textarea><br>
-            <button type="submit">등록</button>
-            <button type="button" id="ai-button-reply-{{ comment.id }}">AI</button>
-          </form>
-          <script>
-            document.getElementById('ai-button-reply-{{ comment.id }}').addEventListener('click', function() {
-              const form = document.getElementById('reply-form-{{ comment.id }}');
-              form.action = "{% url 'community:detail_reply_ai_response' post.id comment.id %}";
-              form.submit();
-              form.action = "{% url 'community:detail_reply_create' post.id comment.id %}"; // 제출 후 다시 원복
-            });
-          </script>
-          <!-- AI 결과 영역 (기본 숨김) -->
-          {% if replyEvidence %}
-            <div id="aiResultR" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
-              <div style="font-weight:bold; margin-bottom:6px;">result</div>
-              <div style="background:#555; padding:10px; border-radius:4px;">
-                자료 검색 결과<br>
-
-                AI 주석<br>
-                {{ replyEvidence.keyword }}<br>
-
-                <a href="{{ replyEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-                <a href="{{ replyEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-              </div>
-            </div>
-          {% endif %}
-
-          <script>
-            const aiBtnR = document.getElementById('aiBtnR');
-            const aiResultR = document.getElementById('aiResultR');
-
-            aiBtnR.addEventListener('click', () => {
-              if (aiResultR.style.display === 'none') {
-                aiResultR.style.display = 'block';
-              } else {
-                aiResultR.style.display = 'none';
-              }
-            });
-          </script>
-        </div>
-      </div>
-{% empty %}
-  <p>아직 의견이 없습니다.</p>
-{% endfor %}
+{% endwith %}
 
 <h3>댓글 작성</h3>
 <form method="post" id="comment-form" action="{% url 'community:detail_comment_create' post.id now %}">
   {% csrf_token %}
-  {{ comment_form.content }}
-
+  <textarea name="content">{{ comment_form.content.value|default_if_none:'' }}</textarea>
   <button type="submit" id="submit-comment">댓글 작성</button>
   <button type="button" id="ai-button">AI</button>
 </form>
 
-
-
 <script>
-  document.getElementById('ai-button').addEventListener('click', function() {
-    const form = document.getElementById('comment-form');
-    form.action = "{% url 'community:detail_comment_ai_response' post.id now %}";
-    form.submit();
-    form.action = "{% url 'community:detail_comment_create' post.id now %}"; // 제출 후 다시 원복
-  });
+document.getElementById('ai-button').addEventListener('click', function() {
+  const form = document.getElementById('comment-form');
+  form.action = "{% url 'community:detail_comment_ai_response' post.id now %}";
+  form.submit();
+  form.action = "{% url 'community:detail_comment_create' post.id now %}";
+});
 </script>
 
-<!-- AI 결과 영역 (기본 숨김) -->
 {% if commentEvidence %}
   <div id="aiResult" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
     <div style="font-weight:bold; margin-bottom:6px;">result</div>
     <div style="background:#555; padding:10px; border-radius:4px;">
       자료 검색 결과<br>
-
       AI 주석<br>
       {{ commentEvidence.keyword }}<br>
-
       <a href="{{ commentEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
       <a href="{{ commentEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
     </div>
   </div>
 {% endif %}
 
-<script>
-  const aiBtn = document.getElementById('aiBtn');
-  const aiResult = document.getElementById('aiResult');
-
-  aiBtn.addEventListener('click', () => {
-    if (aiResult.style.display === 'none') {
-      aiResult.style.display = 'block';
-    } else {
-      aiResult.style.display = 'none';
-    }
-  });
-</script>
-
-
-<script>
-  function toggleReply(commentId) {
-    const el = document.getElementById('reply-section-' + commentId);
-    if (el.style.display === 'block') {
-      el.style.display = 'none';
-    } else {
-      el.style.display = 'block';
-    }
-  }
-</script>
 <h3>관련 아티클</h3>
 {% if post.related_article %}
   <a href="{% url 'articles:detail' post.related_article.id %}" class="card-link">
     <div class="card">
       <div class="article-thumbnail">
-        <img src="{{ post.related_article.image.url }}" alt="썸네일" style="width: 100%;">
+        <img src="{{ post.related_article.image.url }}" alt="쌌더남일" style="width: 100%;">
       </div>
-      <div class="card-content">
-        {{ post.related_article.title|truncatechars:30 }}
-      </div>
-      <div class="meta">
-        ❤️ {{ post.related_article.liked.count }} | 💬 {{ post.related_article.article_comments.count }}
-      </div>
+      <div class="card-content">{{ post.related_article.title|truncatechars:30 }}</div>
+      <div class="meta">❤️ {{ post.related_article.liked.count }} | 💬 {{ post.related_article.article_comments.count }}</div>
     </div>
   </a>
 {% else %}
-  <p style="color: #999;">이 게시글과 연결된 아티클이 없습니다.</p>
+  <p style="color: #999;">이 게시물과 연결된 아티클이 없습니다.</p>
 {% endif %}
 
 <hr>
 
-<h3>추천 아티클</h3>
+<h3>최규 추천 아티클</h3>
 <section class="grid">
   {% for article in recommended_articles %}
     <a href="{% url 'articles:detail' article.id %}" class="card-link">
       <div class="card">
         <div class="article-thumbnail">
-          <img src="{{ article.image }}" alt="썸네일" style="width: 100%;">
+          <img src="{{ article.image }}" alt="쌌더남일" style="width: 100%;">
         </div>
-        <div class="card-content">
-          {{ article.title|truncatechars:30 }}
-        </div>
-        <div class="meta">
-          ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}
-        </div>
+        <div class="card-content">{{ article.title|truncatechars:30 }}</div>
+        <div class="meta">❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}</div>
       </div>
     </a>
   {% empty %}
     <p style="color: #999;">추천 아티클이 없습니다.</p>
   {% endfor %}
 </section>
+
 <a href="{% url 'community:detail_comment_detail' post.id %}">댓글 상세</a>
 
 </body>
