@@ -5,5 +5,5 @@ register = template.Library()
 @register.filter
 def dict_get(d, key):
     if isinstance(d, dict):
-        return d.get(key)
+        return d.get(int(key))
     return None

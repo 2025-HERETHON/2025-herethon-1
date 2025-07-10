@@ -519,8 +519,7 @@
                 </div>
               </div>
               <div class="comment-reply-group">
-                {% load extra_dict %} {% for comment in comments_by_choice|dict_get:"1" %} {% if forloop.counter <= 3 %}
-                <!-- 댓글 출력 -->
+            {% load extra_dict %} {% for comment in comments_by_choice|dict_get:"1" %} {% if forloop.counter <= 3 %}               <!-- 댓글 출력 -->
                 <!-- width 값 조절한 부분 오류나면 참고하기 -->
                 <div id="comment_{{ comment.id }}" class="comment-reply-card" style="box-sizing: border-box; width: 20rem">
                   <div class="comment-top">
@@ -547,10 +546,7 @@
                         {{comment.created_at|date:"Y.m.d"}}
                       </div>
                     </div>
-                    <div
-                      class="icon-buttons1 comment-menu"
-                      style="cursor: pointer"
-                    >
+                    <div class="icon-buttons1 comment-menu" style="cursor: pointer">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="18"
@@ -1092,11 +1088,11 @@
               </div>
             </div>
           </div>
-        </div>
-        {% endif %}
+ {% endif %}
         {% empty %}
         <p>아직 의견이 없습니다.</p>
-        {% endfor %}
+        {% endfor %}        </div>
+
       </div>
       <div id="left">
         <h3>관련 아티클</h3>
