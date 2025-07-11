@@ -161,7 +161,7 @@
                   />
                 </g>
               </svg>
-              <div class="comment-div3">{{ comment.replies.count }}</div>
+              <div class="comment-div3">{{ comment.filtered_replies.count }}</div>
             </button>
           </div>
           <button
@@ -213,7 +213,7 @@
                     />
                   </g>
                 </svg>
-                <img src="{{ reply.image }}" width="1.25rem" height="1.25rem" />
+                <img src="{{ reply.image.url }}" />
                 <div class="nickname">{{ reply.anonymous_name }}</div>
                 <div class="gender">
                   {% if reply.user.sex == 'M' %}남성{% elif reply.user.sex == 'F' %}여성{% else %}기타{% endif %}
