@@ -41,7 +41,6 @@ INSTALLED_APPS = [
 
 
     'accounts',
-    'main',
     'community',
     'proposals',
     'articles',
