@@ -175,14 +175,11 @@
         </div>
       </div>
 
+
     {% if opened_reply_comment_id|stringformat:"s" == comment.id|stringformat:"s" %}
-      <div class="opinion-comment-reply"></div>
-        <div id="reply-section-{{ comment.id }}" style="display:block;"></div>
-      {% else %}
-      <div id="reply-section-{{ comment.id }}" style="display:none;"></div>
-      {% endif %}
+        <div id="reply-section-{{ comment.id }}" style="display:block;" >
       {% for reply in comment.replies.all %}
-      {% if reply.created_at %}
+        {% if reply.created_at %}
       <div class="comment-reply-card comment-background"
           style="border-radius: 0"
           id="reply_{{ reply.id }}">
@@ -344,12 +341,13 @@
       {% empty %}
       <p>대댓글이 없습니다.</p>
       {% endfor %}
+
   <div class="comment-reply-inputfield">
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
 <path d="M8.19364 15.7629C8.03435 15.6047 7.95634 15.4239 7.95959 15.2207C7.96284 15.0174 8.04086 14.8399 8.19364 14.6881L11.4349 11.4721H1.85778C1.34531 11.4721 0.907522 11.292 0.54441 10.9319C0.18147 10.5716 0 10.1372 0 9.62866V0.764806C0 0.547771 0.0738211 0.366087 0.221464 0.219754C0.368935 0.0732513 0.552032 0 0.770755 0C0.989479 0 1.17258 0.0732513 1.32005 0.219754C1.46769 0.366087 1.54151 0.547771 1.54151 0.764806V9.62866C1.54151 9.72026 1.57114 9.79547 1.6304 9.85427C1.68967 9.91308 1.76546 9.94248 1.85778 9.94248H11.4349L8.17797 6.71066C8.01851 6.55243 7.94143 6.3733 7.94674 6.17326C7.95205 5.97339 8.02913 5.79434 8.17797 5.63611C8.33743 5.47788 8.51959 5.39783 8.72444 5.39596C8.92929 5.39392 9.1081 5.46871 9.26088 5.62031L13.7372 10.062C13.8334 10.1576 13.9013 10.2583 13.9407 10.3641C13.9802 10.47 14 10.5844 14 10.7073C14 10.8302 13.9802 10.9445 13.9407 11.0504C13.9013 11.1563 13.8334 11.257 13.7372 11.3525L9.29248 15.7629C9.13302 15.921 8.94993 16 8.74319 16C8.53629 16 8.3531 15.921 8.19364 15.7629Z" fill="#737373"/>
     </svg>
     <div class="comment-inputfield-div">
-      <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'community:detail_reply_create' post.id comment.id %}">
+      <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'community:detail_reply_create' comment.post.id comment.id %}">
       {% csrf_token %}
       <!-- 필터 값과 열린 답글 comment_id 같이 넘기기 -->
       <input type="hidden" name="filter" value="{{ request.GET.filter|default:'all' }}">
@@ -398,13 +396,18 @@
             <div class="nickname" style="margin-top: -0.13rem">익명</div>
           </div>
           {% if opened_reply_comment_id|stringformat:"s" == comment.id|stringformat:"s" %}
-          <div class="inputplace" style="width: 57rem">{{ reply_form.content }}</div>
-          {% else %}
-          <textarea
+
+          <textarea name="content"
             class="inputplace"
-            style="width: 57rem"
+            style="width: 57rem; background-color:transparent"
             placeholder="답글을 입력하세요."
-          ></textarea>
+          >{{ reply_form.content.value|default_if_none:'' }}</textarea>
+          {% else %}
+          <textarea name="content"
+            class="inputplace"
+            style="width: 57rem; background-color:transparent"
+            placeholder="답글을 입력하세요."
+          >{{ reply_form.content.value|default_if_none:'' }}</textarea>
           {% endif %}
           <div class="inputplace-menu">
                 <button
@@ -463,10 +466,10 @@
           <div class="close">닫기</div>
         </div>
 
-        <div class="ai">AI 주석</div>
+<!--        <div class="ai">AI 주석</div>-->
         {% for evidence in replyEvidenceMap|dict_get:comment.id %}
         <div class="ai-text">
-          {{ commentEvidence.keyword }}
+          {{ replyEvidence.keyword|linebreaksbr }}
           <div style="display: flex; vertical-align: middle">
             <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -572,6 +575,10 @@
       {% endif %}
     </div>
   </div>
+          </div>
+      {% else %}
+      <div id="reply-section-{{ comment.id }}" style="display:none;"></div>
+      {% endif %}
     {% empty %}
     <p>아직 의견이 없습니다.</p>
     {% endfor %}
@@ -589,14 +596,20 @@
 
   }
 
-  function toggleReply(commentId) {
-    const el = document.getElementById("reply-section-" + commentId);
-    if (el.style.display === "block") {
-      el.style.display = "none";
-    } else {
-      el.style.display = "block";
-    }
+function toggleReply(commentId) {
+  const url = new URL(window.location.href);
+  const currentId = url.searchParams.get("opened_reply_comment_id");
+
+  if (currentId === String(commentId)) {
+    // 이미 열려 있는 경우 → 파라미터 제거하여 닫기
+    url.searchParams.delete("opened_reply_comment_id");
+  } else {
+    // 새로 열기
+    url.searchParams.set("opened_reply_comment_id", commentId);
   }
+
+  window.location.href = url.toString();
+}
   document.addEventListener("click", (event) => {
   // 클릭한 요소 중에서 ⋯ 버튼(.comment-menu)을 포함한 경우
   const menuBtn = event.target.closest(".icon-buttons1.comment-menu");
