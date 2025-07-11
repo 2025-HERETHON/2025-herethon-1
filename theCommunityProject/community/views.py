@@ -1,8 +1,11 @@
 import random
+from collections import defaultdict
 from email.quoprimime import unquote
 from html.parser import tagfind_tolerant
 from random import shuffle
 from urllib import request
+from urllib.parse import urlencode
+
 from django.utils import timezone
 
 from django.contrib.auth.decorators import login_required
@@ -125,7 +128,7 @@ def detail(request, post_id):
     else:
         vote_choice = None
 
-
+    #투표 퍼센트 정보 얻기
     votes_dict_raw = post.count_votes()
     votes_for_choice_1 = votes_dict_raw[1]
     votes_for_choice_2 = votes_dict_raw[2]
@@ -142,22 +145,42 @@ def detail(request, post_id):
             3: votes_for_choice_3 / total * 100,
         }
 
+    #이전, 다음 포스트 정보 - 인기순 정렬만
+    post_list = Post.objects.all()
+
+    post_list = sorted(post_list, key=lambda a: (
+                a.votes.count() * 5 + a.comments.filter(created_at__isnull=False).count() * 2), reverse=True)
+
+    for index, tpost in enumerate(post_list):
+        if tpost.id == post.id:
+            prevPost = post_list[index - 1] if index > 0 else post_list[-1]
+            nextPost = post_list[index + 1] if index < len(post_list) - 1 else post_list[0]
+            break
+
+
+
+
+    print('prevPost', prevPost)
+
+
     context = {
-        'post': post,
-        'comments' : comments,
-        'comments_by_choice' : comments_by_choice,
-        'comment_etc' : comment_etc,
-        # 추천 아티클 추가
-        'recommended_articles': recommended_articles,
-        'comment_form': comment_form,
-        'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
-        'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
-        'opened_reply_comment_id': opened_reply_comment_id,
-        'reply_form': reply_form,
-        'now' : 0,
-        'voted_choice': int(vote_choice) if vote_choice else None,
-        'votes_dict':votes_percent,
-    }
+            'post': post,
+            'comments' : comments,
+            'comments_by_choice' : comments_by_choice,
+            'comment_etc' : comment_etc,
+            # 추천 아티클 추가
+            'recommended_articles': recommended_articles,
+            'comment_form': comment_form,
+            'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
+            'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
+            'opened_reply_comment_id': opened_reply_comment_id,
+            'reply_form': reply_form,
+            'now' : 0,
+            'voted_choice': int(vote_choice) if vote_choice else None,
+            'votes_dict':votes_percent,
+            'prevPost': prevPost,
+            'nextPost': nextPost,
+        }
 
     return render(request, 'community_detail.html', context)
 
@@ -191,10 +214,10 @@ def detail_comment_create(request, post_id, now):
 
             comment.save()
 
-            if(now == 1):
-                return redirect('community:detail_comment_detail', post_id=post_id)
-            else:
-                return redirect('community:detail', comment.post.pk)
+            # if(now == 1):
+            return redirect('community:detail_comment_detail', post_id=post_id)
+            # else:
+            #     return redirect('community:detail', comment.post.pk)
     else:
         form = CommentForm()
     context = {
@@ -292,6 +315,10 @@ def detail_reply_create(request, post_id, comment_id):
     """
     답글 생성
     """
+
+    filter = request.POST.get('filter', 'all')
+    opened_reply_comment_id = request.POST.get('opened_reply_comment_id')
+
     if request.method == 'POST':
         form = ReplyForm(request.POST)
         if form.is_valid():
@@ -319,12 +346,28 @@ def detail_reply_create(request, post_id, comment_id):
             reply.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
             reply.save()
             print(f"reply saved: {reply}, id: {reply.id}")
-            return redirect('community:detail_comment_detail', post_id=post_id)
+
+            base_url = reverse('community:detail_comment_detail', args=[post_id])
+
+            # params = {
+            #     'filter': filter,
+            #     'opened_reply_comment_id': str(opened_reply_comment_id)
+            # }
+
+
+            if filter:
+                redirect_url = f"{base_url}?filter={filter}&opened_reply_comment_id={opened_reply_comment_id}"
+            else:
+                redirect_url = base_url
+
+
+            return redirect(redirect_url)
     else:
         form = ReplyForm()
 
     context = {
         'form': form,
+        'opened_reply_comment_id': comment_id
     }
     return render(request, 'community_detail_comment.html', context)
 
@@ -479,6 +522,18 @@ def detail_comment_ai_response(request, post_id, now):
                 3: votes_for_choice_3 / total * 100,
             }
 
+            # 이전, 다음 포스트 정보 - 인기순 정렬만
+            post_list = Post.objects.all()
+
+            post_list = sorted(post_list, key=lambda a: (
+                    a.votes.count() * 5 + a.comments.filter(created_at__isnull=False).count() * 2), reverse=True)
+
+            for index, tpost in enumerate(post_list):
+                if tpost.id == post.id:
+                    prevPost = post_list[index - 1] if index > 0 else post_list[-1]
+                    nextPost = post_list[index + 1] if index < len(post_list) - 1 else post_list[0]
+                    break
+
         context = {
             'post': post,
             'comments': comments,
@@ -489,6 +544,8 @@ def detail_comment_ai_response(request, post_id, now):
             'now': now,
             'votes_dict': votes_percent,
             'voted_choice': vote_choice,
+            'prevPost': prevPost,
+            'nextPost': nextPost,
         }
 
         if(now == 1):
@@ -521,6 +578,7 @@ def detail_comment_detail(request, post_id):
     editing_reply_id = request.GET.get('edit_reply')
     # 답글 수정 완료 시, 답글 창 열린 상태 유지하기 위해서 답글이 달린 댓글의 id를 받아옴
     open_reply_comment_id = request.GET.get('open_reply')
+    opened_reply_comment_id = request.GET.get('opened_reply_comment_id')
     print('open_reply_comment_id', open_reply_comment_id)
 
     replies = Reply.objects.filter(created_at__isnull=False)
@@ -570,80 +628,56 @@ def detail_comment_detail(request, post_id):
     recommended_articles = Article.objects.all().order_by('-created_at')[:5]
 
     # # 댓글 목록 가져오기(답글까지 같이 가져옴)
-    comments = post.comments.select_related('user').prefetch_related('replies')
+    comments = post.comments.select_related('user').prefetch_related('replies').filter(created_at__isnull=False)
 
-    #
-    # sort = request.GET.get('sort', 'popular')
-    #
-    # if sort == 'popular':
-    #     comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
-    # else:
-    #     comments = comments.order_by('-created_at')
+    # 댓글 필터링 및 익명번호 부여
+    comments, comments_by_choice, comment_etc = anonymous_function(post, comments)
 
-    # 익명 이름 부여
-    all_entries = []
-    for comment in comments :
-        # 더미 코멘트 포함 안 함
-        if comment.created_at:
-            all_entries.append((comment.user.id, comment.created_at))
-        for reply in comment.replies.all():
-            # 더미 코멘트 포함 안 함
-            if reply.created_at:
-                all_entries.append((reply.user.id, reply.created_at))
+    vote_choice = Vote.objects.filter(post=post, user=request.user).first()
+    if vote_choice:
+        vote_choice = vote_choice.choice
+    else:
+        vote_choice = None
 
-    # 작성 시간 순 정렬
-    all_entries.sort(key=lambda x: x[1])
-    # 익명 번호 매핑
-    anon_map = {}
-    counter = 1
-    for user_id, _ in all_entries:
-        if user_id not in anon_map:
-            anon_map[user_id] = f"익명{counter}"
-            counter += 1
-    # 객체에 익명 번호 부여
+    # 투표 퍼센트 정보 얻기
+    votes_dict_raw = post.count_votes()
+    votes_for_choice_1 = votes_dict_raw[1]
+    votes_for_choice_2 = votes_dict_raw[2]
+    votes_for_choice_3 = votes_dict_raw[3]
+    total = votes_for_choice_1 + votes_for_choice_2 + votes_for_choice_3
+
+    # 0으로 나누는 에러 방지
+    if total == 0:
+        votes_percent = {1: 0, 2: 0, 3: 0}
+    else:
+        votes_percent = {
+            1: votes_for_choice_1 / total * 100,
+            2: votes_for_choice_2 / total * 100,
+            3: votes_for_choice_3 / total * 100,
+        }
+
     for comment in comments:
-        comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
-        print(f"comment id={comment.id}, anonymous_name={comment.anonymous_name}")
-        for reply in comment.replies.filter(created_at__isnull=False):
-            reply.anonymous_name = anon_map.get(reply.user.id, "익명?")
-            print(reply.id, reply.anonymous_name)
-    # 투표 수(전달 형태: {1: 0, 2: 0, 3: 2})
-    print(post.count_votes())
+        comment.filtered_replies = comment.replies.filter(created_at__isnull=False)
 
-    # 투표 항목에 따른 댓글 필터링
-    comments_modifing = post.comments.filter(created_at__isnull=False)
-    vote_choices = [1, 2, 3]
-    comments_by_choice = {}
-
-    for choice in vote_choices:
-        filtered_comments = comments_modifing.filter(
-            user__vote__post=post,
-            user__vote__choice=choice,
-        ).distinct()
-        comments_by_choice[choice] = filtered_comments
-
-        for comment in filtered_comments:
-            comment.anonymous_name = anon_map.get(comment.user.id, "익명?")
-        comments_by_choice[str(choice)] = filtered_comments
-
-    print(f"open_reply_comment_id from GET: {open_reply_comment_id}")
-    print(f"passed to context: {int(open_reply_comment_id) if open_reply_comment_id else None}")
-    opened_reply_comment_id = int(open_reply_comment_id) if open_reply_comment_id else None
 
     context = {
         'post': post,
-        'comments': post.comments.filter(created_at__isnull=False),
+        'comments' : comments,
         'comments_by_choice' : comments_by_choice,
-        'replies' : replies,
+        'comment_etc' : comment_etc,
         'comment_form': comment_form,
         'editing_comment_id': int(editing_comment_id) if editing_comment_id else None,
         'editing_reply_id': int(editing_reply_id) if editing_reply_id else None,
-        'opened_reply_comment_id': opened_reply_comment_id,
+        'opened_reply_comment_id': open_reply_comment_id,
         'reply_form': reply_form,
         'recommended_articles': recommended_articles,
         'now':1,
         'replyEvidenceMap': {},
         'commentEvidence': None,
+        'voted_choice': vote_choice,
+        'opened_reply_comment_id': opened_reply_comment_id,
+        'reply_form': ReplyForm(),
+
     }
     return render(request, 'community_detail_comment.html', context)
 
@@ -659,6 +693,7 @@ def detail_reply_ai_response(request, post_id, comment_id):
     post = get_object_or_404(Post, id=post_id)
     comment = get_object_or_404(Comment, id=comment_id)
     content = request.POST.get('content')
+    opened_reply_comment_id = request.POST.get('opened_reply_comment_id')
 
     if not content:
         messages.error(request, "답글 내용을 입력하세요.")
@@ -669,21 +704,67 @@ def detail_reply_ai_response(request, post_id, comment_id):
         extra_text = ' 이 글을 분석하여 중심이 되는 핵심 키워드 1~3개를 추출해 주세요. 각 키워드는 댓글의 핵심 주제를 대표해야 합니다. 출력은 오직 쉼표로 구분된 키워드 목록 형태로 작성해 주세요. 단어 수준이 아닌, 사회적 이슈나 제도 등을 나타내는 의미 단위(논리적 단위)의 주제어로 판단해 주세요. 출력 형식 예시: 군 가산점 제도, 여성 역차별, 남성 의무복무'
         full_prompt = content + extra_text
         evidence, link1, link2, link3, link4 = get_gemini_response(content, full_prompt)
+
         replyEvidence = ReplyEvidence.objects.create(reply=reply, keyword=evidence, link1=link1, link2=link2, link3=link3, link4=link4)
         print('테스트' + replyEvidence.keyword)
         reply_form = ReplyForm(request.POST or None, initial={'content': content})
         comment_form = CommentForm()
 
+        # # 댓글 목록 가져오기(답글까지 같이 가져옴)
+        comments = post.comments.select_related('user').prefetch_related('replies').filter(created_at__isnull=False)
+
+        # 댓글 필터링 및 익명번호 부여
+        comments, comments_by_choice, comment_etc = anonymous_function(post, comments)
+
+        vote_choice = Vote.objects.filter(post=post, user=request.user).first()
+        if vote_choice:
+            vote_choice = vote_choice.choice
+        else:
+            vote_choice = None
+
+        # 투표 퍼센트 정보 얻기
+        votes_dict_raw = post.count_votes()
+        votes_for_choice_1 = votes_dict_raw[1]
+        votes_for_choice_2 = votes_dict_raw[2]
+        votes_for_choice_3 = votes_dict_raw[3]
+        total = votes_for_choice_1 + votes_for_choice_2 + votes_for_choice_3
+
+        # 0으로 나누는 에러 방지
+        if total == 0:
+            votes_percent = {1: 0, 2: 0, 3: 0}
+        else:
+            votes_percent = {
+                1: votes_for_choice_1 / total * 100,
+                2: votes_for_choice_2 / total * 100,
+                3: votes_for_choice_3 / total * 100,
+            }
+        replyEvidenceMap = defaultdict(list)  # 댓글ID
+        ai_replied_id_map = {}
+        for comment in comments:
+            comment.filtered_replies = comment.replies.filter(created_at__isnull=False)
+
+            # 댓글별 AI 주석 맵 만들기
+
+            for r in comment.replies.all():
+                if r.id == reply.id:
+                    for evidence_obj in r.reply_evidence.all():
+                        replyEvidenceMap[comment.id].append(evidence_obj)
+                    ai_replied_id_map[comment.id] = r.id
         context = {
-            'post': comment.post,
+            'post': post,
             'comment': reply.comment,
-            'comments': reply.comment.post.comments.filter(created_at__isnull=False),
+            'comments': comments,
+            'comments_by_choice': comments_by_choice,
+            'comment_etc': comment_etc,
             'reply_form': reply_form,
             'comment_form':comment_form,
             'replyEvidence': replyEvidence,
-            'replyEvidenceMap': {comment.id: replyEvidence},
-            'opened_reply_comment_id': comment.id,
+            'replyEvidenceMap': replyEvidenceMap,
             'now':1,
+            'voted_choice': vote_choice,
+            'opened_reply_comment_id': opened_reply_comment_id,
+            'reply_form': reply_form,
+            'comment_form': comment_form,
 
         }
 
@@ -694,23 +775,27 @@ def anonymous_function (post, comments):
     # 투표 항목에 따른 댓글 필터링
     comments_modifing = post.comments.filter(created_at__isnull=False)
     vote_choices = [1, 2, 3]
-    comments_by_choice = {}
+    comments_by_choice = defaultdict(list)
+
+    comment_etc = comments_modifing.filter(
+        post=post,
+        image='/media/profile_image/D.jpg',
+    )
 
     for choice in vote_choices:
         comments_opinion = comments_modifing.filter(
             post=post,
             user__vote__post=post,
             user__vote__choice=choice,
-        ).distinct()  # 중복 방지 distinct()
-        # 프론트 전달용 딕셔너리 - comments_by_choice
-        comments_by_choice[choice] = comments_opinion
+        )
 
-    comment_etc = comments_modifing.filter(
-        post=post,
-        image='/media/profile_image/D.jpg',
-    ).distinct()
+        for comment in comments_opinion:
+            if comment not in comment_etc:
 
+                # 프론트 전달용 딕셔너리 - comments_by_choice
+                comments_by_choice[choice].append(comment)
 
+        comments_by_choice[4] = comment_etc
     all_entries = []
 
     # comments 전체

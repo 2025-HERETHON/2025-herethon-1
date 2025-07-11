@@ -1,108 +1,138 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>스크랩 - 더 커뮤니티</title>
-  <style>
-    body {
-      background-color: #ffffff;
-      color: #111111;
-      font-family: 'Pretendard', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #f8f8f8;
-      padding: 20px 40px;
-      font-weight: bold;
-      font-size: 20px;
-    }
-    .container {
-      max-width: 960px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-    .tabs {
-      margin-bottom: 30px;
-    }
-    .tabs a {
-      margin-right: 20px;
-      text-decoration: none;
-      color: #333;
-      font-weight: 600;
-    }
-    .tabs a.active {
-      border-bottom: 2px solid #000;
-      padding-bottom: 4px;
-    }
-    .post {
-      border-bottom: 1px solid #ddd;
-      padding: 20px 0;
-      display: flex;
-      justify-content: space-between;
-    }
-    .post-info {
-      max-width: 65%;
-    }
-    .post-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 8px 0;
-    }
-    .post-content {
-      color: #555;
-      margin-bottom: 8px;
-    }
-    .post-meta {
-      font-size: 13px;
-      color: #999;
-    }
-    .post-thumbnail {
-      width: 30%;
-      height: 120px;
-      background-color: #eee;
-    }
-    footer {
-      margin-top: 60px;
-      padding: 20px;
-      text-align: center;
-      font-size: 13px;
-      color: #aaa;
-    }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>스크랩 - 더 커뮤니티</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/scrap.css' %}">
+      <script src="{% static 'js/scrap.js' %}"></script>
+  </head>
+  <body>
+    <div id="header"></div>
+    <div class="container">
+      <h4>스크랩</h4>
+      <div class="tabs">
+        <a href="{% url 'scraps:scraps_article' %}" class="article-nav active"
+          >아티클</a
+        >
+        <a href="{% url 'scraps:scraps_community' %}" class="community-nav"
+          >커뮤니티</a
+        >
+        <a href="{% url 'scraps:scraps_proposal' %}" class="policy-nav"
+          >정책 제안</a
+        >
+      </div>
 
-<header>더 커뮤니티</header>
-
-<div class="container">
-  <h2>스크랩</h2>
-
-  <div class="tabs">
-    <a href="{% url 'scraps:scraps_article' %}" class="active">아티클</a>
-    <a href="{% url 'scraps:scraps_community' %}">커뮤니티</a>
-    <a href="{% url 'scraps:scraps_proposal' %}">정책 제안</a>
-  </div>
-
-  {% for post in article_posts %}
-  <div class="post">
-    <div class="post-info">
-      <div class="post-meta">{{ post.created_at|date:"Y.m.d" }}</div>
-      <div class="post-title">{{ post.title }}</div>
-      <div class="post-content">{{ post.content|truncatechars:70 }}</div>
-      <div class="post-meta">{{ post.author.username }}</div>
+      {% for post in article_posts %}
+      <div class="post">
+        <div class="post-info">
+          <div class="post-meta">{{ post.created_at|date:"Y.m.d" }}</div>
+          <div class="post-title">{{ post.title }}</div>
+          <div class="post-content">{{ post.content|truncatechars:70 }}</div>
+          <div class="comment-div4">
+            <div class="comment-buttons2 like">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <mask
+                  id="mask0_1422_15530"
+                  style="mask-type: alpha"
+                  maskUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="20"
+                  height="20"
+                >
+                  <rect width="20" height="20" fill="#D9D9D9" />
+                </mask>
+                <g mask="url(#mask0_1422_15530)">
+                  <path
+                    d="M16.5895 7.16631C16.9721 7.16631 17.31 7.31304 17.6033 7.60649C17.8968 7.89982 18.0435 8.23778 18.0435 8.62039V9.91964C18.0435 10.0041 18.0327 10.0946 18.011 10.1911C17.9894 10.2875 17.9652 10.3775 17.9384 10.4612L15.6331 15.9007C15.5179 16.1579 15.3247 16.3752 15.0535 16.5526C14.7823 16.73 14.4993 16.8187 14.2045 16.8187H5.74605V7.16631L10.4252 2.52735C10.5852 2.36755 10.7703 2.27217 10.9806 2.2412C11.191 2.21023 11.3925 2.24629 11.5853 2.34939C11.7782 2.45261 11.9195 2.59907 12.0092 2.78877C12.0989 2.97846 12.118 3.17493 12.0665 3.37816L11.2002 7.16631H16.5895ZM6.95259 7.67989V15.6121H14.2073C14.264 15.6121 14.322 15.5966 14.3813 15.5657C14.4407 15.5347 14.4858 15.4831 14.5168 15.411L16.837 9.98157V8.62039C16.837 8.54813 16.8138 8.48881 16.7674 8.44243C16.721 8.39604 16.6617 8.37285 16.5895 8.37285H9.67516L10.6836 3.96434L6.95259 7.67989ZM3.41038 16.8187C3.01048 16.8187 2.66816 16.6763 2.38341 16.3915C2.09867 16.1068 1.9563 15.7645 1.9563 15.3646V8.62039C1.9563 8.22049 2.09867 7.87817 2.38341 7.59342C2.66816 7.30868 3.01048 7.16631 3.41038 7.16631H5.74605V8.37285H3.41038C3.33813 8.37285 3.2788 8.39604 3.23242 8.44243C3.18603 8.48881 3.16284 8.54813 3.16284 8.62039V15.3646C3.16284 15.4368 3.18603 15.4961 3.23242 15.5425C3.2788 15.5889 3.33813 15.6121 3.41038 15.6121H5.74605V16.8187H3.41038Z"
+                    fill="#A3A3A3"
+                  />
+                </g>
+              </svg>
+              <div class="comment-div3">{{ article.liked.count }}</div>
+            </div>
+            <div class="comment-div4">
+              <div class="comment-buttons2 messages">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <mask
+                    id="mask0_374_11829"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="24"
+                    height="24"
+                  >
+                    <rect width="24" height="24" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_374_11829)">
+                    <path
+                      d="M6.44068 17.9315L4.57373 19.7983C4.30842 20.0637 4.00324 20.1239 3.6582 19.9787C3.31331 19.8334 3.14087 19.5718 3.14087 19.194V5.62917C3.14087 5.15808 3.30406 4.75934 3.63046 4.43295C3.95685 4.10655 4.35559 3.94336 4.82668 3.94336H19.1734C19.6445 3.94336 20.0433 4.10655 20.3697 4.43295C20.696 4.75934 20.8592 5.15808 20.8592 5.62917V16.2457C20.8592 16.7168 20.696 17.1156 20.3697 17.442C20.0433 17.7684 19.6445 17.9315 19.1734 17.9315H6.44068ZM5.84525 16.5327H19.1734C19.2452 16.5327 19.311 16.5028 19.3707 16.443C19.4305 16.3833 19.4604 16.3175 19.4604 16.2457V5.62917C19.4604 5.55736 19.4305 5.49162 19.3707 5.43194C19.311 5.3721 19.2452 5.34218 19.1734 5.34218H4.82668C4.75487 5.34218 4.68913 5.3721 4.62945 5.43194C4.56961 5.49162 4.53969 5.55736 4.53969 5.62917V17.8241L5.84525 16.5327Z"
+                      fill="white"
+                    />
+                  </g>
+                </svg>
+                <div class="comment-div3">{{ article.comment.count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <img
+          class="post-thumnail"
+          src="{{post.thumnail}}"
+          alt="{{post.thumnail}}"
+        />
+      </div>
+      {% empty %}
+      <div class="none-post">
+        <div class="none-post-info">스크랩 된 아티클이 없습니다.</div>
+        <div class="goTo">
+          <a href="{% url 'articles:home' %}" style="color: #fff"
+            >아티클 보러가기</a
+          >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="21"
+            height="20"
+            viewBox="0 0 21 20"
+            fill="none"
+          >
+            <mask
+              id="mask0_1422_8232"
+              style="mask-type: alpha"
+              maskUnits="userSpaceOnUse"
+              x="0"
+              y="0"
+              width="21"
+              height="20"
+            >
+              <rect x="0.5" width="20" height="20" fill="#D9D9D9" />
+            </mask>
+            <g mask="url(#mask0_1422_8232)">
+              <path
+                d="M14.5721 6.87138L6.20565 15.2293C6.08149 15.3534 5.9255 15.4139 5.73769 15.4111C5.54973 15.4083 5.39367 15.3448 5.26951 15.2206C5.1455 15.0964 5.0835 14.9419 5.0835 14.7569C5.0835 14.5719 5.1455 14.4174 5.26951 14.2932L13.6275 5.92673H6.27983C6.08933 5.92673 5.92961 5.86226 5.80067 5.73332C5.67188 5.60438 5.60748 5.44465 5.60748 5.25416C5.60748 5.06351 5.67188 4.90386 5.80067 4.77522C5.92961 4.64643 6.08933 4.58203 6.27983 4.58203H15.1064C15.3361 4.58203 15.5285 4.65965 15.6837 4.81489C15.8391 4.97028 15.9168 5.16272 15.9168 5.39221V14.219C15.9168 14.4095 15.8524 14.5692 15.7234 14.698C15.5945 14.8269 15.4348 14.8914 15.2443 14.8914C15.0536 14.8914 14.8939 14.8269 14.7651 14.698C14.6365 14.5692 14.5721 14.4095 14.5721 14.219V6.87138Z"
+                fill="white"
+              />
+            </g>
+          </svg>
+        </div>
+      </div>
+      {% endfor %}
     </div>
-    <div class="post-thumbnail"></div>
-  </div>
-  {% empty %}
-  <p>스크랩한 글이 없습니다.</p>
-  <a href="{% url 'articles:home' %}" class="active">아티클바로가기</a>
-  {% endfor %}
-</div>
-
-<footer>
-  &copy; 더 커뮤니티. All rights reserved.
-</footer>
-
-</body>
+    <div id="footer"></div>
+    <script src="./scrap.js"></script>
+  </body>
 </html>

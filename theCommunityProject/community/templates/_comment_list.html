@@ -4,13 +4,16 @@
     <img src="{{ comment.image }}" width="50" height="50">
     <strong>{{ comment.anonymous_name }}</strong>:
 
-    {% if editing_comment_id == comment.id %}
-      {# 수정 중인 댓글 UI 작성 #}
-    {% else %}
+
       <p>{{ comment.content }}</p>
       {% if request.user == comment.user %}
-        {# 수정/삭제 버튼 등 #}
-      {% endif %}
+    <form method="post" action="{% url 'community:detail_comment_delete' post.id comment.id now %}" style="display:inline;">
+  {% csrf_token %}
+  <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
+</form>
+        💬 답글 ({{ comment.replies.count }})
+      </button>
+
     {% endif %}
 
     <p>
@@ -18,18 +21,23 @@
       <button onclick="toggleReply({{ comment.id }})">
         💬 답글 ({{ comment.replies.count }})
       </button>
-      <a href="{% url 'community:detail_comment_like' post.id comment.id now %}">
+      {% if request.user in comment.liked.all %}
+      <a style="color: #a57bff" href="{% url 'community:detail_comment_like' post.id comment.id now %}">
         ❤️ {{ comment.liked.count }}
       </a>
+      {% else %}
+      <a style="color: #fff" href="{% url 'community:detail_comment_like' post.id comment.id now %}">❤️ {{ comment.liked.count }} </a>
+      {% endif %}
     </p>
 
-    {% if opened_reply_comment_id == comment.id %}
-      <div id="reply-section-{{ comment.id }}" style="display:block;">
-    {% else %}
-      <div id="reply-section-{{ comment.id }}" style="display:none;">
-    {% endif %}
 
-    {% for reply in comment.replies.all %}
+    {% if opened_reply_comment_id|stringformat:"s" == comment.id|stringformat:"s" %}
+  <div id="reply-section-{{ comment.id }}" style="display:block;">
+{% else %}
+  <div id="reply-section-{{ comment.id }}" style="display:none;">
+{% endif %}
+
+{% for reply in comment.replies.all %}
       {% if reply.created_at %}
         <img src="{{ reply.image }}" width="50" height="50">
         <div id="reply_{{ reply.id }}">
@@ -56,25 +64,30 @@
           {% endif %}
 
           <small>{{ reply.created_at|date:"Y.m.d" }}</small>
-          <a href="{% url 'community:detail_reply_like' reply.comment.post.id reply.comment.id reply.id %}">좋아요</a>
+          <a href="{% url 'community:detail_reply_like' reply.comment.post.id reply.comment.id reply.id %}">좋아요{{reply.liked.count}}</a>
         </div>
       {% endif %}
     {% empty %}
       <p>대댓글이 없습니다.</p>
-    {% endfor %}
+{% endfor %}
 
-    <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'community:detail_reply_create' post.id comment.id %}">
-      {% csrf_token %}
-      {% if opened_reply_comment_id == comment.id %}
-      {{ reply_form.content }}
-      {% else %}
-      <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;">{{ reply_form.content.value|default_if_none:'' }}</textarea>
-      {% endif %}
-      <br>
-      <button type="submit">등록</button>
-      <button type="button" id="ai-button-reply-{{ comment.id }}">AI</button>
-    </form>
+<form method="post" id="reply-form-{{ comment.id }}" action="{% url 'community:detail_reply_create' post.id comment.id %}">
+  {% csrf_token %}
 
+  <!-- 필터 값과 열린 답글 comment_id 같이 넘기기 -->
+  <input type="hidden" name="filter" value="{{ request.GET.filter|default:'all' }}">
+  <input type="hidden" name="opened_reply_comment_id" value="{{ comment.id }}">
+
+  {% if opened_reply_comment_id|stringformat:"s" == comment.id|stringformat:"s" %}
+    {{ reply_form.content }}
+  {% else %}
+    <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;">{{ reply_form.content.value|default_if_none:'' }}</textarea>
+  {% endif %}
+  <br>
+  <button type="submit">등록</button>
+  <button type="button" id="ai-button-reply-{{ comment.id }}">AI</button>
+</form>
+</div>
     <script>
       document.getElementById('ai-button-reply-{{ comment.id }}').addEventListener('click', function() {
         const form = document.getElementById('reply-form-{{ comment.id }}');
@@ -92,24 +105,19 @@
     }
   }
     </script>
-    {% if replyEvidenceMap %}
-          {% with replyEvidence=replyEvidenceMap|dict_get:comment.id %}
-    {% if replyEvidence %}
-      <div id="aiResultR" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
-        <div style="font-weight:bold; margin-bottom:6px;">result</div>
-        <div style="background:#555; padding:10px; border-radius:4px;">
-          자료 검색 결과<br>
-          AI 주석<br>
-          {{ replyEvidence.keyword }}<br>
-          <a href="{{ replyEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-          <a href="{{ replyEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-        </div>
+     {% if replyEvidenceMap|dict_get1:comment.id %}
+      <div class="ai-evidence-section" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
+        <strong>AI 주석들:</strong><br>
+        {% for evidence in replyEvidenceMap|dict_get:comment.id %}
+          <div style="background:#555; padding:10px; border-radius:4px; margin-bottom:6px;">
+            키워드: {{ evidence.keyword }}<br>
+            <a href="{{ evidence.link1 }}" target="_blank" style="color:#9cf;">출처1</a>
+            <a href="{{ evidence.link2 }}" target="_blank" style="color:#9cf;">출처2</a>
+          </div>
+        {% endfor %}
       </div>
-    {% endif %}
-    {% endwith %}
     {% endif %}
   </div>
 {% empty %}
   <p>아직 의견이 없습니다.</p>
 {% endfor %}
-      </div></div>
