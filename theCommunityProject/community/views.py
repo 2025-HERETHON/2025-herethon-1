@@ -440,10 +440,10 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
             reply.liked.remove(request.user)
         else:
             reply.liked.add(request.user)
-    return redirect('{}#reply_{}'.format(
-        resolve_url('community:detail_comment_detail', post_id=post_id), comment_id, reply_id
+    return redirect('{}#reply_{}_reply_{}'.format(
+        resolve_url('community:detail_comment_detail', post_id=post_id), comment.id, reply.id
     ))
-    return redirect('{}#reply_{}'.format(resolve_url('community:detail_comment_detail', post_id=post.id), reply.id))
+    # return redirect('{}#commentreply_{}'.format(resolve_url('community:detail_comment_detail', post_id=post.id), reply.id))
 
 @login_required(login_url='accounts:login')
 def detail_vote(request, post_id, now):
