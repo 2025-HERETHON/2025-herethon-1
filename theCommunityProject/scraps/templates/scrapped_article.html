@@ -56,7 +56,7 @@
                   />
                 </g>
               </svg>
-              <div class="comment-div3">{{ article.liked.count }}</div>
+              <div class="comment-div3">{{ post.liked.count }}</div>
             </div>
             <div class="comment-div4">
               <div class="comment-buttons2 messages">
@@ -85,14 +85,14 @@
                     />
                   </g>
                 </svg>
-                <div class="comment-div3">{{ article.comment.count }}</div>
+                <div class="comment-div3">{{ post.artice_comments.count }}</div>
               </div>
             </div>
           </div>
         </div>
         <img
           class="post-thumnail"
-          src="{{post.thumnail}}"
+          src="{{post.image.url}}"
           alt="{{post.thumnail}}"
         />
       </div>

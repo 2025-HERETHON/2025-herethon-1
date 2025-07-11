@@ -140,6 +140,8 @@
         <li><a href="{% url 'proposals:home' %}">정책 제안</a></li>
         {% if user.is_authenticated %}
         <li><a href="{% url 'scraps:scraps_article' %}">스크랩</a></li>
+        {% else %}
+        <li><a href="{% url 'accounts:login' %}">스크랩</a></li>
         {% endif %}
       </ul>
       {% if user.is_authenticated %}
@@ -411,7 +413,7 @@
       <a href="{% url 'community:detail' post.id %}" class="card-link">
         <div class="card">
           <!-- if 넣기 -->
-          <div class="thumbnail"><img src="{{ post.image }}"></div>
+          <div class="thumbnail"><img src="{{ post.image.url }}"></div>
           <div class="card-content">{{ post.title|truncatechars:30 }}</div>
           <div class="meta">
             투표수: {{ post.votes.count }} | 💬 {{ post.filtered_comments.count }}

@@ -9,7 +9,7 @@ class ProposalPost(models.Model):
     question = models.TextField()  # 투표 질문
     result_number = models.IntegerField(null=True, blank=True) # 썸네일 지정용
     result_choice = models.CharField(max_length=100)  # 가장 많이 선택된 항목
-    result_percent = models.IntegerField()  # 해당 항목 퍼센트
+    result_percent = models.FloatField()  # 해당 항목 퍼센트
     created_at = models.DateTimeField(auto_now_add=True)
     liked = models.ManyToManyField(User, related_name='liked_proposal_posts', blank=True)
     # article = models.ForeignKey(Article, on_delete = models.CASCADE)
