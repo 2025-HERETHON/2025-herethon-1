@@ -2,429 +2,691 @@
 {% load custom_filters %}
 <!DOCTYPE html>
 <html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ article.title }} - 아티클</title>
+    <link rel="stylesheet" href="{% static 'css/ArticleDetail.css' %}" />
+    <style></style>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>{{ article.title }} - 아티클</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Pretendard', sans-serif;
-      background-color: #121212;
-      color: white;
-    }
-
-    header,
-    footer {
-      background-color: #1f1f1f;
-      padding: 1rem 2rem;
-    }
-
-    .logo {
-      font-size: 1.5rem;
-      color: #a57bff;
-      font-weight: bold;
-    }
-
-    nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    nav ul {
-      display: flex;
-      list-style: none;
-      gap: 2rem;
-      margin: 0;
-      padding: 0;
-    }
-
-    nav ul li {
-      cursor: pointer;
-    }
-
-    .article-container {
-      max-width: 800px;
-      margin: auto;
-      padding: 2rem;
-    }
-
-    .article-header img {
-      width: 100%;
-      border-radius: 10px;
-      margin-bottom: 0.5rem;
-    }
-
-    .article-header small {
-      display: block;
-      color: #aaa;
-      margin-bottom: 1rem;
-    }
-
-    .section {
-      margin-top: 2rem;
-    }
-
-    .section img {
-      width: 100%;
-      margin: 1rem 0;
-      border-radius: 8px;
-    }
-
-    .quote {
-      background: #222;
-      padding: 1rem;
-      border-left: 4px solid #a57bff;
-      margin: 1rem 0;
-      color: #ddd;
-    }
-
-    .meta-bar {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #bbb;
-    }
-
-    .author-info {
-      margin-top: 3rem;
-      padding: 1rem;
-      background-color: #1e1e1e;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .author-photo {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .card {
-      background-color: #1f1f1f;
-      padding: 1rem;
-      border-radius: 10px;
-      color: white;
-      transition: transform 0.2s ease;
-    }
-
-    .thumbnail {
-      width: 100%;
-      height: 120px;
-      background-color: #333;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-    }
-  </style>
-</head>
-
-<body>
-  <header>
-    <nav>
-      <div class="logo">더 커뮤니티</div>
-      <ul>
-        <li><a href="{% url 'articles:home' %}" style="color: #a57bff">아티클</a></li>
-        <li><a href="{% url 'community:home' %}">커뮤니티</a></li>
-        <li><a href="{% url 'proposals:home' %}">정책 제안</a></li>
-        {% if user.is_authenticated %}
-        <li><a href="{% url 'scraps:scraps_article' %}">스크랩</a></li>
-        {% endif %}
-      </ul>
-      {% if user.is_authenticated %}
-      <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
-      {% else %}
-      <a href="{% url 'accounts:login' %}" class="auth-links">로그인/회원가입</a>
-      {% endif %}
-    </nav>
-  </header>
-
-  <div class="article-container">
-
-    <div class="article-header">
-      {% if article.image %}
-      <img src="{{ article.image.url }}" alt="대표 이미지">
-      {% if article.image_alt %}<small>{{ article.image_alt }}</small>{% endif %}
-      {% endif %}
-      <h1>{{ article.title }}</h1>
-      <div class="meta-bar">
-        <div>작성일: {{ article.created_at|date:"Y.m.d" }}</div>
-      </div>
-    </div>
-
-    {% for section in article.sections.all %}
-    <div class="section">
-      {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
-      {% if section.image %}
-      <img src="{{ section.image.url }}" alt="{{ section.image_alt }}">
-      {% if section.image_alt %}<small>{{ section.image_alt }}</small>{% endif %}
-      {% endif %}
-      {% if section.quote %}<div class="quote">“{{ section.quote }}”</div>{% endif %}
-      <p>{{ section.text|linebreaks }}</p>
-    </div>
-    {% endfor %}
-
-    <div class="author-info">
-      {% if article.author_profile.photo %}
-      <img src="{{ article.author_profile.photo.url }}" alt="작성자 사진" class="author-photo">
-      {% endif %}
-      <div>
-        <p><strong>{{ article.author_profile.name }}</strong> - {{ article.author_profile.role }}</p>
-        <p>{{ article.author_profile.bio }}</p>
-        <p>{{ article.author_profile.email }}</p>
-      </div>
-    </div>
-
-    <div style="margin-top: 1.5rem; display:flex; justify-content:space-between; align-items:center;">
-      <div><a href="{% url 'articles:article_like' article.id %}">❤️ {{ article.liked.count }}</a></div>
-      <div>💬 {{ article.article_comments.count }}</div>
-      <div>
-        {% if request.user in article.scrapped.all %}
-        <a style="color: #a57bff;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
-        {% else %}
-        <a style="color: white;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
-        {% endif %}
-      </div>
-      <div><button onclick="copyCurrentUrl()">공유</button></div>
-    </div>
-
-    <hr>
-    <h3>댓글 {{ comments|length }}개</h3>
-
-    {% if messages %}
-    <div>
-      {% for message in messages %}
-      <p style="color: red;">{{ message }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <div style="margin-bottom: 1rem;">
-      {% if request.GET.sort == 'popular' or not request.GET.sort %}
-      <strong>인기순</strong>
-      {% else %}
-      <a href="?sort=popular">인기순</a>
-      {% endif %}
-
-      {% if request.GET.sort == 'recent' %}
-      <strong>최신순</strong>
-      {% else %}
-      <a href="?sort=recent">최신순</a>
-      {% endif %}
-    </div>
-
-    {% for comment in comments %}
-    <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
-      <strong>{{ comment.anonymous_name }}</strong>
-      <small>{% if comment.user.sex == 'M' %}(남성){% elif comment.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
-
-      {% if editing_comment_id == comment.id %}
-      <!-- <form method="post" action="{% url 'articles:comment_update' article.id comment.id %}">
-          {% csrf_token %}
-          <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
-          <button type="submit">수정 완료</button>
-        </form> -->
-      {% else %}
-      <p>{{ comment.content }}</p>
-      {% if request.user == comment.user %}
-      <!-- <form method="get" action="">
-            <input type="hidden" name="edit_comment" value="{{ comment.id }}">
-            <button>수정</button>
-          </form> -->
-      <form method="post" action="{% url 'articles:comment_delete' article.id comment.id %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
-      </form>
-      {% else %}
-      <button>신고하기</button>
-      {% endif %}
-      {% endif %}
-
-      <p>
-        {{ comment.created_at|date:"Y.m.d" }}
-        <button onclick="toggleReply({{ comment.id }})">
-          💬 대댓글 ({{ comment.article_replies.count }})
-        </button>
-        <a href="{% url 'articles:comment_like' article.id comment.id %}">❤️ {{ comment.liked.count }}</a>
-      </p>
-
-      {% if opened_reply_comment_id == comment.id %}
-        <div id="reply-section-{{ comment.id }}" style="display:block;">
-      {% else %}
-        <div id="reply-section-{{ comment.id }}" style="display:none;">
-      {% endif %}
-
-        {% for reply in comment.article_replies.all %}
-          <div id="reply_{{ reply.id }}">
-            <strong>{{ reply.anonymous_name }}</strong>
-            <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
-
-          {% if editing_reply_id == reply.id %}
-            <!-- <form method="post" action="{% url 'articles:reply_update' article.id comment.id reply.id %}">
-              {% csrf_token %}
-              <textarea name="content" style="width:100%; height:60px;">{{ reply.content }}</textarea><br>
-              <button type="submit">수정 완료</button>
-            </form> -->
-          {% else %}
-            <p>{{ reply.content }}</p>
-            {% if request.user == reply.user %}
-            <!-- <form method="get" action="">
-                <input type="hidden" name="edit_reply" value="{{ reply.id }}">
-                <input type="hidden" name="open_reply" value="{{ comment.id }}">
-                <button>수정</button>
-              </form> -->
-            <form method="post" action="{% url 'articles:reply_delete' article.id comment.id reply.id %}"
-              style="display:inline;">
-              {% csrf_token %}
-              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
-            </form>
-            {% else %}
-            <button>신고하기</button>
-            {% endif %}
-          {% endif %}
-
-          <small>{{ reply.created_at|date:"Y.m.d" }}</small>
-          <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+  <body>
+    <div class="AD-wrap">
+      <header>
+        <div class="gnb">
+          <div class="logo">
+            <a href="/">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="98"
+                height="24"
+                viewBox="0 0 98 24"
+                fill="none"
+              >
+                <path
+                  d="M85.0554 23.9984C76.5099 23.9984 72.1108 18.4765 72.1108 12.1147C72.1108 6.40377 76.2784 0 85.0554 0C93.8324 0 97.9999 6.40377 97.9999 12.1147C97.9999 18.4765 93.6009 23.9984 85.0554 23.9984ZM85.0554 18.2245C88.4862 18.2245 91.1593 15.705 91.1593 12.0097C91.1593 8.31441 88.7598 5.79489 85.0554 5.79489C81.3509 5.79489 78.9514 8.3774 78.9514 12.0097C78.9514 15.642 81.6246 18.2245 85.0554 18.2245Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M24.0158 0.0405237L12.0184 12.0082L0 23.9969H12.0184L24.0158 12.0292V12.0082H24.0369V0.0195312L24.0158 0.0405237Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M36.0555 0.0195312H24.0371V12.0082L30.0568 6.02437L36.0555 0.0195312Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M18.0386 23.997H24.0373V17.9922L18.0386 23.997Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M42.0539 12.0292V12.0082H42.0749V0.0195312L42.0539 0.0405237L36.0552 6.00338V17.9921L42.0539 12.0292Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M36.0555 6.00391L30.0568 12.0088L24.0371 17.9926V23.9975H30.0568L36.0555 17.9926V6.00391Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M42.0752 12.0082L48.0949 6.02437L54.0936 0.0195312H42.0752V12.0082Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M60.0714 0.0405237L54.0938 6.00338V17.9921L60.0714 12.0292V12.0082H60.0924V0.0195312L60.0714 0.0405237Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M36.0552 23.997H42.0749V17.9922L36.0552 23.997Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M48.0739 12.0088L42.0752 17.9926V23.9975H48.0739L54.0936 17.9926V6.00391L48.0739 12.0088Z"
+                  fill="#AD97F6"
+                />
+                <path
+                  d="M66.112 6.02437L72.1107 0.0195312H60.0923V12.0082L66.112 6.02437Z"
+                  fill="#AD97F6"
+                />
+              </svg>
+            </a>
           </div>
-          {% empty %}
-          <p>대댓글이 없습니다.</p>
-          {% endfor %}
-
-          <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'articles:reply_create' article.id comment.id %}">
-            {% csrf_token %}
-            {% if opened_reply_comment_id == comment.id %}
-              {{ reply_form.content }}
+          <div class="menu">
+            <a href="/articles/">아티클</a>
+            <a href="/community/">커뮤니티</a>
+            <a href="/proposals/">정책 제안</a>
+            <a href="/scrap/">스크랩</a>
+          </div>
+          <div class="login">
+            {% if user.is_authenticated %}
+            <a href="{% url 'accounts:logout' %}" class="auth-links"
+              >로그아웃</a
+            >
             {% else %}
-              <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea>
+            <a href="{% url 'accounts:login' %}" class="auth-links">로그인</a>
             {% endif %}
-            <br>
-            <button type="submit">등록</button>
-            <button type="button" id="ai-button-reply-{{ comment.id }}">AI</button>
-          </form>
-          <script>
-            document.getElementById('ai-button-reply-{{ comment.id }}').addEventListener('click', function() {
-              const form = document.getElementById('reply-form-{{ comment.id }}');
-              form.action = "{% url 'articles:detail_reply_ai_response' article.id comment.id %}";
-              form.submit();
-            });
-          </script>
-          <!-- AI 결과 영역 (기본 숨김) -->
-          {% if replyEvidenceMap %}
-          {% with replyEvidenceList=replyEvidenceMap|dict_get:comment.id %}
-          {% if replyEvidenceList %}
-            {% for replyEvidence in replyEvidenceList %}
-              <div id="aiResultR" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
-                <div style="font-weight:bold; margin-bottom:6px;">result</div>
-                <div style="background:#555; padding:10px; border-radius:4px;">
-                  자료 검색 결과<br>
+          </div>
+        </div>
+      </header>
 
-                  AI 주석<br>
-                  {{ replyEvidence.keyword }}<br>
+      <div class="AD-container">
+        <div class="AD-header">
+          {% if article.image %}
+          <img src="{{ article.image.url }}" alt="대표 이미지" />
+          {% if article.image_alt %}
+          <p class="AD-p1">{{ article.image_alt }}</p>
+          {% endif %}
+          {% endif %}
+          <p class="AD-p2">{{ article.title }}</p>
+          <div class="AD-meta-bar">
+            <div>작성일: {{ article.created_at|date:"Y.m.d" }}</div>
+          </div>
+        </div>
 
-                  <a href="{{ replyEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-                  <a href="{{ replyEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+        {% for section in article.sections.all %}
+        <div class="AD-section">
+          {% if section.heading %}
+          <p class="AD-p3">{{ section.heading }}</p>
+          {% endif %}
+          {% if section.image %}
+          <img src="{{ section.image.url }}" alt="{{ section.image_alt }}" />
+          {% if section.image_alt %}
+          <p class="AD-p4">{{ section.image_alt }}</p>
+          {% endif %}
+          {% endif %} 
+          {% if section.quote %}
+          <div class="AD-quote">“{{ section.quote }}”</div>
+          {% endif %}
+          <p class="AD-p5">{{ section.text | linebreaks }}</p>
+        </div>
+        {% endfor %}
+
+        <div class="AD-author-info">
+          {% if article.author_profile.photo %}
+          <img
+            src="{{ article.author_profile.photo.url }}"
+            alt="작성자 사진"
+            class="AD-author-photo"
+          />
+          {% endif %}
+          <div class="AD-infotext">
+            <div class="AD-job">
+              <p class="AD-p7">{{ article.author_profile.name }}</p>
+              <p class="AD-p6">- {{ article.author_profile.role }}</p>
+            </div>
+            <p class="AD-p8">{{ article.author_profile.bio }}</p>
+            <p class="AD-p9">{{ article.author_profile.email }}</p>
+          </div>
+        </div>
+
+        <div class="AD-click">
+          <div class="AD-likecomment">
+            <div class="AD-articlelike">
+              <a href="{% url 'articles:article_like' article.id %}">
+                <label class="AD-like-toggle">
+                  <input type="checkbox" class="AD-like-checkbox" hidden />
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <mask
+                      id="mask0_1347_16897"
+                      style="mask-type: alpha"
+                      maskUnits="userSpaceOnUse"
+                      x="0"
+                      y="0"
+                      width="20"
+                      height="20"
+                    >
+                      <rect width="20" height="20" fill="#D9D9D9" />
+                    </mask>
+                    <g mask="url(#mask0_1347_16897)">
+                      <path
+                        d="M16.5895 7.16795C16.9721 7.16795 17.31 7.31468 17.6033 7.60814C17.8968 7.90147 18.0435 8.23943 18.0435 8.62204V9.92129C18.0435 10.0057 18.0327 10.0962 18.011 10.1928C17.9894 10.2891 17.9652 10.3792 17.9384 10.4628L15.6331 15.9023C15.5179 16.1596 15.3247 16.3769 15.0535 16.5543C14.7823 16.7316 14.4993 16.8203 14.2045 16.8203H5.74605V7.16795L10.4252 2.529C10.5852 2.3692 10.7703 2.27382 10.9806 2.24285C11.191 2.21188 11.3925 2.24794 11.5853 2.35103C11.7782 2.45426 11.9195 2.60072 12.0092 2.79042C12.0989 2.98011 12.118 3.17658 12.0665 3.37981L11.2002 7.16795H16.5895ZM6.95259 7.68154V15.6138H14.2073C14.264 15.6138 14.322 15.5983 14.3813 15.5673C14.4407 15.5363 14.4858 15.4848 14.5168 15.4127L16.837 9.98322V8.62204C16.837 8.54978 16.8138 8.49046 16.7674 8.44408C16.721 8.39769 16.6617 8.3745 16.5895 8.3745H9.67516L10.6836 3.96599L6.95259 7.68154ZM3.41038 16.8203C3.01048 16.8203 2.66816 16.6779 2.38341 16.3932C2.09867 16.1084 1.9563 15.7661 1.9563 15.3662V8.62204C1.9563 8.22214 2.09867 7.87981 2.38341 7.59507C2.66816 7.31033 3.01048 7.16795 3.41038 7.16795H5.74605V8.3745H3.41038C3.33813 8.3745 3.2788 8.39769 3.23242 8.44408C3.18603 8.49046 3.16284 8.54978 3.16284 8.62204V15.3662C3.16284 15.4385 3.18603 15.4978 3.23242 15.5442C3.2788 15.5906 3.33813 15.6138 3.41038 15.6138H5.74605V16.8203H3.41038Z"
+                        fill="white"
+                      />
+                    </g>
+                  </svg>
+                  {{ article.liked.count }}
+                </label>
+              </a>
+            </div>
+            <div class="AD-articlecomment">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <mask id="mask0_490_27412" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+              <rect width="20" height="20" fill="#fff"/>
+              </mask>
+              <g mask="url(#mask0_490_27412)">
+              <path d="M6.22044 14.0338L4.95118 15.3029C4.77081 15.4834 4.56334 15.5243 4.32876 15.4256C4.09429 15.3268 3.97705 15.1489 3.97705 14.8921V5.66997C3.97705 5.3497 4.088 5.07861 4.3099 4.85671C4.5318 4.63481 4.80288 4.52386 5.12315 4.52386H14.8768C15.1971 4.52386 15.4682 4.63481 15.6901 4.85671C15.912 5.07861 16.0229 5.3497 16.0229 5.66997V12.8877C16.0229 13.208 15.912 13.479 15.6901 13.7009C15.4682 13.9228 15.1971 14.0338 14.8768 14.0338H6.22044ZM5.81564 13.0828H14.8768C14.9257 13.0828 14.9704 13.0625 15.0109 13.0218C15.0516 12.9812 15.072 12.9365 15.072 12.8877V5.66997C15.072 5.62115 15.0516 5.57645 15.0109 5.53588C14.9704 5.4952 14.9257 5.47486 14.8768 5.47486H5.12315C5.07434 5.47486 5.02964 5.4952 4.98906 5.53588C4.94838 5.57645 4.92804 5.62115 4.92804 5.66997V13.9607L5.81564 13.0828Z" fill="white"/>
+              </g>
+              </svg>
+              {{ article.article_comments.count }}
+            </div>
+          </div>
+          <div class="AD-scrapshare">
+            <div class="AD-articlescrap">
+              {% if request.user in article.scrapped.all %}
+              <a
+                style="color: #a57bff"
+                href="{% url 'articles:article_scrap' article.id %}"
+              >
+                스크랩
+              </a>
+              {% else %}
+              <a
+                style="color: white"
+                href="{% url 'articles:article_scrap' article.id %}"
+              >
+                스크랩
+              </a>
+              {% endif %}
+            </div>
+            <div class="AD-articleshare">
+              <button onclick="copyCurrentUrl()">공유</button>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="AD-commentsort">
+          <p class="AD-p10">댓글 {{ comments | length }}개</p>
+          {% if messages %}
+          <div class="AD-modal">
+            {% for message in messages %}
+            <p style="color: red">{{ message }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="AD-sort">
+            {% if request.GET.sort == 'popular' or not request.GET.sort %}
+            <p class="AD-popular active">인기순</p>
+            {% else %}
+            <a class="AD-popular" href="?sort=popular">인기순</a>
+            {% endif %} 
+            {% if request.GET.sort == 'recent' %}
+            <p class="AD-latest active">최신순</p>
+            {% else %}
+            <a class="AD-popular" href="?sort=recent">최신순</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="AD-commentboard">
+          {% for comment in comments %}
+          <div class="AD-usercomment" id="comment_{{ comment.id }}">
+            <div class="AD-cmtop">
+              <div
+                class="AD-commentusername"
+              >
+                <p class="AD-p11">{{ comment.anonymous_name }}</p>
+                <p class="AD-p12">
+                  {% if comment.user.sex == 'M' %}(남성){% elif comment.user.sex == 'F' %}(여성){% else %}(기타){% endif %} 
+                 <p class="Ad-p13"> {{comment.created_at|date:"Y.m.d" }}</p>
+                </p>
+              </div>
+              <details>
+                <summary>
+                <svg class="AD-kebob"
+                  width="29"
+                  height="28"
+                  viewBox="0 0 29 28"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <mask
+                    id="mask0_1347_14855"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="5"
+                    y="5"
+                    width="19"
+                    height="18"
+                  >
+                    <rect
+                      x="5.71484"
+                      y="5"
+                      width="18"
+                      height="18"
+                      fill="#D9D9D9"
+                    />
+                  </mask>
+                  <g mask="url(#mask0_1347_14855)">
+                    <path
+                      d="M14.7147 19.9998C14.3742 19.9998 14.0827 19.8785 13.8404 19.636C13.5978 19.3936 13.4766 19.1021 13.4766 18.7617C13.4766 18.4212 13.5978 18.1297 13.8404 17.8872C14.0827 17.6448 14.3742 17.5236 14.7147 17.5236C15.0551 17.5236 15.3466 17.6448 15.589 17.8872C15.8315 18.1297 15.9527 18.4212 15.9527 18.7617C15.9527 19.1021 15.8315 19.3936 15.589 19.636C15.3466 19.8785 15.0551 19.9998 14.7147 19.9998ZM14.7147 15.2378C14.3742 15.2378 14.0827 15.1166 13.8404 14.8741C13.5978 14.6317 13.4766 14.3402 13.4766 13.9998C13.4766 13.6593 13.5978 13.3678 13.8404 13.1255C14.0827 12.8829 14.3742 12.7617 14.7147 12.7617C15.0551 12.7617 15.3466 12.8829 15.589 13.1255C15.8315 13.3678 15.9527 13.6593 15.9527 13.9998C15.9527 14.3402 15.8315 14.6317 15.589 14.8741C15.3466 15.1166 15.0551 15.2378 14.7147 15.2378ZM14.7147 10.4759C14.3742 10.4759 14.0827 10.3547 13.8404 10.1124C13.5978 9.86983 13.4766 9.57832 13.4766 9.23785C13.4766 8.89737 13.5978 8.60594 13.8404 8.36355C14.0827 8.12102 14.3742 7.99976 14.7147 7.99976C15.0551 7.99976 15.3466 8.12102 15.589 8.36355C15.8315 8.60594 15.9527 8.89737 15.9527 9.23785C15.9527 9.57832 15.8315 9.86983 15.589 10.1124C15.3466 10.3547 15.0551 10.4759 14.7147 10.4759Z"
+                      fill="#A3A3A3"
+                    />
+                  </g>
+                </svg>
+                </summary>
+
+                <div class="AD-delete112">
+                  {% if request.user == comment.user %}
+                  <form
+                    method="post"
+                    action="{% url 'articles:comment_delete' article.id comment.id %}"
+                    style="display: inline"
+                  >
+                    {% csrf_token %}
+                    <button class="AD-delete"
+                      type="submit"
+                      onclick="return confirm('댓글을 삭제하시겠습니까?');"
+                    >
+                      삭제
+                    </button>
+                  </form>
+                  {% else %}
+                  <button class="AD-112">신고하기</button>
+                  {% endif %}
+                </div>
+              </details>
+            </div>
+
+            <p class="AD-14">{{ comment.content }}</p>
+
+            <p class="AD-cmreaction">
+              <a href="{% url 'articles:comment_like' article.id comment.id %}">
+                <label class="AD-cmlike">
+                  <input type="checkbox" class="AD-cmlike-checkbox" hidden />
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <mask id="mask0_1347_16294" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
+                  <rect width="16" height="16" fill="#D9D9D9"/>
+                  </mask>
+                  <g mask="url(#mask0_1347_16294)">
+                  <path d="M13.2717 5.73432C13.5778 5.73432 13.8482 5.8517 14.0828 6.08646C14.3176 6.32112 14.435 6.5915 14.435 6.89758V7.93698C14.435 8.00455 14.4263 8.07694 14.4089 8.15416C14.3916 8.23127 14.3723 8.30329 14.3508 8.37021L12.5066 12.7218C12.4145 12.9276 12.2599 13.1015 12.043 13.2434C11.826 13.3852 11.5996 13.4562 11.3638 13.4562H4.59699V5.73432L8.34033 2.02315C8.46827 1.89531 8.61638 1.819 8.78466 1.79423C8.95293 1.76945 9.11418 1.7983 9.2684 1.88078C9.42273 1.96336 9.53577 2.08053 9.60752 2.23228C9.67927 2.38404 9.69455 2.54121 9.65337 2.7038L8.96033 5.73432H13.2717ZM5.56222 6.14518V12.491H11.366C11.4114 12.491 11.4578 12.4786 11.5052 12.4538C11.5527 12.429 11.5888 12.3878 11.6136 12.3301L13.4697 7.98653V6.89758C13.4697 6.83978 13.4512 6.79232 13.4141 6.75521C13.377 6.7181 13.3295 6.69955 13.2717 6.69955H7.74027L8.54705 3.17274L5.56222 6.14518ZM2.72845 13.4562C2.40853 13.4562 2.13467 13.3423 1.90688 13.1145C1.67908 12.8867 1.56519 12.6128 1.56519 12.2929V6.89758C1.56519 6.57766 1.67908 6.3038 1.90688 6.07601C2.13467 5.84821 2.40853 5.73432 2.72845 5.73432H4.59699V6.69955H2.72845C2.67065 6.69955 2.62319 6.7181 2.58608 6.75521C2.54897 6.79232 2.53042 6.83978 2.53042 6.89758V12.2929C2.53042 12.3507 2.54897 12.3982 2.58608 12.4353C2.62319 12.4724 2.67065 12.491 2.72845 12.491H4.59699V13.4562H2.72845Z" fill="#A3A3A3"/>
+                  </g>
+                  </svg>
+                  {{ comment.liked.count }}
+                </label>
+              </a>
+              <label class="AD-reply-toggle-wrapper">
+                <input type="checkbox" hidden class="AD-reply-toggle-checkbox" />
+                <button class="AD-cmtogglebtn" onclick="toggleReply({{ comment.id }})" >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <mask id="mask0_1347_5284" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
+                  <rect width="16" height="16"/>
+                  </mask>
+                  <g mask="url(#mask0_1347_5284)">
+                  <path d="M3.46453 12.8405L1.94142 14.3634C1.72497 14.58 1.476 14.6291 1.19451 14.5106C0.913144 14.3921 0.772461 14.1787 0.772461 13.8704V2.80391C0.772461 2.41959 0.9056 2.09428 1.17188 1.82801C1.43816 1.56173 1.76346 1.42859 2.14779 1.42859H13.8522C14.2365 1.42859 14.5618 1.56173 14.8281 1.82801C15.0944 2.09428 15.2275 2.41959 15.2275 2.80391V11.4652C15.2275 11.8495 15.0944 12.1748 14.8281 12.4411C14.5618 12.7074 14.2365 12.8405 13.8522 12.8405H3.46453ZM2.97876 11.6993H13.8522C13.9108 11.6993 13.9644 11.6749 14.0131 11.6261C14.0619 11.5774 14.0863 11.5237 14.0863 11.4652V2.80391C14.0863 2.74533 14.0619 2.6917 14.0131 2.64301C13.9644 2.59419 13.9108 2.56978 13.8522 2.56978H2.14779C2.0892 2.56978 2.03557 2.59419 1.98688 2.64301C1.93806 2.6917 1.91365 2.74533 1.91365 2.80391V12.7528L2.97876 11.6993Z" fill="#A3A3A3"/>
+                  </g>
+                  </svg>
+                  ({{ comment.article_replies.count }})
+              </button>
+              </label>
+            </p>
+          </div>
+
+            {% if opened_reply_comment_id == comment.id %}
+            <div id="reply-section-{{ comment.id }}" class="AD-cmreplybox1" style="display: block">
+            {% else %}
+            <div id="reply-section-{{ comment.id }}" class="AD-cmreplybox1" style="display: none">
+            {% endif %}
+          
+            {% for reply in comment.article_replies.all %}
+              <div id="reply_{{ reply.id }}" class="AD-replybox2">
+                <svg width="24" height="28" viewBox="0 0 24 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <mask id="mask0_1347_16299" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="28">
+                <rect width="24" height="28" fill="#D9D9D9"/>
+                </mask>
+                <g mask="url(#mask0_1347_16299)">
+                <path d="M13.1936 19.7629C13.0344 19.6047 12.9563 19.4239 12.9596 19.2207C12.9628 19.0174 13.0409 18.8399 13.1936 18.6881L16.4349 15.4721H6.85778C6.34531 15.4721 5.90752 15.292 5.54441 14.9319C5.18147 14.5716 5 14.1372 5 13.6287V4.76481C5 4.54777 5.07382 4.36609 5.22146 4.21975C5.36893 4.07325 5.55203 4 5.77076 4C5.98948 4 6.17258 4.07325 6.32005 4.21975C6.46769 4.36609 6.54151 4.54777 6.54151 4.76481V13.6287C6.54151 13.7203 6.57114 13.7955 6.6304 13.8543C6.68967 13.9131 6.76546 13.9425 6.85778 13.9425H16.4349L13.178 10.7107C13.0185 10.5524 12.9414 10.3733 12.9467 10.1733C12.9521 9.97339 13.0291 9.79434 13.178 9.63611C13.3374 9.47788 13.5196 9.39783 13.7244 9.39596C13.9293 9.39392 14.1081 9.46871 14.2609 9.62031L18.7372 14.062C18.8334 14.1576 18.9013 14.2583 18.9407 14.3641C18.9802 14.47 19 14.5844 19 14.7073C19 14.8302 18.9802 14.9445 18.9407 15.0504C18.9013 15.1563 18.8334 15.257 18.7372 15.3525L14.2925 19.7629C14.133 19.921 13.9499 20 13.7432 20C13.5363 20 13.3531 19.921 13.1936 19.7629Z" fill="#737373"/>
+                </g>
+                </svg>
+                <div class="AD-cmreplyboxreal">
+                <div class="AD-replytop">
+                  <div>
+                    <p class="AD-p15">{{ reply.anonymous_name }}</p>
+                    <p class="AD-p16">{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</p>
+                    <p class="AD-p17">{{ reply.created_at|date:"Y.m.d" }}</p>
+                  </div>
+                  <details>
+                    <summary>
+                    <svg class="AD-kebob"
+                      width="29"
+                      height="28"
+                      viewBox="0 0 29 28"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <mask
+                        id="mask0_1347_14855"
+                        style="mask-type: alpha"
+                        maskUnits="userSpaceOnUse"
+                        x="5"
+                        y="5"
+                        width="19"
+                        height="18"
+                      >
+                        <rect
+                          x="5.71484"
+                          y="5"
+                          width="18"
+                          height="18"
+                          fill="#D9D9D9"
+                        />
+                      </mask>
+                      <g mask="url(#mask0_1347_14855)">
+                        <path
+                          d="M14.7147 19.9998C14.3742 19.9998 14.0827 19.8785 13.8404 19.636C13.5978 19.3936 13.4766 19.1021 13.4766 18.7617C13.4766 18.4212 13.5978 18.1297 13.8404 17.8872C14.0827 17.6448 14.3742 17.5236 14.7147 17.5236C15.0551 17.5236 15.3466 17.6448 15.589 17.8872C15.8315 18.1297 15.9527 18.4212 15.9527 18.7617C15.9527 19.1021 15.8315 19.3936 15.589 19.636C15.3466 19.8785 15.0551 19.9998 14.7147 19.9998ZM14.7147 15.2378C14.3742 15.2378 14.0827 15.1166 13.8404 14.8741C13.5978 14.6317 13.4766 14.3402 13.4766 13.9998C13.4766 13.6593 13.5978 13.3678 13.8404 13.1255C14.0827 12.8829 14.3742 12.7617 14.7147 12.7617C15.0551 12.7617 15.3466 12.8829 15.589 13.1255C15.8315 13.3678 15.9527 13.6593 15.9527 13.9998C15.9527 14.3402 15.8315 14.6317 15.589 14.8741C15.3466 15.1166 15.0551 15.2378 14.7147 15.2378ZM14.7147 10.4759C14.3742 10.4759 14.0827 10.3547 13.8404 10.1124C13.5978 9.86983 13.4766 9.57832 13.4766 9.23785C13.4766 8.89737 13.5978 8.60594 13.8404 8.36355C14.0827 8.12102 14.3742 7.99976 14.7147 7.99976C15.0551 7.99976 15.3466 8.12102 15.589 8.36355C15.8315 8.60594 15.9527 8.89737 15.9527 9.23785C15.9527 9.57832 15.8315 9.86983 15.589 10.1124C15.3466 10.3547 15.0551 10.4759 14.7147 10.4759Z"
+                          fill="#A3A3A3"
+                        />
+                      </g>
+                    </svg>
+                    </summary>
+                    {% if request.user == reply.user %}
+                    <form class="AD-delete112"
+                      method="post"
+                      action="{% url 'articles:reply_delete' article.id comment.id reply.id %}"
+                      style="display: inline"
+                    >
+                      {% csrf_token %}
+                      <button
+                      class="AD-delete"
+                        type="submit"
+                        onclick="return confirm('대댓글을 삭제하시겠습니까?');"
+                      >
+                        삭제
+                      </button>
+                    </form>
+                    {% else %}
+                    <button class="AD-112">신고하기</button>
+                    {% endif %}
+                  </details>
+                </div>
+
+                <p class="AD-p18">{{ reply.content }}</p>
+                <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <mask id="mask0_1347_16294" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
+                  <rect width="16" height="16" fill="#D9D9D9"/>
+                  </mask>
+                  <g mask="url(#mask0_1347_16294)">
+                  <path d="M13.2717 5.73432C13.5778 5.73432 13.8482 5.8517 14.0828 6.08646C14.3176 6.32112 14.435 6.5915 14.435 6.89758V7.93698C14.435 8.00455 14.4263 8.07694 14.4089 8.15416C14.3916 8.23127 14.3723 8.30329 14.3508 8.37021L12.5066 12.7218C12.4145 12.9276 12.2599 13.1015 12.043 13.2434C11.826 13.3852 11.5996 13.4562 11.3638 13.4562H4.59699V5.73432L8.34033 2.02315C8.46827 1.89531 8.61638 1.819 8.78466 1.79423C8.95293 1.76945 9.11418 1.7983 9.2684 1.88078C9.42273 1.96336 9.53577 2.08053 9.60752 2.23228C9.67927 2.38404 9.69455 2.54121 9.65337 2.7038L8.96033 5.73432H13.2717ZM5.56222 6.14518V12.491H11.366C11.4114 12.491 11.4578 12.4786 11.5052 12.4538C11.5527 12.429 11.5888 12.3878 11.6136 12.3301L13.4697 7.98653V6.89758C13.4697 6.83978 13.4512 6.79232 13.4141 6.75521C13.377 6.7181 13.3295 6.69955 13.2717 6.69955H7.74027L8.54705 3.17274L5.56222 6.14518ZM2.72845 13.4562C2.40853 13.4562 2.13467 13.3423 1.90688 13.1145C1.67908 12.8867 1.56519 12.6128 1.56519 12.2929V6.89758C1.56519 6.57766 1.67908 6.3038 1.90688 6.07601C2.13467 5.84821 2.40853 5.73432 2.72845 5.73432H4.59699V6.69955H2.72845C2.67065 6.69955 2.62319 6.7181 2.58608 6.75521C2.54897 6.79232 2.53042 6.83978 2.53042 6.89758V12.2929C2.53042 12.3507 2.54897 12.3982 2.58608 12.4353C2.62319 12.4724 2.67065 12.491 2.72845 12.491H4.59699V13.4562H2.72845Z" fill="#A3A3A3"/>
+                  </g>
+                  </svg>
+                  {{ reply.liked.count }}
+                </a>
                 </div>
               </div>
+            {% empty %}
+              <p>대댓글이 없습니다.</p>
             {% endfor %}
-          {% endif %}
-          {% endwith %}
-          {% endif %}
 
-          <script>
-            const aiBtnR = document.getElementById('aiBtnR');
-            const aiResultR = document.getElementById('aiResultR');
+            <div class="AD-reply-container">
+            <form
+              method="post"
+              id="reply-form-{{ comment.id }}"
+              action="{% url 'articles:reply_create' article.id comment.id %}">
+              {% csrf_token %} 
+              {% if opened_reply_comment_id == comment.id %} 
+              {{ reply_form.content }}
+              {% else %}
+                <div class="AD-reply-icon">
+                  <svg
+                    width="25"
+                    height="29"
+                    viewBox="0 0 25 29"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <mask
+                      id="mask0_1347_9992"
+                      style="mask-type: alpha"
+                      maskUnits="userSpaceOnUse"
+                      x="0"
+                      y="0"
+                      width="25"
+                      height="29"
+                    >
+                      <rect
+                        x="0.5"
+                        y="0.914062"
+                        width="24"
+                        height="28"
+                        fill="#D9D9D9"
+                      />
+                    </mask>
+                    <g mask="url(#mask0_1347_9992)">
+                      <path
+                        d="M13.6936 20.677C13.5344 20.5187 13.4563 20.338 13.4596 20.1347C13.4628 19.9315 13.5409 19.7539 13.6936 19.6022L16.9349 16.3862H7.35778C6.84531 16.3862 6.40752 16.2061 6.04441 15.8459C5.68147 15.4856 5.5 15.0512 5.5 14.5427V5.67887C5.5 5.46183 5.57382 5.28015 5.72146 5.13382C5.86893 4.98731 6.05203 4.91406 6.27076 4.91406C6.48948 4.91406 6.67258 4.98731 6.82005 5.13382C6.96769 5.28015 7.04151 5.46183 7.04151 5.67887V14.5427C7.04151 14.6343 7.07114 14.7095 7.1304 14.7683C7.18967 14.8271 7.26546 14.8565 7.35778 14.8565H16.9349L13.678 11.6247C13.5185 11.4665 13.4414 11.2874 13.4467 11.0873C13.4521 10.8875 13.5291 10.7084 13.678 10.5502C13.8374 10.3919 14.0196 10.3119 14.2244 10.31C14.4293 10.308 14.6081 10.3828 14.7609 10.5344L19.2372 14.9761C19.3334 15.0716 19.4013 15.1723 19.4407 15.2782C19.4802 15.3841 19.5 15.4985 19.5 15.6213C19.5 15.7442 19.4802 15.8586 19.4407 15.9645C19.4013 16.0704 19.3334 16.1711 19.2372 16.2666L14.7925 20.677C14.633 20.835 14.4499 20.9141 14.2432 20.9141C14.0363 20.9141 13.8531 20.835 13.6936 20.677Z"
+                        fill="#737373"
+                      />
+                    </g>
+                  </svg>
+                </div>
 
-            aiBtnR.addEventListener('click', () => {
-              if (aiResultR.style.display === 'none') {
-                aiResultR.style.display = 'block';
-              } else {
-                aiResultR.style.display = 'none';
-              }
+                <div class="AD-reply-bubble">
+                  <div class="AD-reply-header">
+                    <div class="AD-reply-nickname">{{ reply.anonymous_name }}</div>
+                  </div>
+
+                  <div class="AD-reply-text-block">
+                    <textarea
+                      class="AD-reply-text"
+                      name="content"
+                      placeholder="대댓글을 입력하세요..."
+                    ></textarea>
+                  </div>
+              {% endif %}
+                <div class="AD-reply-footer">
+                  <button type="button" class="aibtn" id="ai-button-reply-{{ comment.id }}">
+                    <svg
+                      width="29"
+                      height="29"
+                      viewBox="0 0 29 29"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <mask
+                        id="mask0_1347_3685"
+                        style="mask-type: alpha"
+                        maskUnits="userSpaceOnUse"
+                        x="5"
+                        y="5"
+                        width="19"
+                        height="19"
+                      >
+                        <rect
+                          x="5.5"
+                          y="5.21875"
+                          width="18"
+                          height="18"
+                          fill="#D9D9D9"
+                        />
+                      </mask>
+                      <g mask="url(#mask0_1347_3685)">
+                        <path
+                          d="M7.60581 19.4688H21.3942C21.5658 19.4688 21.7097 19.5268 21.8258 19.6429C21.9419 19.7591 22 19.9029 22 20.0746C22 20.2462 21.9419 20.3901 21.8258 20.5062C21.7097 20.6222 21.5658 20.6802 21.3942 20.6802H7.60581C7.43419 20.6802 7.29031 20.6222 7.17419 20.5062C7.05806 20.3901 7 20.2462 7 20.0746C7 19.9029 7.05806 19.7591 7.17419 19.6429C7.29031 19.5268 7.43419 19.4688 7.60581 19.4688ZM19.75 17.5216V8.29094C19.75 8.16169 19.7922 8.05488 19.8766 7.9705C19.9609 7.886 20.0677 7.84375 20.1968 7.84375C20.3258 7.84375 20.4326 7.886 20.5173 7.9705C20.6019 8.05488 20.6442 8.16169 20.6442 8.29094V17.5216C20.6442 17.6508 20.602 17.7576 20.5176 17.842C20.4333 17.9265 20.3265 17.9688 20.1974 17.9688C20.0684 17.9688 19.9616 17.9265 19.8769 17.842C19.7923 17.7576 19.75 17.6508 19.75 17.5216ZM11.1379 15.2616L10.2539 17.5765C10.2057 17.7034 10.1303 17.8005 10.0274 17.8679C9.9245 17.9351 9.80737 17.9688 9.676 17.9688C9.46025 17.9688 9.29087 17.8793 9.16787 17.7004C9.04475 17.5217 9.02119 17.3309 9.09719 17.128L12.5847 8.23319C12.6279 8.11594 12.701 8.02169 12.8039 7.95044C12.9069 7.87931 13.0184 7.84375 13.1386 7.84375H13.6097C13.7407 7.84375 13.8553 7.87931 13.9534 7.95044C14.0514 8.02169 14.1221 8.11594 14.1653 8.23319L17.6571 17.1179C17.7331 17.3255 17.7075 17.5192 17.5803 17.6991C17.4531 17.8789 17.2812 17.9688 17.0644 17.9688C16.9348 17.9688 16.8144 17.9316 16.7033 17.8572C16.5923 17.7828 16.5136 17.6806 16.4672 17.5504L15.6136 15.2616H11.1379ZM11.5403 14.1438H15.1879L13.3909 9.41875H13.3446L11.5403 14.1438Z"
+                          fill="#A3A3A3"
+                        />
+                      </g>
+                    </svg>
+                  </button>
+                  <script>
+                    document
+                      .getElementById("ai-button-reply-{{ comment.id }}")
+                      .addEventListener("click", function () {
+                        const form = document.getElementById("reply-form-{{ comment.id }}");
+                        form.action =
+                          "{% url 'articles:detail_reply_ai_response' article.id comment.id %}";
+                        form.submit();
+                      });
+                  </script>
+                  <!-- AI 결과 영역 (기본 숨김) -->
+                  {% if replyEvidenceMap %}
+                  {% with replyEvidenceList=replyEvidenceMap|dict_get:comment.id %}
+                  {% if replyEvidenceList %}
+                  {% for replyEvidence in replyEvidenceList %}
+                  <div id="aiResultR">
+                    <div>자료 검색 결과</div>
+                    <p>{{ replyEvidence.keyword }}</p>
+                    <a href="{{ replyEvidence.link1 }}" target="_blank" style="color: #9cf"
+                      >출처 링크</a
+                    >
+                    <a href="{{ replyEvidence.link2 }}" target="_blank" style="color: #9cf"
+                      >출처 링크</a
+                    >
+                  </div>
+                  {% endfor %} 
+                  {% endif %} 
+                  {% endwith %} 
+                  {% endif %}
+                  <script>
+                    const aiBtnR = document.getElementById("aiBtnR");
+                    const aiResultR = document.getElementById("aiResultR");
+
+                    aiBtnR.addEventListener("click", () => {
+                      if (aiResultR.style.display === "none") {
+                        aiResultR.style.display = "block";
+                      } else {
+                        aiResultR.style.display = "none";
+                      }
+                    });
+                  </script>
+
+                  <div class="AD-reply-buttons">
+                    <div class="AD-btn-cancel">
+                      <div class="AD-btn-text">취소</div>
+                    </div>
+                    <button class="submit" type="submit">등록</button>
+                  </div>
+                </div>
+
+                  <div class="AD-reply-loading-box">
+                    <div class="AD-reply-loading-text">근거 자료 검색중</div>
+                  </div>
+                </div>
+              </div>
+            </form>
+            
+          </div>
+          </div>
+          {% empty %}
+          <p>아직 의견이 없습니다.</p>
+          {% endfor %}
+
+          <h3>댓글 작성</h3>
+
+          <form
+            method="post"
+            id="comment-form"
+            action="{% url 'articles:comment_create' article.id %}"
+          >
+            {% csrf_token %} 
+            {{ comment_form.content }}
+            <button type="submit">등록</button>
+            <button type="button" id="ai-button">AI</button>
+          </form>
+        </div>
+        <!--AD-commentboard -->
+
+        <script>
+          document
+            .getElementById("ai-button")
+            .addEventListener("click", function () {
+              const form = document.getElementById("comment-form");
+              form.action =
+                "{% url 'articles:detail_comment_ai_response' article.id %}";
+              form.submit();
             });
-          </script>
+        </script>
+
+        <!-- AI 결과 영역 (기본 숨김) -->
+        {% if commentEvidence %}
+        <div
+          id="aiResult"
+          style="
+            background: #333;
+            color: #eee;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+          "
+        >
+          <div style="font-weight: bold; margin-bottom: 6px">result</div>
+          <div style="background: #555; padding: 10px; border-radius: 4px">
+            자료 검색 결과<br />
+
+            AI 주석<br />
+            {{ commentEvidence.keyword }}<br />
+
+            <a
+              href="{{ commentEvidence.link1 }}"
+              target="_blank"
+              style="color: #9cf"
+              >출처 링크</a
+            >
+            <a
+              href="{{ commentEvidence.link2 }}"
+              target="_blank"
+              style="color: #9cf"
+              >출처 링크</a
+            >
+          </div>
+        </div>
+        {% endif %}
+
+        <script>
+          const aiBtn = document.getElementById("aiBtn");
+          const aiResult = document.getElementById("aiResult");
+
+          aiBtn.addEventListener("click", () => {
+            if (aiResult.style.display === "none") {
+              aiResult.style.display = "block";
+            } else {
+              aiResult.style.display = "none";
+            }
+          });
+        </script>
+
+        <div class="AD-relatedboard">
+          <h3>관련 게시글</h3>
+          <section class="grid" style="margin-bottom: 2rem">
+            {% for post in related_posts %}
+            <a href="{% url 'community:detail' post.id %}" class="card-link">
+              <div class="card">
+                <div class="thumbnail"></div>
+                <div class="card-content">
+                  {{ post.title | truncatechars:30 }}
+                </div>
+                <div class="meta">
+                  투표수: {{ post.votes.count }} | 💬 {{ post.filtered_comments.count }}
+                </div>
+              </div>
+            </a>
+            {% empty %}
+            <p style="color: #999">
+              이 아티클과 연결된 게시글이 없습니다.
+            </p>
+            {% endfor %}
+          </section>
         </div>
       </div>
-    {% empty %}
-    <p>아직 의견이 없습니다.</p>
-    {% endfor %}
-
-      <h3>댓글 작성</h3>
-      <form method="post" id="comment-form" action="{% url 'articles:comment_create' article.id %}">
-        {% csrf_token %}
-        {{ comment_form.content }}
-        <button type="submit">등록</button>
-        <button type="button" id="ai-button">AI</button>
-      </form>
-
-      <script>
-        document.getElementById('ai-button').addEventListener('click', function() {
-          const form = document.getElementById('comment-form');
-          form.action = "{% url 'articles:detail_comment_ai_response' article.id %}";
-          form.submit();
-        });
-      </script>
-
-      <!-- AI 결과 영역 (기본 숨김) -->
-      {% if commentEvidence %}
-        <div id="aiResult" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
-          <div style="font-weight:bold; margin-bottom:6px;">result</div>
-          <div style="background:#555; padding:10px; border-radius:4px;">
-            자료 검색 결과<br>
-
-            AI 주석<br>
-            {{ commentEvidence.keyword }}<br>
-
-            <a href="{{ commentEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-            <a href="{{ commentEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-          </div>
-        </div>
-      {% endif %}
-
-      <script>
-        const aiBtn = document.getElementById('aiBtn');
-        const aiResult = document.getElementById('aiResult');
-
-        aiBtn.addEventListener('click', () => {
-          if (aiResult.style.display === 'none') {
-            aiResult.style.display = 'block';
-          } else {
-            aiResult.style.display = 'none';
-          }
-        });
-      </script>
-
-    <hr>
-    <h3>관련 커뮤니티 게시글</h3>
-    <section class="grid" style="margin-bottom: 2rem;">
-      {% for post in related_posts %}
-      <a href="{% url 'community:detail' post.id %}" class="card-link">
-        <div class="card">
-          <div class="thumbnail"></div>
-          <div class="card-content">{{ post.title|truncatechars:30 }}</div>
-          <div class="meta">
-            투표수: {{ post.votes.count }} | 💬 {{ post.filtered_comments.count }}
-          </div>
-        </div>
-      </a>
-      {% empty %}
-      <p style="color: #999;">이 아티클과 연결된 커뮤니티 게시글이 없습니다.</p>
-      {% endfor %}
-    </section>
-
-    <footer>
-      <div class="logo">더 커뮤니티</div>
-    </footer>
+      <!--AD-container의 /div-->
+      <div id="footer"></div>
+    </div>
+    <!--AD-wrap의 /div-->
 
     <script>
       function copyCurrentUrl() {
@@ -434,20 +696,20 @@
       }
 
       function toggleReply(commentId) {
-        const el = document.getElementById('reply-section-' + commentId);
-        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        const el = document.getElementById("reply-section-" + commentId);
+        el.style.display = el.style.display === "block" ? "none" : "block";
       }
     </script>
-{% if opened_reply_comment_id %}
-<script>
-  window.onload = function() {
-    const target = document.getElementById("reply-form-{{ opened_reply_comment_id }}");
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-</script>
-{% endif %}
-</body>
-
+    {% if opened_reply_comment_id %}
+    <script>
+      window.onload = function() {
+        const target = document.getElementById("reply-form-{{ opened_reply_comment_id }}");
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    </script>
+    {% endif %}
+    <script src="{% static 'js/HF.js' %}"></script>
+  </body>
 </html>
