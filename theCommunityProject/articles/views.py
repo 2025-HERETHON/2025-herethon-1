@@ -11,7 +11,7 @@ from community.apis import get_gemini_response
 from django.urls import reverse
 
 # 홈: 아티클 목록
-@login_required(login_url='accounts:login')
+# @login_required(login_url='accounts:login')
 def home(request):
     sort = request.GET.get('sort', 'popular')
     articles = Article.objects.all()
@@ -24,7 +24,7 @@ def home(request):
     return render(request, 'article_home.html', {'articles': articles})
 
 # 상세 보기
-@login_required(login_url='accounts:login')
+# @login_required(login_url='accounts:login')
 def detail(request, article_id):
     article = get_object_or_404(Article, id=article_id)
 

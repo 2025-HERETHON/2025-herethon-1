@@ -140,6 +140,8 @@
         <li><a href="{% url 'proposals:home' %}">정책 제안</a></li>
         {% if user.is_authenticated %}
         <li><a href="{% url 'scraps:scraps_article' %}">스크랩</a></li>
+        {% else %}
+        <li><a href="{% url 'accounts:login' %}">스크랩</a></li>
         {% endif %}
       </ul>
       {% if user.is_authenticated %}

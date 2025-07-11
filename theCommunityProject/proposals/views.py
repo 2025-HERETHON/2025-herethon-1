@@ -420,7 +420,7 @@ def detail_reply_ai_response(request, post_id, comment_id):
                 r.anonymous_name = anon_map.get(r.user.id, "익명?")
     
         for c in comments:
-            c.is_best = (c.liked.count() * 5 + c.proposal_replies.count() * 2) >= 100
+            c.is_best = (c.liked.count() * 5 + c.proposal_replies.count() * 2) >= 50
 
     recommended_articles = Article.objects.order_by('-created_at')[:5]
 
