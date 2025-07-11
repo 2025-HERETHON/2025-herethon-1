@@ -205,9 +205,9 @@ def detail_comment_create(request, post_id, now):
                     voted_choice = vote.choice
 
             profile_images = {
-                1: '/media/profile_image/A.svg',
-                2: '/media/profile_image/B.svg',
-                3: '/media/profile_image/C.svg',
+                1: '/profile_image/A.svg',
+                2: '/profile_image/B.svg',
+                3: '/profile_image/C.svg',
             }
 
             comment.image = profile_images.get(voted_choice, '/media/profile_image/D.svg')
