@@ -28,11 +28,22 @@
         {% for post in proposal_posts %}
         <a href="{% url 'proposals:detail' post.id %}" class="card-link">
           <div class="article-card">
+            {% if post.result_number == 1 %}
             <img
+              src="{% static 'thumbnail/agree.png' %}"
               class="thumnail"
-              src="{{post.image.url}}"
-              alt="{{post.image.url}}"
             />
+            {% elif post.result_number == 2 %}
+            <img
+              src="{% static 'thumbnail/disagree.png' %}"
+              class="thumnail"
+            />
+            {% else %}
+            <img
+              src="{% static 'thumbnail/neutral.png' %}"
+              class="thumnail"
+            />
+            {% endif %}
             <div class="article-card-contents">
               <div class="article-card-contents-div1">
                 {{ post.title|truncatechars:40 }}
@@ -64,7 +75,7 @@
                       />
                     </g>
                   </svg>
-                  <div class="comment-div3">{{ proposalpost.liked.count }}</div>
+                  <div class="comment-div3">{{ post.liked.count }}</div>
                 </div>
                 <div class="comment-div4">
                   <div class="comment-buttons2 messages">
@@ -94,7 +105,7 @@
                       </g>
                     </svg>
                     <div class="comment-div3">
-                      {{ proposalpost.comment.count }}
+                      {{ post.proposal_comments.count }}
                     </div>
                   </div>
                 </div>
