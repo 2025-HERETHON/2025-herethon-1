@@ -341,9 +341,9 @@ def detail_reply_create(request, post_id, comment_id):
                 #     return redirect('community:detail_comment_detail', post_id=post_id)
 
             profile_images = {
-                1: '/media/profile_image/A.svg',
-                2: '/media/profile_image/B.svg',
-                3: '/media/profile_image/C.svg',
+                1: '/profile_image/A.svg',
+                2: '/profile_image/B.svg',
+                3: '/profile_image/C.svg',
             }
 
             reply.image = profile_images.get(voted_choice, '/media/profile_image/D.svg')
