@@ -279,6 +279,7 @@ def detail_comment_delete(request, post_id, comment_id, now):
 
     if (now == 1):
         return redirect('community:detail_comment_detail', post_id=post_id)
+
     else:
         return redirect('community:detail', comment.post.pk)
 
@@ -410,7 +411,7 @@ def detail_reply_delete(request, post_id, comment_id, reply_id):
     답글 삭제
     """
     post = get_object_or_404(Post, id=post_id)
-    #comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(Comment, id=comment_id)
     reply = get_object_or_404(Reply, id=reply_id)
 
     if request.user != reply.user:
@@ -419,7 +420,8 @@ def detail_reply_delete(request, post_id, comment_id, reply_id):
     if request.method == 'POST':
         reply.delete()
 
-    return redirect('community:detail_comment_detail', post.pk)
+    #return redirect('community:detail_comment_detail', post.pk)
+    return redirect('{}#comment_{}'.format(resolve_url('community:detail_comment_detail', post_id=post.id), reply.id))
 
 @login_required(login_url='accounts:login')
 def detail_reply_like(request, post_id, comment_id, reply_id):
@@ -427,7 +429,7 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
     답글 좋아요
     """
     post = get_object_or_404(Post, id=post_id)
-    #comment = get_object_or_404(Comment, id=comment_id)
+    comment = get_object_or_404(Comment, id=comment_id)
     reply = get_object_or_404(Reply, id=reply_id)
 
     if request.user == reply.user:
@@ -441,6 +443,7 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
     return redirect('{}#reply_{}'.format(
         resolve_url('community:detail_comment_detail', post_id=post_id), comment_id, reply_id
     ))
+    return redirect('{}#reply_{}'.format(resolve_url('community:detail_comment_detail', post_id=post.id), reply.id))
 
 @login_required(login_url='accounts:login')
 def detail_vote(request, post_id, now):

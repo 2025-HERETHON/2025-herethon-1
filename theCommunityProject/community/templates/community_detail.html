@@ -1191,7 +1191,9 @@
           {% for article in recommended_articles %}
           <a href="{% url 'articles:detail' article.id %}" class="card-link">
             <div class="article-card">
-              <img class="thumnail" src="{{ article.image }}" alt="썸네일" />
+              {% if article.image %}
+              <img class="thumnail" src="{{ article.image.url }}" alt="썸네일" />
+              {% endif %}
               <div class="article-card-contents">
                 <div class="article-card-contents-div1">
                   {{ article.title|truncatechars:30 }}
