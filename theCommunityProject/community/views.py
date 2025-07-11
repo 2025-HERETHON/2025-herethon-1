@@ -822,7 +822,7 @@ def anonymous_function (post, comments):
 
     comment_etc = comments_modifing.filter(
         post=post,
-        image='/media/profile_image/D.svg',
+        image='/profile_image/D.svg',
     )
 
     for choice in vote_choices:
