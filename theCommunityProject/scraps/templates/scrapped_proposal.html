@@ -26,12 +26,12 @@
 
       <div class="proposal_grid">
         {% for post in proposal_posts %}
-        <a href="{% url 'community:detail' post.id %}" class="card-link">
+        <a href="{% url 'proposals:detail' post.id %}" class="card-link">
           <div class="article-card">
             <img
               class="thumnail"
-              src="{{post.thumnail}}"
-              alt="{{post.thumnail}}"
+              src="{{post.image.url}}"
+              alt="{{post.image.url}}"
             />
             <div class="article-card-contents">
               <div class="article-card-contents-div1">

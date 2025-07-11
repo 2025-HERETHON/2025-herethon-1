@@ -281,7 +281,7 @@
           <div class="comment-reply-information">
             <div class="comment-reply-div">
               <div class="more-div">댓글</div>
-              <div class="more-div">{{commet|length}}</div>
+              <div class="more-div">{{comments|length}}</div>
             </div>
             <div class="tab">
               <div class="buttons">
@@ -427,7 +427,7 @@
               </div>
               <div class="ai">AI 주석</div>
               <div class="ai-text">
-                {{ commentEvidence.keyword }}
+                {{ commentEvidence.keyword|linebreaksbr }}
                 <div style="display: flex; vertical-align: middle">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -634,7 +634,7 @@
           {% for article in recommended_articles %}
           <a href="{% url 'articles:detail' article.id %}" class="card-link">
             <div class="article-card">
-              <img class="thumnail" src="{{ article.image }}" alt="썸네일" />
+              <img class="thumnail" src="{{ article.image.url }}" alt="썸네일" />
               <div class="article-card-contents">
                 <div class="article-card-contents-div1">
                   {{ article.title|truncatechars:30 }}

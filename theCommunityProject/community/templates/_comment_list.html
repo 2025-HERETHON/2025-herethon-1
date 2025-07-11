@@ -5,9 +5,9 @@
       <div class="comment-reply-card" id="comment_{{ comment.id }}">
         <div class="comment-top">
           <div class="profile">
-            <img src="{{ comment.image }}" width="1.25rem" height="1.25rem" />
+            <img src="{{ comment.image.url }}" />
             <div class="nickname">{{ comment.anonymous_name }}</div>
-            <div class="gender">{{comment.user.sex}}</div>
+            <div class="gender">{% if comment.user.sex == 'M' %}남성{% elif comment.user.sex == 'F' %}여성{% else %}기타{% endif %}</div>
             <div class="time">{{comment.created_at|date:"Y.m.d"}}</div>
           </div>
           {% if request.user == comment.user %}
@@ -216,7 +216,7 @@
                 <img src="{{ reply.image }}" width="1.25rem" height="1.25rem" />
                 <div class="nickname">{{ reply.anonymous_name }}</div>
                 <div class="gender">
-                  {{reply.user.sex}}
+                  {% if reply.user.sex == 'M' %}남성{% elif reply.user.sex == 'F' %}여성{% else %}기타{% endif %}
                 </div>
                 <div class="time">{{reply.created_at|date:"Y.m.d"}}</div>
             </div>
