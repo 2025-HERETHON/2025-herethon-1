@@ -33,14 +33,16 @@
          <a href="{% url 'community:home' %}">커뮤니티</a>
          <a href="{% url 'proposals:home' %}">정책 제안</a>
         {% if user.is_authenticated %}
-         <a href="{% url 'scraps:scraps_article' %}">스크랩</a>
-         {% endif %}
+        <a href="{% url 'scraps:scraps_article' %}">스크랩</a>
+        {% else %}
+        <a href="{% url 'accounts:login' %}">스크랩</a>
+        {% endif %}
       </div>
       <div class="login">
          {% if user.is_authenticated %}
          <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
          {% else %}
-         <a href="{% url 'accounts:login' %}" class="auth-links">로그인/회원가입</a>
+         <a href="{% url 'accounts:login' %}" class="auth-links">로그인</a>
          {% endif %}
       </div>
     </div>
