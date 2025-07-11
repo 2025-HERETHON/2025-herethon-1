@@ -301,12 +301,16 @@
               </div>
             </div>
           </div>
-          {% comment %} 댓글 필터링 조건을 정리한 블록입니다. 기존 else가 누락된
-          위치에 있었고, filter=all에 대한 처리 조건이 중첩 if/else 문법 때문에
-          작동 안했을 수 있음 {% endcomment %}
-          {% with selected_stance=request.GET.filter|default:'all' %} {% if selected_stance == 'all' %} {% include '_comment_list.html' with comments=comments %} {% elif comments_by_choice|dict_get:selected_stance %} {% include '_comment_list.html' with comments=comments_by_choice|dict_get:selected_stance %} {% else %}
+          <div class="community-reply-group" style="width: 63rem">
+          {% with selected_stance=request.GET.filter|default:'all' %}
+          {% if selected_stance == 'all' %}
+          {% include '_comment_list.html' with comments=comments %}
+          {% elif comments_by_choice|dict_get:selected_stance %}
+          {% include '_comment_list.html' with comments=comments_by_choice|dict_get:selected_stance %} {% else %}
           <p>아직 의견이 없습니다.</p>
-          {% endif %} {% endwith %}
+          {% endif %}
+          {% endwith %}
+          </div>
         </div>
         <div><div><div class="comment-inputfield-div" style="width: 63rem">
           <form
@@ -740,6 +744,20 @@
     form.action = "{% url 'community:detail_comment_create' post.id now %}"; // 제출 후 다시 원복
   });
       }
+      document.addEventListener("click", (event) => {
+  // 클릭한 요소 중에서 ⋯ 버튼(.comment-menu)을 포함한 경우
+  const menuBtn = event.target.closest(".icon-buttons1.comment-menu");
+  if (menuBtn) {
+    const deleteMenu = menuBtn.querySelector(".delete-menu");
+    if (deleteMenu) {
+      // toggle 보이기/숨기기
+      deleteMenu.classList.toggle("hidden");
+    }
+    // 더 이상 다른 클릭 이벤트로 넘어가지 않게 중단
+    event.stopPropagation();
+    return;
+  }
+});
     </script>
   </body>
 </html>
