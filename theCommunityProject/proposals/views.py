@@ -109,7 +109,7 @@ def detail(request, post_id):
     for comment in comments:
         likes = comment.liked.count()
         replies = comment.proposal_replies.count()
-        comment.is_best = (likes * 5 + replies * 2) >= 100
+        comment.is_best = (likes * 5 + replies * 2) >= 20
 
     # 익명 이름 부여(정책 제안의 경우 답글만)
     all_reply_entries = []
@@ -420,7 +420,7 @@ def detail_reply_ai_response(request, post_id, comment_id):
                 r.anonymous_name = anon_map.get(r.user.id, "익명?")
     
         for c in comments:
-            c.is_best = (c.liked.count() * 5 + c.proposal_replies.count() * 2) >= 50
+            c.is_best = (c.liked.count() * 5 + c.proposal_replies.count() * 2) >= 20
 
     recommended_articles = Article.objects.order_by('-created_at')[:5]
 

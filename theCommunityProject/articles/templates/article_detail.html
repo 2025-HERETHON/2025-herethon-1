@@ -189,7 +189,13 @@
     </div>
 
     <div style="margin-top: 1.5rem; display:flex; justify-content:space-between; align-items:center;">
-      <div><a href="{% url 'articles:article_like' article.id %}">❤️ {{ article.liked.count }}</a></div>
+      <div>
+        {% if request.user in article.liked.all %}
+        <a href="{% url 'articles:article_like' article.id %}">❤️ {{ article.liked.count }}</a>
+        {% else %}
+        <a href="{% url 'articles:article_like' article.id %}">♡ {{ article.liked.count }}</a>
+        {% endif %}
+      </div>
       <div>💬 {{ article.article_comments.count }}</div>
       <div>
         {% if request.user in article.scrapped.all %}
