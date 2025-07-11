@@ -5,7 +5,8 @@
 
 - **서비스 소개**
 
-
+정치, 젠더 등 민감하지만 사회적으로 중요한 이슈를 
+학습하고 토론할 수 있는 플랫폼, 사상사이
 
 - **기술 스택**
 
@@ -29,6 +30,9 @@
   <td  align="center"><a href="https://imgbb.com/"><img src="https://i.ibb.co/sWXnzcJ/befbedf87e51f5b02aac8b882ada60fd-sticker.png" alt="befbedf87e51f5b02aac8b882ada60fd-sticker" border="0" width="90px"></a></td>
   <td  align="center"><a href="https://imgbb.com/"><img src="https://i.ibb.co/MRr1QMW/f67635fddb50d05f2d0f142e63b0ab5c-sticker.png" alt="f67635fddb50d05f2d0f142e63b0ab5c-sticker" border="0" width="90px"></a></td>
   <td  align="center"><a href="https://imgbb.com/"><img src="https://i.ibb.co/2KDG82L/d006044e5996d0023cd2e18425aa4677-sticker.png" alt="d006044e5996d0023cd2e18425aa4677-sticker" border="0" width="90px"></a></td>
+  <td  align="center"><a href="https://imgbb.com/"><img src="https://i.ibb.co/sWXnzcJ/befbedf87e51f5b02aac8b882ada60fd-sticker.png" alt="befbedf87e51f5b02aac8b882ada60fd-sticker" border="0" width="90px"></a></td>
+  <td  align="center"><a href="https://imgbb.com/"><img src="https://i.ibb.co/MRr1QMW/f67635fddb50d05f2d0f142e63b0ab5c-sticker.png" alt="f67635fddb50d05f2d0f142e63b0ab5c-sticker" border="0" width="90px"></a></td>
+  <td  align="center"><a href="https://imgbb.com/"><img src="https://i.ibb.co/2KDG82L/d006044e5996d0023cd2e18425aa4677-sticker.png" alt="d006044e5996d0023cd2e18425aa4677-sticker" border="0" width="90px"></a></td>
   </tr>
   <tr width="100%">
   <td  align="center">기획·디자인</td>
@@ -39,12 +43,12 @@
   <td  align="center">프론트엔드</td>
      </tr>
       <tr width="100%">
-        <td  align="center"><p>담당 기능 A</p><p>담당 기능 B</p><p>담당 기능 C</p></td>
-        <td  align="center"><p>담당 기능 A</p><p>담당 기능 B</p><p>담당 기능 C</p></td>
+        <td  align="center"><p></p><p></p><p></p></td>
+        <td  align="center"><p></p><p></p><p></p></td>
         <td  align="center"><p>로그인/회원가입</p><p>아티클</p><p>정책 제안</p></td>
         <td  align="center"><p>커뮤니티</p><p>AI 기능</p><p>스크랩</p></td>
-        <td  align="center"><p>담당 기능 A</p><p>담당 기능 B</p><p>담당 기능 C</p></td>
-        <td  align="center"><p>담당 기능 A</p><p>담당 기능 B</p><p>담당 기능 C</p></td>
+        <td  align="center"><p>아티클</p><p>정책 제안</p><p></p></td>
+        <td  align="center"><p>로그인/회원가입</p>커뮤니티<p></p><p>스크랩</p></td>
      </tr>
   </table>
 
@@ -138,7 +142,7 @@
 
 - **개발환경에서의 실행 방법**
   ```
-  .env 파일 생성 후, .env.example 파일 참고해서 실제 값으로 변경
+  .env 파일 생성 후 .env.example 파일 참고해서 실제 값으로 변경
   $ cd theCommunityProject/
   $ pip install -r requirements.txt
   (버전이 맞지 않을 경우 $ pip install django 명령어 실행 후 위 명령어 실행)
