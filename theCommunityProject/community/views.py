@@ -316,13 +316,15 @@ def detail_reply_create(request, post_id, comment_id):
     """
     답글 생성
     """
-
+    post = get_object_or_404(Post, id=post_id)
+    comment = get_object_or_404(Comment, id=comment_id)
     filter = request.POST.get('filter', 'all')
     opened_reply_comment_id = request.POST.get('opened_reply_comment_id')
 
     if request.method == 'POST':
         form = ReplyForm(request.POST)
         if form.is_valid():
+            print('vaild 요청')
             reply = form.save(commit=False)
             reply.user = request.user
             reply.comment = get_object_or_404(Comment, id=comment_id)
@@ -366,9 +368,45 @@ def detail_reply_create(request, post_id, comment_id):
     else:
         form = ReplyForm()
 
+    vote_choice = Vote.objects.filter(post=post, user=request.user).first()
+    if vote_choice:
+        vote_choice = vote_choice.choice
+    else:
+        vote_choice = None
+
+    comments = post.comments.all().prefetch_related('replies', 'user').filter(created_at__isnull=False)
+    comments = sorted(comments, key=lambda c: c.liked.count(), reverse=True)
+    comments, comments_by_choice, comment_etc = anonymous_function(post, comments)
+
+    votes_dict_raw = post.count_votes()
+    votes_for_choice_1 = votes_dict_raw[1]
+    votes_for_choice_2 = votes_dict_raw[2]
+    votes_for_choice_3 = votes_dict_raw[3]
+    total = votes_for_choice_1 + votes_for_choice_2 + votes_for_choice_3
+
+    # 0으로 나누는 에러 방지
+    if total == 0:
+        votes_percent = {1: 0, 2: 0, 3: 0}
+    else:
+        votes_percent = {
+            1: votes_for_choice_1 / total * 100,
+            2: votes_for_choice_2 / total * 100,
+            3: votes_for_choice_3 / total * 100,
+        }
+
     context = {
+        'comments': comments,
+        'comments_by_choice': comments_by_choice,
+        'comment_etc': comment_etc,
         'form': form,
-        'opened_reply_comment_id': comment_id
+        'opened_reply_comment_id': comment_id,
+        'post': post,
+        'comment': comment,
+        'now':1,
+        'votes_dict': votes_percent,
+        'voted_choice': vote_choice,
+        # 'reply':reply,
+        # 'replies':reply,
     }
     return render(request, 'community_detail_comment.html', context)
 
@@ -440,10 +478,10 @@ def detail_reply_like(request, post_id, comment_id, reply_id):
             reply.liked.remove(request.user)
         else:
             reply.liked.add(request.user)
-    return redirect('{}#reply_{}'.format(
-        resolve_url('community:detail_comment_detail', post_id=post_id), comment_id, reply_id
+    return redirect('{}#reply_{}_reply_{}'.format(
+        resolve_url('community:detail_comment_detail', post_id=post_id), comment.id, reply.id
     ))
-    return redirect('{}#reply_{}'.format(resolve_url('community:detail_comment_detail', post_id=post.id), reply.id))
+    # return redirect('{}#commentreply_{}'.format(resolve_url('community:detail_comment_detail', post_id=post.id), reply.id))
 
 @login_required(login_url='accounts:login')
 def detail_vote(request, post_id, now):
@@ -680,6 +718,7 @@ def detail_comment_detail(request, post_id):
         'voted_choice': vote_choice,
         'opened_reply_comment_id': opened_reply_comment_id,
         'reply_form': ReplyForm(),
+        'votes_dict': votes_percent,
 
     }
     return render(request, 'community_detail_comment.html', context)
@@ -768,6 +807,7 @@ def detail_reply_ai_response(request, post_id, comment_id):
             'opened_reply_comment_id': opened_reply_comment_id,
             'reply_form': reply_form,
             'comment_form': comment_form,
+            'votes_dict': votes_percent,
 
         }
 
