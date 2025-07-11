@@ -413,7 +413,7 @@
       <a href="{% url 'community:detail' post.id %}" class="card-link">
         <div class="card">
           <!-- if 넣기 -->
-          <div class="thumbnail"><img src="{{ post.image }}"></div>
+          <div class="thumbnail"><img src="{{ post.image.url }}"></div>
           <div class="card-content">{{ post.title|truncatechars:30 }}</div>
           <div class="meta">
             투표수: {{ post.votes.count }} | 💬 {{ post.filtered_comments.count }}
