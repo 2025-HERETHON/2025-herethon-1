@@ -205,12 +205,12 @@ def detail_comment_create(request, post_id, now):
                     voted_choice = vote.choice
 
             profile_images = {
-                1: '/media/profile_image/A.jpg',
-                2: '/media/profile_image/B.jpg',
-                3: '/media/profile_image/C.jpg',
+                1: '/media/profile_image/A.svg',
+                2: '/media/profile_image/B.svg',
+                3: '/media/profile_image/C.svg',
             }
 
-            comment.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
+            comment.image = profile_images.get(voted_choice, '/media/profile_image/D.svg')
 
             comment.save()
 
@@ -341,12 +341,12 @@ def detail_reply_create(request, post_id, comment_id):
                 #     return redirect('community:detail_comment_detail', post_id=post_id)
 
             profile_images = {
-                1: '/media/profile_image/A.jpg',
-                2: '/media/profile_image/B.jpg',
-                3: '/media/profile_image/C.jpg',
+                1: '/media/profile_image/A.svg',
+                2: '/media/profile_image/B.svg',
+                3: '/media/profile_image/C.svg',
             }
 
-            reply.image = profile_images.get(voted_choice, '/media/profile_image/D.jpg')
+            reply.image = profile_images.get(voted_choice, '/media/profile_image/D.svg')
             reply.save()
             print(f"reply saved: {reply}, id: {reply.id}")
 
@@ -822,7 +822,7 @@ def anonymous_function (post, comments):
 
     comment_etc = comments_modifing.filter(
         post=post,
-        image='/media/profile_image/D.jpg',
+        image='/media/profile_image/D.svg',
     )
 
     for choice in vote_choices:
