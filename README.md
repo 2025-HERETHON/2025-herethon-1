@@ -5,8 +5,7 @@
 
 - **서비스 소개**
 
-정치, 젠더 등 민감하지만 사회적으로 중요한 이슈를 
-학습하고 토론할 수 있는 플랫폼, 사상사이
+  정치, 젠더 등 민감하지만 사회적으로 중요한 이슈를 학습하고 토론할 수 있는 플랫폼, 사상사이
 
 - **기술 스택**
 
@@ -46,7 +45,7 @@
         <td  align="center"><p></p><p></p><p></p></td>
         <td  align="center"><p></p><p></p><p></p></td>
         <td  align="center"><p>로그인/회원가입</p><p>아티클</p><p>정책 제안</p></td>
-        <td  align="center"><p>커뮤니티</p><p>AI 기능</p><p>스크랩</p></td>
+        <td  align="center"><p>커뮤니티</p><p>외부 API 연동</p><p>스크랩</p></td>
         <td  align="center"><p>아티클</p><p>정책 제안</p><p></p></td>
         <td  align="center"><p>로그인/회원가입</p>커뮤니티<p></p><p>스크랩</p></td>
      </tr>
