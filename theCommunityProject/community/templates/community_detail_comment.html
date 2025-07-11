@@ -1,165 +1,745 @@
 <!DOCTYPE html>
-{% load static %}
-{% load extra_dict %}
+{% load static %} {% load extra_dict %}
 <html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>{{ post.title }} - 더 커뮤니티</title>
-  <style>
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-    .card {
-      background-color: #1f1f1f;
-      padding: 1rem;
-      border-radius: 10px;
-      color: white;
-      transition: transform 0.2s ease;
-    }
-    .article-thumbnail {
-      width: 120px;
-      height: 120px;
-      border-radius: 8px;
-      background-color: #ccc;
-      object-fit: cover;
-    }
-  </style>
-</head>
-<body>
-
-{% if messages %}
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ post.title }} - 더 커뮤니티</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/CommunityDetail.css' %}">
+      <script src="{% static 'js/community_detail.js' %}"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/CommunityDetail.css' %}"
+    />
+    <script src="{% static 'js/community_detail.js' %}"></script>
+  </head>
+  <body>
+    <!-- {% if messages %}
   <div>
     {% for message in messages %}
       <p style="color:red;">{{ message }}</p>
     {% endfor %}
   </div>
 {% endif %}
+<a href="{% url 'community:detail' post.id %}">← 게시\uuae00 보기</a> -->
+    <div id="header"></div>
+    <div id="container">
+      <div id="right">
+        <!-- 이전으로 버튼 -->
+        <a href="{% url 'community:detail' post.id %}" class="back-btn">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="21"
+            viewBox="0 0 20 21"
+            fill="none"
+          >
+            <mask
+              id="mask0_860_2065"
+              style="mask-type: alpha"
+              maskUnits="userSpaceOnUse"
+              x="0"
+              y="0"
+              width="20"
+              height="21"
+            >
+              <rect y="0.5" width="20" height="20" fill="#D9D9D9" />
+            </mask>
+            <g mask="url(#mask0_860_2065)">
+              <path
+                d="M2.74188 10.4999L9.01917 16.7772C9.18472 16.9427 9.26542 17.1377 9.26125 17.362C9.25695 17.5864 9.17202 17.7814 9.00646 17.947C8.84076 18.1125 8.64577 18.1953 8.42146 18.1953C8.19715 18.1953 8.00215 18.1125 7.83646 17.947L1.44396 11.5672C1.29326 11.4165 1.1816 11.2477 1.10896 11.0607C1.03632 10.8738 1 10.6868 1 10.4999C1 10.3129 1.03632 10.126 1.10896 9.93906C1.1816 9.75211 1.29326 9.58329 1.44396 9.4326L7.83646 3.03989C8.00215 2.87433 8.19931 2.79371 8.42792 2.79802C8.65653 2.80232 8.85361 2.88725 9.01917 3.05281C9.18472 3.21836 9.2675 3.41336 9.2675 3.63781C9.2675 3.86211 9.18472 4.05704 9.01917 4.2226L2.74188 10.4999Z"
+                fill="#A3A3A3"
+              />
+            </g>
+          </svg>
+          <div class="back-btn-comment">이전으로</div>
+        </a>
+        <div id="vote" class="comment-vote-div2">
+          {% if voted_choice %}
+          <div id="voted_choice" style="display: none">{{ voted_choice }}</div>
+          {% endif %}
+          <div class="top">
+            <div class="community-timer">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <mask
+                  id="mask0_494_3174"
+                  style="mask-type: alpha"
+                  maskUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="20"
+                  height="20"
+                >
+                  <rect width="20" height="20" fill="#D9D9D9" />
+                </mask>
+                <g mask="url(#mask0_494_3174)">
+                  <path
+                    d="M10.6249 9.74655V6.45801C10.6249 6.28092 10.565 6.13245 10.4451 6.01259C10.3253 5.89287 10.1768 5.83301 9.99971 5.83301C9.82249 5.83301 9.67409 5.89287 9.5545 6.01259C9.43478 6.13245 9.37492 6.28092 9.37492 6.45801V9.93884C9.37492 10.0369 9.39311 10.1319 9.4295 10.2238C9.46575 10.3158 9.52291 10.4008 9.60096 10.4788L12.4551 13.333C12.5704 13.4484 12.7154 13.5075 12.8901 13.5101C13.0648 13.5127 13.2126 13.4537 13.3333 13.333C13.4539 13.2123 13.5143 13.0659 13.5143 12.8938C13.5143 12.7219 13.4539 12.5756 13.3333 12.4549L10.6249 9.74655ZM10.0014 17.9163C8.90638 17.9163 7.87714 17.7086 6.91367 17.293C5.9502 16.8775 5.11214 16.3135 4.3995 15.6011C3.68686 14.8888 3.12263 14.0511 2.70679 13.088C2.2911 12.125 2.08325 11.096 2.08325 10.0011C2.08325 8.90613 2.29103 7.8769 2.70659 6.91342C3.12214 5.94995 3.6861 5.1119 4.39846 4.39926C5.11082 3.68662 5.94853 3.12238 6.91159 2.70655C7.87464 2.29085 8.9036 2.08301 9.99846 2.08301C11.0935 2.08301 12.1227 2.29079 13.0862 2.70634C14.0496 3.1219 14.8877 3.68586 15.6003 4.39822C16.313 5.11058 16.8772 5.94829 17.293 6.91134C17.7087 7.8744 17.9166 8.90335 17.9166 9.99822C17.9166 11.0932 17.7088 12.1225 17.2933 13.0859C16.8777 14.0494 16.3137 14.8875 15.6014 15.6001C14.889 16.3127 14.0513 16.877 13.0883 17.2928C12.1252 17.7085 11.0962 17.9163 10.0014 17.9163ZM9.99992 16.6663C11.8471 16.6663 13.4201 16.017 14.7187 14.7184C16.0173 13.4198 16.6666 11.8469 16.6666 9.99967C16.6666 8.15245 16.0173 6.57954 14.7187 5.28092C13.4201 3.98231 11.8471 3.33301 9.99992 3.33301C8.1527 3.33301 6.57978 3.98231 5.28117 5.28092C3.98256 6.57954 3.33325 8.15245 3.33325 9.99967C3.33325 11.8469 3.98256 13.4198 5.28117 14.7184C6.57978 16.017 8.1527 16.6663 9.99992 16.6663Z"
+                    fill="#A3A3A3"
+                  />
+                </g>
+              </svg>
+              <div class="div2">
+                <span>
+                  <span class="div-2-span">현재</span>
+                  <!-- 진행 중/ 완료 여부 확인 필요 -> 후순위! -->
+                  <span class="div-2-span2">진행 중</span>
+                  <span class="div-2-span">인 투표입니다.</span>
+                </span>
+              </div>
+              <div class="period">
+                {{post.created_at|date:"Y.m.d"}} ~
+                {{post.finish_at|date:"Y.m.d"}}
+              </div>
+            </div>
+            <div class="div3">Q.{{post.title}}</div>
+          </div>
+          <div class="div4">
+            <form
+              id="voteForm"
+              method="post"
+              action="{% url 'community:detail_vote' post.id now %}"
+            >
+              <div class="vote-container2" style="margin-top: -1rem">
+                <!-- {% csrf_token %} -->
+                <input type="radio" name="selected" value="1" id="vote1" {% if voted_choice == 1 %}checked{% endif %} {% if voted_choice %}disabled{% endif %} hidden/>
+                <label
+                  for="vote1"
+                  class="community-vote-button1"
+                  style="width: 20em"
+                >
+                  <div class="a">A</div>
+                  <div class="div5">{{ post.option1 }}</div>
 
-<a href="{% url 'community:detail' post.id %}">← 게시\uuae00 보기</a>
+                  <!-- 퍼센트 템플릿 태그 수정 필요 -->
+                  <div class="percent1">{{ votes_dict.1 |floatformat:1}}%</div>
+                </label>
 
-<form id="voteForm" method="post" action="{% url 'community:detail_vote' post.id now %}">
-  {% csrf_token %}
-  <label><input type="radio" name="selected" value="1" {% if voted_choice == 1 %}checked{% endif %} {% if voted_choice %}disabled{% endif %}> {{ post.option1 }}</label><br>
-  <label><input type="radio" name="selected" value="2" {% if voted_choice == 2 %}checked{% endif %} {% if voted_choice %}disabled{% endif %}> {{ post.option2 }}</label><br>
-  <label><input type="radio" name="selected" value="3" {% if voted_choice == 3 %}checked{% endif %} {% if voted_choice %}disabled{% endif %}> {{ post.option3 }}</label><br>
-  <button type="submit">투표하기</button>
-</form>
+                <input id="vote2" type="radio" name="selected" value="2" {% if voted_choice == 2 %}checked{% endif %} {% if voted_choice %}disabled{% endif %} hidden/>
+                <label
+                  for="vote2"
+                  class="community-vote-button2"
+                  style="width: 20em"
+                >
+                  <div class="b">B</div>
+                  <div class="div5">{{ post.option2 }}</div>
 
-<hr>
-<div style="display:flex; justify-content:space-between; align-items:center;">
-  <div>💬 {{ comments.count }}</div>
-  <div>
-    {% if request.user in post.scrapped.all %}
-      <a style="color: #a57bff;" href="{% url 'community:detail_post_scrap' post.id now %}">스크래프</a>
-    {% else %}
-      <a style="color: #000;" href="{% url 'community:detail_post_scrap' post.id now %}">스크래프</a>
-    {% endif %}
-  </div>
-  <div><button onclick="copyCurrentUrl()">공유</button></div>
-</div>
-<hr>
+                  <!-- 퍼센트 템플릿 태그 수정 필요 -->
+                  <div class="percent2">{{ votes_dict.2 |floatformat:1}}%</div>
+                </label>
 
-<script>
-function copyCurrentUrl() {
-  const url = window.location.href;
-  navigator.clipboard.writeText(url);
-  alert("링크가 복사되었습니다!");
-}
-</script>
+                <input id="vote3" type="radio" name="selected" value="3" {% if voted_choice == 3 %}checked{% endif %} {% if voted_choice %}disabled{% endif %} hidden/>
+                <label
+                  for="vote3"
+                  class="community-vote-button3"
+                  style="width: 20em"
+                >
+                  <div class="c">C</div>
+                  <div class="div5">{{ post.option3 }}</div>
 
-<h3>댓글 {{ comments|length }}개</h3>
-
-<h2>의견</h2>
-<div style="margin-bottom: 1rem;">
-  <span>입장별 필터: </span>
-  <a href="?filter=all" {% if not request.GET.filter or request.GET.filter == 'all' %}style="font-weight:bold;"{% endif %}>전체</a> |
-  <a href="?filter=1" {% if request.GET.filter == '1' %}style="font-weight:bold;"{% endif %}>찬성</a> |
-  <a href="?filter=2" {% if request.GET.filter == '2' %}style="font-weight:bold;"{% endif %}>반대</a> |
-  <a href="?filter=3" {% if request.GET.filter == '3' %}style="font-weight:bold;"{% endif %}>중립</a>
-</div>
-
-{% comment %}
-댓글 필터링 조건을 정리한 블록입니다.
-기존 else가 누락된 위치에 있었고, filter=all에 대한 처리 조건이 중첩 if/else 문법 때문에 작동 안했을 수 있음
-{% endcomment %}
-
-{% with selected_stance=request.GET.filter|default:'all' %}
-  {% if selected_stance == 'all' %}
-    {% include '_comment_list.html' with comments=comments %}
-  {% elif comments_by_choice|dict_get:selected_stance %}
-    {% include '_comment_list.html' with comments=comments_by_choice|dict_get:selected_stance %}
-  {% else %}
-    <p>아직 의견이 없습니다.</p>
-  {% endif %}
-{% endwith %}
-
-<h3>댓글 작성</h3>
-<form method="post" id="comment-form" action="{% url 'community:detail_comment_create' post.id now %}">
-  {% csrf_token %}
-  <textarea name="content">{{ comment_form.content.value|default_if_none:'' }}</textarea>
-  <button type="submit" id="submit-comment">댓글 작성</button>
-  <button type="button" id="ai-button">AI</button>
-</form>
-
-<script>
-document.getElementById('ai-button').addEventListener('click', function() {
-  const form = document.getElementById('comment-form');
-  form.action = "{% url 'community:detail_comment_ai_response' post.id now %}";
-  form.submit();
-  form.action = "{% url 'community:detail_comment_create' post.id now %}";
-});
-</script>
-
-{% if commentEvidence %}
-  <div id="aiResult" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
-    <div style="font-weight:bold; margin-bottom:6px;">result</div>
-    <div style="background:#555; padding:10px; border-radius:4px;">
-      자료 검색 결과<br>
-      AI 주석<br>
-      {{ commentEvidence.keyword }}<br>
-      <a href="{{ commentEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-      <a href="{{ commentEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
-    </div>
-  </div>
-{% endif %}
-
-<h3>관련 아티클</h3>
-{% if post.related_article %}
-  <a href="{% url 'articles:detail' post.related_article.id %}" class="card-link">
-    <div class="card">
-      <div class="article-thumbnail">
-        <img src="{{ post.related_article.image.url }}" alt="쌌더남일" style="width: 100%;">
-      </div>
-      <div class="card-content">{{ post.related_article.title|truncatechars:30 }}</div>
-      <div class="meta">❤️ {{ post.related_article.liked.count }} | 💬 {{ post.related_article.article_comments.count }}</div>
-    </div>
-  </a>
-{% else %}
-  <p style="color: #999;">이 게시물과 연결된 아티클이 없습니다.</p>
-{% endif %}
-
-<hr>
-
-<h3>최규 추천 아티클</h3>
-<section class="grid">
-  {% for article in recommended_articles %}
-    <a href="{% url 'articles:detail' article.id %}" class="card-link">
-      <div class="card">
-        <div class="article-thumbnail">
-          <img src="{{ article.image }}" alt="쌌더남일" style="width: 100%;">
+                  <!-- 퍼센트 템플릿 태그 수정 필요 -->
+                  <div class="percent3">{{votes_dict.3|floatformat:1}}%</div>
+                </label>
+              </div>
+              <div
+                class="vote-complete"
+                style="
+                  display: flex;
+                  justify-content: center;
+                  justify-items: center;
+                  align-items: center;
+                  margin-top: 2.5rem;
+                "
+              >
+                <button type="submit" class="vote-complete-buttons">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="17"
+                    height="16"
+                    viewBox="0 0 17 16"
+                    fill="none"
+                  >
+                    <mask
+                      id="mask0_515_13468"
+                      style="mask-type: alpha"
+                      maskUnits="userSpaceOnUse"
+                      x="0"
+                      y="0"
+                      width="17"
+                      height="16"
+                    >
+                      <rect x="0.5" width="16" height="16" fill="#D9D9D9" />
+                    </mask>
+                    <g mask="url(#mask0_515_13468)">
+                      <path
+                        d="M3.96159 14.4102C3.62493 14.4102 3.33993 14.2935 3.10659 14.0602C2.87326 13.8269 2.75659 13.5419 2.75659 13.2052V11.0757C2.75659 10.9329 2.78115 10.7913 2.83026 10.6507C2.87937 10.5101 2.9552 10.3851 3.05776 10.2757L4.39243 8.7692C4.48476 8.65898 4.60354 8.60214 4.74876 8.5987C4.89409 8.59537 5.01848 8.64537 5.12193 8.7487C5.21426 8.84103 5.26381 8.95259 5.27059 9.08337C5.27748 9.21415 5.23476 9.33126 5.14243 9.4347L3.82826 10.9232H13.1719L11.8911 9.46803C11.7988 9.36459 11.756 9.24748 11.7629 9.1167C11.7697 8.98592 11.8193 8.87437 11.9116 8.78203C12.015 8.6787 12.1394 8.6287 12.2848 8.63203C12.43 8.63548 12.5488 8.69231 12.6411 8.80253L13.9424 10.2757C14.045 10.3851 14.1208 10.5101 14.1699 10.6507C14.219 10.7913 14.2436 10.9329 14.2436 11.0757V13.2052C14.2436 13.5419 14.1269 13.8269 13.8936 14.0602C13.6603 14.2935 13.3753 14.4102 13.0386 14.4102H3.96159ZM3.96159 13.4104H13.0386C13.0941 13.4104 13.1422 13.39 13.1828 13.3494C13.2234 13.3088 13.2438 13.2608 13.2438 13.2052V11.923H3.75643V13.2052C3.75643 13.2608 3.77676 13.3088 3.81743 13.3494C3.85798 13.39 3.90604 13.4104 3.96159 13.4104ZM7.67326 9.42953L5.50276 7.2462C5.26854 7.01198 5.1542 6.72798 5.15976 6.3942C5.16531 6.06053 5.2852 5.77659 5.51943 5.54237L8.61293 2.4487C8.84715 2.21459 9.13176 2.09409 9.46676 2.0872C9.80176 2.08042 10.0864 2.19409 10.3206 2.4282L12.4974 4.6052C12.7316 4.83942 12.8522 5.12059 12.8591 5.4487C12.8659 5.77692 12.7522 6.05814 12.5181 6.29237L9.37059 9.4397C9.13637 9.67392 8.85348 9.78931 8.52193 9.78587C8.19026 9.78253 7.90737 9.66376 7.67326 9.42953ZM11.7886 5.60653C11.8227 5.57231 11.8398 5.52314 11.8398 5.45903C11.8398 5.39492 11.8227 5.34576 11.7886 5.31153L9.62443 3.14753C9.59031 3.11331 9.5412 3.0962 9.47709 3.0962C9.41298 3.0962 9.36381 3.11331 9.32959 3.14753L6.21543 6.26153C6.18131 6.29576 6.16426 6.34492 6.16426 6.40903C6.16426 6.47314 6.18131 6.52231 6.21543 6.55653L8.37959 8.72053C8.41381 8.75476 8.46298 8.77187 8.52709 8.77187C8.5912 8.77187 8.64031 8.75476 8.67443 8.72053L11.7886 5.60653Z"
+                        fill="white"
+                      />
+                    </g>
+                  </svg>
+                  <div class="vote-complete-message">투표 하기</div>
+                </button>
+                <div class="vote-caution">*투표 후 변경이 불가능합니다</div>
+              </div>
+            </form>
+          </div>
+          <div class="bottom">
+            <div class="vote-div6">
+              <div class="vote-div7">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <mask
+                    id="mask0_374_11825"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="24"
+                    height="24"
+                  >
+                    <rect width="24" height="24" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_374_11825)">
+                    <path
+                      d="M5.19227 21.6148C4.68727 21.6148 4.25977 21.4398 3.90977 21.0898C3.55977 20.7398 3.38477 20.3123 3.38477 19.8073V16.6131C3.38477 16.3989 3.4216 16.1864 3.49527 15.9756C3.56893 15.7647 3.68268 15.5772 3.83652 15.4131L5.83852 13.1533C5.97702 12.988 6.15518 12.9027 6.37302 12.8976C6.59102 12.8926 6.7776 12.9676 6.93277 13.1226C7.07127 13.2611 7.1456 13.4284 7.15577 13.6246C7.1661 13.8207 7.10202 13.9964 6.96352 14.1516L4.99227 16.3843H19.0078L17.0865 14.2016C16.948 14.0464 16.8839 13.8707 16.8943 13.6746C16.9044 13.4784 16.9788 13.3111 17.1173 13.1726C17.2724 13.0176 17.459 12.9426 17.677 12.9476C17.8948 12.9527 18.073 13.038 18.2115 13.2033L20.1635 15.4131C20.3173 15.5772 20.4311 15.7647 20.5048 15.9756C20.5784 16.1864 20.6153 16.3989 20.6153 16.6131V19.8073C20.6153 20.3123 20.4403 20.7398 20.0903 21.0898C19.7403 21.4398 19.3128 21.6148 18.8078 21.6148H5.19227ZM5.19227 20.1151H18.8078C18.8911 20.1151 18.9632 20.0846 19.024 20.0236C19.085 19.9627 19.1155 19.8906 19.1155 19.8073V17.8841H4.88452V19.8073C4.88452 19.8906 4.91502 19.9627 4.97602 20.0236C5.03685 20.0846 5.10893 20.1151 5.19227 20.1151ZM10.7598 14.1438L7.50402 10.8688C7.15268 10.5175 6.98118 10.0915 6.98952 9.59081C6.99785 9.09031 7.17768 8.6644 7.52902 8.31306L12.1693 3.67256C12.5206 3.3214 12.9475 3.14065 13.45 3.13031C13.9525 3.12015 14.3794 3.29065 14.7308 3.64181L17.996 6.90731C18.3474 7.25865 18.5282 7.6804 18.5385 8.17256C18.5487 8.6649 18.3782 9.08673 18.027 9.43806L13.3058 14.1591C12.9544 14.5104 12.5301 14.6835 12.0328 14.6783C11.5353 14.6733 11.1109 14.4951 10.7598 14.1438ZM16.9328 8.40931C16.9839 8.35798 17.0095 8.28423 17.0095 8.18806C17.0095 8.0919 16.9839 8.01815 16.9328 7.96681L13.6865 4.72081C13.6353 4.66948 13.5617 4.64381 13.4655 4.64381C13.3693 4.64381 13.2956 4.66948 13.2443 4.72081L8.57302 9.39181C8.52185 9.44315 8.49627 9.5169 8.49627 9.61306C8.49627 9.70923 8.52185 9.78298 8.57302 9.83431L11.8193 13.0803C11.8706 13.1316 11.9443 13.1573 12.0405 13.1573C12.1367 13.1573 12.2103 13.1316 12.2615 13.0803L16.9328 8.40931Z"
+                      fill="white"
+                    />
+                  </g>
+                </svg>
+                <div class="vote-count">{{ post.votes.count }}</div>
+              </div>
+              <div class="vote-div7">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <mask
+                    id="mask0_374_11829"
+                    style="mask-type: alpha"
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="24"
+                    height="24"
+                  >
+                    <rect width="24" height="24" fill="#D9D9D9" />
+                  </mask>
+                  <g mask="url(#mask0_374_11829)">
+                    <path
+                      d="M6.44068 17.9315L4.57373 19.7983C4.30842 20.0637 4.00324 20.1239 3.6582 19.9787C3.31331 19.8334 3.14087 19.5718 3.14087 19.194V5.62917C3.14087 5.15808 3.30406 4.75934 3.63046 4.43295C3.95685 4.10655 4.35559 3.94336 4.82668 3.94336H19.1734C19.6445 3.94336 20.0433 4.10655 20.3697 4.43295C20.696 4.75934 20.8592 5.15808 20.8592 5.62917V16.2457C20.8592 16.7168 20.696 17.1156 20.3697 17.442C20.0433 17.7684 19.6445 17.9315 19.1734 17.9315H6.44068ZM5.84525 16.5327H19.1734C19.2452 16.5327 19.311 16.5028 19.3707 16.443C19.4305 16.3833 19.4604 16.3175 19.4604 16.2457V5.62917C19.4604 5.55736 19.4305 5.49162 19.3707 5.43194C19.311 5.3721 19.2452 5.34218 19.1734 5.34218H4.82668C4.75487 5.34218 4.68913 5.3721 4.62945 5.43194C4.56961 5.49162 4.53969 5.55736 4.53969 5.62917V17.8241L5.84525 16.5327Z"
+                      fill="white"
+                    />
+                  </g>
+                </svg>
+                <div class="comment-count">{{ comments|length }}</div>
+              </div>
+            </div>
+            <div class="vote-div8">
+              {% if request.user in post.scrapped.all %}
+              <a
+                class="mini-menu scrap"
+                style="color: #a57bff"
+                href="{% url 'community:detail_post_scrap' post.id now %}"
+                >스크랩</a
+              >
+              {% else %}
+              <a
+                class="mini-menu scrap"
+                style="color: #fff"
+                href="{% url 'community:detail_post_scrap' post.id now %}"
+                >스크랩</a
+              >
+              {% endif %}
+              <button class="mini-menu copy-url-btn">공유</button>
+            </div>
+          </div>
         </div>
-        <div class="card-content">{{ article.title|truncatechars:30 }}</div>
-        <div class="meta">❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}</div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="1010"
+          height="2"
+          viewBox="0 0 1010 2"
+          fill="none"
+        >
+          <path d="M1 1H1009" stroke="#404040" stroke-linecap="round" />
+        </svg>
+        <div class="comments-group">
+          <div class="comment-reply-information">
+            <div class="comment-reply-div">
+              <div class="more-div">댓글</div>
+              <div class="more-div">{{commet|length}}</div>
+            </div>
+            <div class="tab">
+              <div class="buttons">
+                <a href="?filter=all" class="div4" {% if not request.GET.filter or request.GET.filter == 'all' %}style="color: #fff"{% endif %}>전체</a>
+              </div>
+              <div class="buttons">
+                <a href="?filter=1" class="div4" {% if request.GET.filter == '1' %}style="color: #fff"{% endif %}>A</a>
+              </div>
+              <div class="buttons">
+                <a href="?filter=2" class="div4" {% if request.GET.filter == '2' %}style="color: #fff"{% endif %}>B</a>
+              </div>
+              <div class="buttons">
+                <a href="?filter=3" class="div4" {% if request.GET.filter == '3' %}style="color: #fff"{% endif %}>C</a>
+              </div>
+              <div class="buttons">
+                <a href="?filter=4" class="div4" {% if request.GET.filter == '4' %}style="color: #fff"{% endif %}>기타</a>
+              </div>
+            </div>
+          </div>
+          {% comment %} 댓글 필터링 조건을 정리한 블록입니다. 기존 else가 누락된
+          위치에 있었고, filter=all에 대한 처리 조건이 중첩 if/else 문법 때문에
+          작동 안했을 수 있음 {% endcomment %}
+          {% with selected_stance=request.GET.filter|default:'all' %} {% if selected_stance == 'all' %} {% include '_comment_list.html' with comments=comments %} {% elif comments_by_choice|dict_get:selected_stance %} {% include '_comment_list.html' with comments=comments_by_choice|dict_get:selected_stance %} {% else %}
+          <p>아직 의견이 없습니다.</p>
+          {% endif %} {% endwith %}
+        </div>
+        <div><div><div class="comment-inputfield-div" style="width: 63rem">
+          <form
+            method="post"
+            id="comment-form"
+            action="{% url 'community:detail_comment_create' post.id now %}"
+          >
+            {% csrf_token %}
+            <!--              <div class="comment-inputfield-div"></div>-->
+            <div class="comment-inputfield">
+              <div class="name" style="vertical-align: middle">
+                <div class="inputprofilSVG" style="margin-right: 0.25rem">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <g clip-path="url(#clip0_509_2310)">
+                      <mask id="path-1-inside-1_509_2310" fill="white">
+                        <path
+                          d="M0 10C0 4.47715 4.47715 0 10 0C15.5228 0 20 4.47715 20 10C20 15.5228 15.5228 20 10 20C4.47715 20 0 15.5228 0 10Z"
+                        />
+                      </mask>
+                      <path
+                        d="M0 10C0 4.47715 4.47715 0 10 0C15.5228 0 20 4.47715 20 10C20 15.5228 15.5228 20 10 20C4.47715 20 0 15.5228 0 10Z"
+                        fill="#FAFAFA"
+                      />
+                      <circle cx="10" cy="8.125" r="3.75" fill="#D4D4D4" />
+                      <path
+                        d="M16.9442 18.0558C16.9442 21.891 13.8351 25 9.99997 25C6.1648 25 3.05579 21.891 3.05579 18.0558C3.05579 14.2207 6.1648 12.5 9.99997 12.5C13.8351 12.5 16.9442 14.2207 16.9442 18.0558Z"
+                        fill="#D4D4D4"
+                      />
+                    </g>
+                    <path
+                      d="M10 20V19C5.02944 19 1 14.9706 1 10H0H-1C-1 16.0751 3.92487 21 10 21V20ZM20 10H19C19 14.9706 14.9706 19 10 19V20V21C16.0751 21 21 16.0751 21 10H20ZM10 0V1C14.9706 1 19 5.02944 19 10H20H21C21 3.92487 16.0751 -1 10 -1V0ZM10 0V-1C3.92487 -1 -1 3.92487 -1 10H0H1C1 5.02944 5.02944 1 10 1V0Z"
+                      fill="#FAFAFA"
+                      mask="url(#path-1-inside-1_509_2310)"
+                    />
+                    <defs>
+                      <clipPath id="clip0_509_2310">
+                        <path
+                          d="M0 10C0 4.47715 4.47715 0 10 0C15.5228 0 20 4.47715 20 10C20 15.5228 15.5228 20 10 20C4.47715 20 0 15.5228 0 10Z"
+                          fill="white"
+                        />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                </div>
+                <div class="nickname" style="margin-top: -0.13rem">익명</div>
+              </div>
+              <textarea
+                class="inputplace"
+                placeholder="댓글을 입력하세요."
+                name="content"
+              >
+  {{ comment_form.content.value|default_if_none:'' }}</textarea
+              >
+              <div class="inputplace-menu">
+                <button
+                  type="button"
+                  onclick="aiButton()"
+                  id="ai-button1"
+                  class="ai-btn"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                  >
+                    <mask
+                      id="mask0_711_8826"
+                      style="mask-type: alpha"
+                      maskUnits="userSpaceOnUse"
+                      x="0"
+                      y="0"
+                      width="18"
+                      height="18"
+                    >
+                      <rect width="18" height="18" fill="#D9D9D9" />
+                    </mask>
+                    <g mask="url(#mask0_711_8826)">
+                      <path
+                        d="M2.10581 14.25H15.8942C16.0658 14.25 16.2097 14.3081 16.3258 14.4242C16.4419 14.5403 16.5 14.6842 16.5 14.8558C16.5 15.0274 16.4419 15.1713 16.3258 15.2874C16.2097 15.4034 16.0658 15.4614 15.8942 15.4614H2.10581C1.93419 15.4614 1.79031 15.4034 1.67419 15.2874C1.55806 15.1713 1.5 15.0274 1.5 14.8558C1.5 14.6842 1.55806 14.5403 1.67419 14.4242C1.79031 14.3081 1.93419 14.25 2.10581 14.25ZM14.25 12.3028V3.07219C14.25 2.94294 14.2922 2.83613 14.3766 2.75175C14.4609 2.66725 14.5677 2.625 14.6968 2.625C14.8258 2.625 14.9326 2.66725 15.0173 2.75175C15.1019 2.83613 15.1442 2.94294 15.1442 3.07219V12.3028C15.1442 12.4321 15.102 12.5389 15.0176 12.6233C14.9333 12.7078 14.8265 12.75 14.6974 12.75C14.5684 12.75 14.4616 12.7078 14.3769 12.6233C14.2923 12.5389 14.25 12.4321 14.25 12.3028ZM5.63794 10.0429L4.75388 12.3577C4.70575 12.4846 4.63025 12.5817 4.52738 12.6491C4.4245 12.7164 4.30737 12.75 4.176 12.75C3.96025 12.75 3.79087 12.6606 3.66787 12.4817C3.54475 12.3029 3.52119 12.1121 3.59719 11.9093L7.08469 3.01444C7.12794 2.89719 7.201 2.80294 7.30387 2.73169C7.40688 2.66056 7.51844 2.625 7.63856 2.625H8.10975C8.24075 2.625 8.35531 2.66056 8.45344 2.73169C8.55144 2.80294 8.62206 2.89719 8.66531 3.01444L12.1571 11.8991C12.2331 12.1068 12.2075 12.3005 12.0803 12.4804C11.9531 12.6601 11.7812 12.75 11.5644 12.75C11.4348 12.75 11.3144 12.7128 11.2033 12.6384C11.0923 12.5641 11.0136 12.4618 10.9672 12.3317L10.1136 10.0429H5.63794ZM6.04031 8.925H9.68794L7.89094 4.2H7.84463L6.04031 8.925Z"
+                        fill="#A3A3A3"
+                      />
+                    </g>
+                  </svg>
+                </button>
+                <div class="button-stack">
+                  <div class="delete-button1">취소</div>
+                  <button
+                    type="submit"
+                    id="submit-comment"
+                    class="button2 submit"
+                  >
+                    등록
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- AI 결과 영역 (기본 숨김) -->
+          {% if commentEvidence %}
+          <div id="aiResult" class="ai-search ai-result">
+            <div class="ai-result-css">
+              <div class="ai-result-top">
+                <div class="title">자료 검색 결과</div>
+                <div class="close">닫기</div>
+              </div>
+              <div class="ai">AI 주석</div>
+              <div class="ai-text">
+                {{ commentEvidence.keyword }}
+                <div style="display: flex; vertical-align: middle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <g clip-path="url(#clip0_1256_3835)">
+                      <mask
+                        id="mask0_1256_3835"
+                        style="mask-type: alpha"
+                        maskUnits="userSpaceOnUse"
+                        x="-2"
+                        y="-2"
+                        width="24"
+                        height="24"
+                      >
+                        <rect
+                          x="-2"
+                          y="-2"
+                          width="24"
+                          height="24"
+                          fill="#D9D9D9"
+                        />
+                      </mask>
+                      <g mask="url(#mask0_1256_3835)">
+                        <path
+                          d="M8.83214 10.585C9.08293 10.9203 9.40289 11.1977 9.77031 11.3985C10.1377 11.5992 10.544 11.7186 10.9617 11.7485C11.3793 11.7784 11.7985 11.7182 12.1907 11.5718C12.583 11.4255 12.9393 11.1965 13.2353 10.9004L14.9872 9.14848C15.519 8.59779 15.8133 7.86023 15.8067 7.09466C15.8 6.32909 15.493 5.59676 14.9516 5.0554C14.4102 4.51403 13.6779 4.20696 12.9123 4.20031C12.1468 4.19365 11.4092 4.48796 10.8585 5.01983L9.85408 6.01841M11.168 9.41711C10.9172 9.08183 10.5973 8.80442 10.2298 8.60367C9.86241 8.40293 9.45611 8.28356 9.03849 8.25365C8.62087 8.22374 8.2017 8.28399 7.80941 8.43033C7.41713 8.57666 7.0609 8.80565 6.7649 9.10176L5.01299 10.8537C4.48112 11.4044 4.18682 12.1419 4.19347 12.9075C4.20012 13.6731 4.5072 14.4054 5.04856 14.9468C5.58992 15.4881 6.32225 15.7952 7.08783 15.8018C7.8534 15.8085 8.59096 15.5142 9.14164 14.9823L10.1402 13.9837"
+                          stroke="#737373"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </g>
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_1256_3835">
+                        <rect width="20" height="20" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <a
+                    href="{{ commentEvidence.link1 }}"
+                    target="_blank"
+                    class="ai-link"
+                    >출처 링크</a
+                  >
+                </div>
+                <div style="display: flex; vertical-align: middle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <g clip-path="url(#clip0_1256_3835)">
+                      <mask
+                        id="mask0_1256_3835"
+                        style="mask-type: alpha"
+                        maskUnits="userSpaceOnUse"
+                        x="-2"
+                        y="-2"
+                        width="24"
+                        height="24"
+                      >
+                        <rect
+                          x="-2"
+                          y="-2"
+                          width="24"
+                          height="24"
+                          fill="#D9D9D9"
+                        />
+                      </mask>
+                      <g mask="url(#mask0_1256_3835)">
+                        <path
+                          d="M8.83214 10.585C9.08293 10.9203 9.40289 11.1977 9.77031 11.3985C10.1377 11.5992 10.544 11.7186 10.9617 11.7485C11.3793 11.7784 11.7985 11.7182 12.1907 11.5718C12.583 11.4255 12.9393 11.1965 13.2353 10.9004L14.9872 9.14848C15.519 8.59779 15.8133 7.86023 15.8067 7.09466C15.8 6.32909 15.493 5.59676 14.9516 5.0554C14.4102 4.51403 13.6779 4.20696 12.9123 4.20031C12.1468 4.19365 11.4092 4.48796 10.8585 5.01983L9.85408 6.01841M11.168 9.41711C10.9172 9.08183 10.5973 8.80442 10.2298 8.60367C9.86241 8.40293 9.45611 8.28356 9.03849 8.25365C8.62087 8.22374 8.2017 8.28399 7.80941 8.43033C7.41713 8.57666 7.0609 8.80565 6.7649 9.10176L5.01299 10.8537C4.48112 11.4044 4.18682 12.1419 4.19347 12.9075C4.20012 13.6731 4.5072 14.4054 5.04856 14.9468C5.58992 15.4881 6.32225 15.7952 7.08783 15.8018C7.8534 15.8085 8.59096 15.5142 9.14164 14.9823L10.1402 13.9837"
+                          stroke="#737373"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </g>
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_1256_3835">
+                        <rect width="20" height="20" fill="white" />
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <a
+                    href="{{ commentEvidence.link2 }}"
+                    target="_blank"
+                    class="ai-link"
+                    >출처 링크</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
       </div>
-    </a>
-  {% empty %}
-    <p style="color: #999;">추천 아티클이 없습니다.</p>
-  {% endfor %}
-</section>
+        </div>
+      </div>
+      <div id="left">
+        <h3>관련 아티클</h3>
+        {% if post.related_article %}
+        <a
+          href="{% url 'articles:detail' post.related_article.id %}"
+          class="card-link"
+        >
+          <div class="article-card">
+            <img
+              src="{{ post.related_article.image.url }}"
+              alt="썸네일"
+              class="thumnail"
+            />
+            <div class="article-card-contents">
+              <div class="article-card-contents-div1">
+                {{ post.related_article.title|truncatechars:30 }}
+              </div>
+              <div class="comment-div4">
+                <div class="comment-buttons2 like">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="21"
+                    viewBox="0 0 20 21"
+                    fill="none"
+                  >
+                    <mask
+                      id="mask0_1256_2740"
+                      style="mask-type: alpha"
+                      maskUnits="userSpaceOnUse"
+                      x="0"
+                      y="0"
+                      width="20"
+                      height="21"
+                    >
+                      <rect
+                        y="0.546875"
+                        width="20"
+                        height="20"
+                        fill="#D9D9D9"
+                      />
+                    </mask>
+                    <g mask="url(#mask0_1256_2740)">
+                      <path
+                        d="M16.5895 7.71514C16.9721 7.71514 17.31 7.86186 17.6033 8.15532C17.8968 8.44865 18.0435 8.78661 18.0435 9.16922V10.4685C18.0435 10.5529 18.0327 10.6434 18.011 10.7399C17.9894 10.8363 17.9652 10.9263 17.9384 11.01L15.6331 16.4495C15.5179 16.7068 15.3247 16.9241 15.0535 17.1014C14.7823 17.2788 14.4993 17.3675 14.2045 17.3675H5.74605V7.71514L10.4252 3.07618C10.5852 2.91638 10.7703 2.821 10.9806 2.79003C11.191 2.75906 11.3925 2.79512 11.5853 2.89821C11.7782 3.00144 11.9195 3.1479 12.0092 3.3376C12.0989 3.52729 12.118 3.72376 12.0665 3.92699L11.2002 7.71514H16.5895ZM6.95259 8.22872V16.1609H14.2073C14.264 16.1609 14.322 16.1455 14.3813 16.1145C14.4407 16.0835 14.4858 16.032 14.5168 15.9598L16.837 10.5304V9.16922C16.837 9.09696 16.8138 9.03764 16.7674 8.99126C16.721 8.94487 16.6617 8.92168 16.5895 8.92168H9.67516L10.6836 4.51317L6.95259 8.22872ZM3.41038 17.3675C3.01048 17.3675 2.66816 17.2251 2.38341 16.9404C2.09867 16.6556 1.9563 16.3133 1.9563 15.9134V9.16922C1.9563 8.76932 2.09867 8.42699 2.38341 8.14225C2.66816 7.85751 3.01048 7.71514 3.41038 7.71514H5.74605V8.92168H3.41038C3.33813 8.92168 3.2788 8.94487 3.23242 8.99126C3.18603 9.03764 3.16284 9.09696 3.16284 9.16922V15.9134C3.16284 15.9857 3.18603 16.045 3.23242 16.0914C3.2788 16.1377 3.33813 16.1609 3.41038 16.1609H5.74605V17.3675H3.41038Z"
+                        fill="#A3A3A3"
+                      />
+                    </g>
+                  </svg>
+                  <div class="comment-div3">
+                    {{ post.related_article.liked.count }}
+                  </div>
+                </div>
+                <div class="comment-buttons2 message">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="21"
+                    viewBox="0 0 20 21"
+                    fill="none"
+                  >
+                    <mask
+                      id="mask0_1256_2746"
+                      style="mask-type: alpha"
+                      maskUnits="userSpaceOnUse"
+                      x="0"
+                      y="0"
+                      width="20"
+                      height="21"
+                    >
+                      <rect
+                        y="0.546875"
+                        width="20"
+                        height="20"
+                        fill="#D9D9D9"
+                      />
+                    </mask>
+                    <g mask="url(#mask0_1256_2746)">
+                      <path
+                        d="M5.46453 15.3875L3.94142 16.9104C3.72497 17.127 3.476 17.1761 3.19451 17.0576C2.91314 16.9391 2.77246 16.7257 2.77246 16.4174V5.35091C2.77246 4.96658 2.9056 4.64128 3.17188 4.375C3.43816 4.10872 3.76346 3.97559 4.14779 3.97559H15.8522C16.2365 3.97559 16.5618 4.10872 16.8281 4.375C17.0944 4.64128 17.2275 4.96658 17.2275 5.35091V14.0122C17.2275 14.3965 17.0944 14.7218 16.8281 14.9881C16.5618 15.2544 16.2365 15.3875 15.8522 15.3875H5.46453ZM4.97876 14.2463H15.8522C15.9108 14.2463 15.9644 14.2219 16.0131 14.1731C16.0619 14.1244 16.0863 14.0707 16.0863 14.0122V5.35091C16.0863 5.29233 16.0619 5.23869 16.0131 5.19C15.9644 5.14118 15.9108 5.11678 15.8522 5.11678H4.14779C4.0892 5.11678 4.03557 5.14118 3.98688 5.19C3.93806 5.23869 3.91365 5.29233 3.91365 5.35091V15.2998L4.97876 14.2463Z"
+                        fill="#A3A3A3"
+                      />
+                    </g>
+                  </svg>
+                  <div class="comment-div3">
+                    {{ post.related_article.article_comments.count }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </a>
+        {% else %}
+        <p style="color: #999">이 게시글과 연결된 아티클이 없습니다.</p>
+        {% endif %}
+        <h3>추천 아티클</h3>
+        <section class="grid">
+          {% for article in recommended_articles %}
+          <a href="{% url 'articles:detail' article.id %}" class="card-link">
+            <div class="article-card">
+              <img class="thumnail" src="{{ article.image }}" alt="썸네일" />
+              <div class="article-card-contents">
+                <div class="article-card-contents-div1">
+                  {{ article.title|truncatechars:30 }}
+                </div>
+                <div class="comment-div4">
+                  <div class="comment-buttons2 like">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="21"
+                      viewBox="0 0 20 21"
+                      fill="none"
+                    >
+                      <mask
+                        id="mask0_1256_2740"
+                        style="mask-type: alpha"
+                        maskUnits="userSpaceOnUse"
+                        x="0"
+                        y="0"
+                        width="20"
+                        height="21"
+                      >
+                        <rect
+                          y="0.546875"
+                          width="20"
+                          height="20"
+                          fill="#D9D9D9"
+                        />
+                      </mask>
+                      <g mask="url(#mask0_1256_2740)">
+                        <path
+                          d="M16.5895 7.71514C16.9721 7.71514 17.31 7.86186 17.6033 8.15532C17.8968 8.44865 18.0435 8.78661 18.0435 9.16922V10.4685C18.0435 10.5529 18.0327 10.6434 18.011 10.7399C17.9894 10.8363 17.9652 10.9263 17.9384 11.01L15.6331 16.4495C15.5179 16.7068 15.3247 16.9241 15.0535 17.1014C14.7823 17.2788 14.4993 17.3675 14.2045 17.3675H5.74605V7.71514L10.4252 3.07618C10.5852 2.91638 10.7703 2.821 10.9806 2.79003C11.191 2.75906 11.3925 2.79512 11.5853 2.89821C11.7782 3.00144 11.9195 3.1479 12.0092 3.3376C12.0989 3.52729 12.118 3.72376 12.0665 3.92699L11.2002 7.71514H16.5895ZM6.95259 8.22872V16.1609H14.2073C14.264 16.1609 14.322 16.1455 14.3813 16.1145C14.4407 16.0835 14.4858 16.032 14.5168 15.9598L16.837 10.5304V9.16922C16.837 9.09696 16.8138 9.03764 16.7674 8.99126C16.721 8.94487 16.6617 8.92168 16.5895 8.92168H9.67516L10.6836 4.51317L6.95259 8.22872ZM3.41038 17.3675C3.01048 17.3675 2.66816 17.2251 2.38341 16.9404C2.09867 16.6556 1.9563 16.3133 1.9563 15.9134V9.16922C1.9563 8.76932 2.09867 8.42699 2.38341 8.14225C2.66816 7.85751 3.01048 7.71514 3.41038 7.71514H5.74605V8.92168H3.41038C3.33813 8.92168 3.2788 8.94487 3.23242 8.99126C3.18603 9.03764 3.16284 9.09696 3.16284 9.16922V15.9134C3.16284 15.9857 3.18603 16.045 3.23242 16.0914C3.2788 16.1377 3.33813 16.1609 3.41038 16.1609H5.74605V17.3675H3.41038Z"
+                          fill="#A3A3A3"
+                        />
+                      </g>
+                    </svg>
+                    <div class="comment-div3">{{ article.liked.count }}</div>
+                  </div>
+                  <div class="comment-buttons2 message">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="21"
+                      viewBox="0 0 20 21"
+                      fill="none"
+                    >
+                      <mask
+                        id="mask0_1256_2746"
+                        style="mask-type: alpha"
+                        maskUnits="userSpaceOnUse"
+                        x="0"
+                        y="0"
+                        width="20"
+                        height="21"
+                      >
+                        <rect
+                          y="0.546875"
+                          width="20"
+                          height="20"
+                          fill="#D9D9D9"
+                        />
+                      </mask>
+                      <g mask="url(#mask0_1256_2746)">
+                        <path
+                          d="M5.46453 15.3875L3.94142 16.9104C3.72497 17.127 3.476 17.1761 3.19451 17.0576C2.91314 16.9391 2.77246 16.7257 2.77246 16.4174V5.35091C2.77246 4.96658 2.9056 4.64128 3.17188 4.375C3.43816 4.10872 3.76346 3.97559 4.14779 3.97559H15.8522C16.2365 3.97559 16.5618 4.10872 16.8281 4.375C17.0944 4.64128 17.2275 4.96658 17.2275 5.35091V14.0122C17.2275 14.3965 17.0944 14.7218 16.8281 14.9881C16.5618 15.2544 16.2365 15.3875 15.8522 15.3875H5.46453ZM4.97876 14.2463H15.8522C15.9108 14.2463 15.9644 14.2219 16.0131 14.1731C16.0619 14.1244 16.0863 14.0707 16.0863 14.0122V5.35091C16.0863 5.29233 16.0619 5.23869 16.0131 5.19C15.9644 5.14118 15.9108 5.11678 15.8522 5.11678H4.14779C4.0892 5.11678 4.03557 5.14118 3.98688 5.19C3.93806 5.23869 3.91365 5.29233 3.91365 5.35091V15.2998L4.97876 14.2463Z"
+                          fill="#A3A3A3"
+                        />
+                      </g>
+                    </svg>
+                    <div class="comment-div3">
+                      {{ article.article_comments.count }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+          {% empty %}
+          <p style="color: #999">추천 아티클이 없습니다.</p>
+          {% endfor %}
+        </section>
+      </div>
+    </div>
+    <div id="footer"></div>
+    <script src="./community_detail.js"></script>
+    <script>
+      function copyCurrentUrl() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url);
+        alert("링크가 복사되었습니다!");
+      }
+       const aiBtn = document.getElementById("aiBtn");
+      const aiResult = document.getElementById("aiResult");
 
-<a href="{% url 'community:detail_comment_detail' post.id %}">댓글 상세</a>
-
-</body>
+      aiBtn.addEventListener("click", () => {
+        if (aiResult.style.display === "none") {
+          aiResult.style.display = "block";
+        } else {
+          aiResult.style.display = "none";
+        }
+      });
+      function aiButton(){
+        document.getElementById('ai-button1').addEventListener('click', function() {
+    const form = document.getElementById('comment-form');
+    form.action = "{% url 'community:detail_comment_ai_response' post.id now %}";
+    form.submit();
+    form.action = "{% url 'community:detail_comment_create' post.id now %}"; // 제출 후 다시 원복
+  });
+      }
+    </script>
+  </body>
 </html>

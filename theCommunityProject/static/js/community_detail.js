@@ -27,7 +27,7 @@ function Header2() {
                     <a href="/scraps/article" class="scrap">스크랩</a>
                 </div>
                 <div class="login">
-                    <a href="/" class="join">로그아웃</a>
+                    <a href="/accounts/logout" class="join">로그아웃</a>
                 </div>
             </div>
         </header>
@@ -189,25 +189,24 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // 등록 누르면 댓글 상세 페이지로 이동
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".submit").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const inputEl = document.querySelector(".inputplace");
+function goTo() {
+  const submitBtn = document.getElementById("submit-comment");
+  submitBtn.addEventListener("click", ()=>{
+    const inputEl = document.querySelector(".inputplace");
       if (!inputEl) {
         alert("입력창이 존재하지 않습니다.");
         return;
       }
-
-      const inputText = inputEl.value.trim();
+    const inputText = inputEl.value.trim();
       if (inputText) {
         // 원하는 페이지로 이동
-        window.location.href = "./vote1_comment.html";
+        window.location.href = "./community_detail_comment.html";
       } else {
         alert("내용을 입력해주세요!");
       }
-    });
-  });
-});
+  })
+}
+
 
 // 공유 버튼을 누르면 현재 페이지 url 복사
 document.querySelectorAll(".copy-url-btn").forEach((btn) => {

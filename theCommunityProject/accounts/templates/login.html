@@ -443,7 +443,7 @@
           <a href="{% url 'articles:home' %}" class="article">아티클</a>
           <a href="{% url 'articles:home' %}" class="community">커뮤니티</a>
           <a href="{% url 'articles:home' %}" class="policy">정책제안</a>
-          <a href="{% url 'scraps:scraps_article' %}" class="policy">스크랩</a>
+          <a href="{% url 'articles:home' %}" class="policy">스크랩</a>
         </div>
         {% if user.is_authenticated %}
         <div class="login">
