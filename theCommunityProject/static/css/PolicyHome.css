@@ -1,0 +1,115 @@
+body{
+    margin: 0;
+}
+main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 120rem;
+    padding: 0 29.25rem;
+    background-color: #171717;
+}
+.PH-community-title {
+    margin-top: 7rem;
+    margin-bottom: 0.2rem;
+width: 61.5rem;
+color: var(--color-text-primary, #FFF);
+font-size: var(--Heading-lg-font-size, 1.75rem);
+font-style: normal;
+font-weight: 600;
+line-height: var(--Heading-lg-line-height, 2.25rem); /* 128.571% */
+letter-spacing: var(--Heading-letter-spacing, -0.0125rem);
+}
+.PH-community-description {
+ width: 61.5rem;
+ color: var(--color-text-secondary, #A3A3A3);
+font-family: Pretendard;
+font-size: var(--Heading-sm-font-size, 1.25rem);
+font-style: normal;
+font-weight: 400;
+line-height: var(--Heading-sm-line-height, 1.5rem); /* 120% */
+letter-spacing: var(--Heading-letter-spacing, -0.0125rem);  
+}
+
+.PH-comment-tab-div {
+    display: flex;
+    justify-content: right;
+    gap: 0.75rem;
+}
+
+
+.PH-community-card-div {
+    width: 61.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);  /* 가로 3줄 */
+  grid-template-rows: repeat(4, auto);    /* 세로 4줄 */
+  gap: 1.5rem;
+}
+.PH-card-link {}
+.PH-card {
+gap: 1rem;
+width: 19.5rem;
+height: 18.25rem;
+padding: 1rem;
+}
+.PH-thumbnail {
+width: 17.5rem;
+height: 11.25rem;
+flex-shrink: 0;
+border-radius: var(--border-radius-xl, 0.75rem);
+border: 1px solid var(--color-border-Tertiary, #262626);
+background: url(<path-to-image>) lightgray 50% / cover no-repeat;
+}
+.PH-card-content {
+color: var(--color-text-primary, #FFF);
+font-size: var(--Heading-sm-font-size, 1.25rem);
+font-style: normal;
+font-weight: 600;
+letter-spacing: var(--Heading-letter-spacing, -0.0125rem);
+}
+.PH-meta {
+    display: flex;
+    justify-content: space-between;
+    width: 7.5rem;
+}
+.PH-meta>div{
+    gap: 0.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-text-secondary, #A3A3A3);
+text-align: center;
+font-size: var(--Body-lg-font-size, 1rem);
+font-style: normal;
+font-weight: 500;
+line-height: var(--Body-lg-line-height, 1.5rem); /* 150% */
+letter-spacing: var(--Body-lg-letter-spacing, 0rem);
+}
+.PH-comment-tab-div {
+  /* 인기순/최신순 정렬 버튼 컨테이너 */
+  display: flex;
+justify-content: flex-end;
+align-items: center;
+gap: var(--spacing-12, 0.75rem);
+align-self: stretch;
+width: 61.5rem;
+}
+.PH-popular,
+.PH-latest {
+  display: inline-block; 
+  color: #A3A3A3;   /* 기본 회색 글씨 */
+text-align: center;
+/* Body/lg/medium */
+font-family: Pretendard;
+font-size: var(--Body-lg-font-size, 1rem);
+font-style: normal;
+font-weight: 500;
+line-height: var(--Body-lg-line-height, 1.5rem); /* 150% */
+letter-spacing: var(--Body-lg-letter-spacing, 0rem);
+}
+
+.PH-popular.active,
+.PH-latest.active {
+  color: #ffffff;  
+}

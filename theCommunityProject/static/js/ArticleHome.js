@@ -1,0 +1,81 @@
+//ArticleHome.js
+import { Header } from '../components/Header.js';
+import { Footer } from '../components/Footer.js';
+export function LikeSvg(){
+  return`
+                     <svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="mask0_892_1040" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="21" height="20">
+<rect x="0.829102" width="20" height="20" fill="#D9D9D9"/>
+</mask>
+<g mask="url(#mask0_892_1040)">
+<path d="M17.4186 7.16777C17.8012 7.16777 18.1391 7.3145 18.4325 7.60796C18.7259 7.90128 18.8726 8.23925 18.8726 8.62186V9.9211C18.8726 10.0056 18.8618 10.0961 18.8401 10.1926C18.8185 10.289 18.7943 10.379 18.7675 10.4626L16.4622 15.9021C16.347 16.1594 16.1538 16.3767 15.8826 16.5541C15.6114 16.7314 15.3284 16.8201 15.0336 16.8201H6.57515V7.16777L11.2543 2.52882C11.4143 2.36902 11.5994 2.27363 11.8097 2.24266C12.0201 2.2117 12.2216 2.24776 12.4144 2.35085C12.6073 2.45408 12.7486 2.60054 12.8383 2.79023C12.928 2.97993 12.9471 3.17639 12.8956 3.37963L12.0293 7.16777H17.4186ZM7.78169 7.68136V15.6136H15.0364C15.0931 15.6136 15.1511 15.5981 15.2104 15.5671C15.2698 15.5362 15.3149 15.4846 15.3459 15.4125L17.6661 9.98304V8.62186C17.6661 8.5496 17.6429 8.49028 17.5965 8.44389C17.5501 8.39751 17.4908 8.37431 17.4186 8.37431H10.5043L11.5127 3.96581L7.78169 7.68136ZM4.23949 16.8201C3.83958 16.8201 3.49726 16.6777 3.21252 16.393C2.92777 16.1083 2.7854 15.7659 2.7854 15.366V8.62186C2.7854 8.22195 2.92777 7.87963 3.21252 7.59489C3.49726 7.31014 3.83958 7.16777 4.23949 7.16777H6.57515V8.37431H4.23949C4.16723 8.37431 4.10791 8.39751 4.06152 8.44389C4.01514 8.49028 3.99194 8.5496 3.99194 8.62186V15.366C3.99194 15.4383 4.01514 15.4976 4.06152 15.544C4.10791 15.5904 4.16723 15.6136 4.23949 15.6136H6.57515V16.8201H4.23949Z" fill="#A3A3A3"/>
+</g>
+</svg>
+  `
+}
+export function CommentSvg(){
+return`
+                   <svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="mask0_571_11431" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="21" height="20">
+<rect x="0.829102" width="20" height="20" fill="#D9D9D9"/>
+</mask>
+<g mask="url(#mask0_571_11431)">
+<path d="M6.028 14.9998L4.41815 16.5732C4.18938 16.797 3.92623 16.8477 3.6287 16.7253C3.33131 16.6028 3.18262 16.3823 3.18262 16.0639V4.6304C3.18262 4.23333 3.32334 3.89724 3.60478 3.62213C3.88622 3.34703 4.23005 3.20947 4.63627 3.20947H17.0073C17.4135 3.20947 17.7573 3.34703 18.0388 3.62213C18.3202 3.89724 18.4609 4.23333 18.4609 4.6304V13.5789C18.4609 13.9759 18.3202 14.312 18.0388 14.5871C17.7573 14.8622 17.4135 14.9998 17.0073 14.9998H6.028ZM5.51457 13.8208H17.0073C17.0692 13.8208 17.1259 13.7956 17.1774 13.7451C17.229 13.6948 17.2548 13.6394 17.2548 13.5789V4.6304C17.2548 4.56988 17.229 4.51447 17.1774 4.46416C17.1259 4.41372 17.0692 4.38851 17.0073 4.38851H4.63627C4.57435 4.38851 4.51766 4.41372 4.4662 4.46416C4.4146 4.51447 4.3888 4.56988 4.3888 4.6304V14.9092L5.51457 13.8208Z" fill="#A3A3A3"/>
+</g>
+</svg>
+`
+}
+document.querySelector('header').innerHTML = Header();
+document.querySelector('footer').innerHTML = Footer();
+
+// /js/ArticleHome.js
+document.addEventListener('DOMContentLoaded', () => {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const sort = urlParams.get('sort') || 'recent';
+
+  document.querySelectorAll(".sort-btn").forEach((btn) => {
+    if (btn.dataset.sort === sort) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+    const listContainer = document.querySelector('.article-list');
+      listContainer.innerHTML = "";
+
+      const sorted = articles.sort((a, b) => {
+    return sort === "popular" ? b.likes - a.likes : new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  sorted.forEach((article) => {
+    const item = document.createElement("a");
+    item.href = `/articles/${article.id}/`;
+    item.className = "article-item";
+   item.innerHTML =`
+           <div class="AH">
+              <div class="article_info">
+                <div>${article.created_at}</div>
+                <h2>${article.title}</h2>
+                <p class="summary">${article.summary}</p>
+                <div class="article_meta">
+                   <span class="AH_likes">
+                     ${LikeSvg()}
+                     ${article.likes}  
+                   </span>
+                   <span class="AH_comments">
+                     ${CommentSvg()}
+                     ${article.comments}
+                   </span>
+                </div>
+              </div>
+              ${article.image
+                ? `<img src="${article.image}" class="article_thumbnail" />`
+                : `<div class="article_thumbnail"></div>`}
+            </div>
+          `;
+          listContainer.appendChild(item);
+        })
+
+});

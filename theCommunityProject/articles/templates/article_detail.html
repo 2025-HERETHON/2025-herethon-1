@@ -1,0 +1,462 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>{{ article.title }} - 아티클</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Pretendard', sans-serif;
+      background-color: #121212;
+      color: white;
+    }
+
+    header,
+    footer {
+      background-color: #1f1f1f;
+      padding: 1rem 2rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      color: #a57bff;
+      font-weight: bold;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li {
+      cursor: pointer;
+    }
+
+    .article-container {
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+    }
+
+    .article-header img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+    }
+
+    .article-header small {
+      display: block;
+      color: #aaa;
+      margin-bottom: 1rem;
+    }
+
+    .section {
+      margin-top: 2rem;
+    }
+
+    .section img {
+      width: 100%;
+      margin: 1rem 0;
+      border-radius: 8px;
+    }
+
+    .quote {
+      background: #222;
+      padding: 1rem;
+      border-left: 4px solid #a57bff;
+      margin: 1rem 0;
+      color: #ddd;
+    }
+
+    .meta-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+
+    .author-info {
+      margin-top: 3rem;
+      padding: 1rem;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .author-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: #1f1f1f;
+      padding: 1rem;
+      border-radius: 10px;
+      color: white;
+      transition: transform 0.2s ease;
+    }
+
+    .thumbnail {
+      width: 100%;
+      height: 120px;
+      background-color: #333;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav>
+      <div class="logo">더 커뮤니티</div>
+      <ul>
+        <li><a href="{% url 'articles:home' %}" style="color: #a57bff">아티클</a></li>
+        <li><a href="{% url 'community:home' %}">커뮤니티</a></li>
+        <li><a href="{% url 'proposals:home' %}">정책 제안</a></li>
+        {% if user.is_authenticated %}
+        <li><a href="{% url 'scraps:scraps_article' %}">스크랩</a></li>
+        {% else %}
+        <li><a href="{% url 'accounts:login' %}">스크랩</a></li>
+        {% endif %}
+      </ul>
+      {% if user.is_authenticated %}
+      <a href="{% url 'accounts:logout' %}" class="auth-links">로그아웃</a>
+      {% else %}
+      <a href="{% url 'accounts:login' %}" class="auth-links">로그인/회원가입</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <div class="article-container">
+
+    <div class="article-header">
+      {% if article.image %}
+      <img src="{{ article.image.url }}" alt="대표 이미지">
+      {% if article.image_alt %}<small>{{ article.image_alt }}</small>{% endif %}
+      {% endif %}
+      <h1>{{ article.title }}</h1>
+      <div class="meta-bar">
+        <div>작성일: {{ article.created_at|date:"Y.m.d" }}</div>
+      </div>
+    </div>
+
+    {% for section in article.sections.all %}
+    <div class="section">
+      {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+      {% if section.image %}
+      <img src="{{ section.image.url }}" alt="{{ section.image_alt }}">
+      {% if section.image_alt %}<small>{{ section.image_alt }}</small>{% endif %}
+      {% endif %}
+      {% if section.quote %}<div class="quote">“{{ section.quote }}”</div>{% endif %}
+      <p>{{ section.text|linebreaks }}</p>
+    </div>
+    {% endfor %}
+
+    <div class="author-info">
+      {% if article.author_profile.photo %}
+      <img src="{{ article.author_profile.photo.url }}" alt="작성자 사진" class="author-photo">
+      {% endif %}
+      <div>
+        <p><strong>{{ article.author_profile.name }}</strong> - {{ article.author_profile.role }}</p>
+        <p>{{ article.author_profile.bio }}</p>
+        <p>{{ article.author_profile.email }}</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        {% if request.user in article.liked.all %}
+        <a href="{% url 'articles:article_like' article.id %}">❤️ {{ article.liked.count }}</a>
+        {% else %}
+        <a href="{% url 'articles:article_like' article.id %}">♡ {{ article.liked.count }}</a>
+        {% endif %}
+      </div>
+      <div>💬 {{ article.article_comments.count }}</div>
+      <div>
+        {% if request.user in article.scrapped.all %}
+        <a style="color: #a57bff;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
+        {% else %}
+        <a style="color: white;" href="{% url 'articles:article_scrap' article.id %}">스크랩</a>
+        {% endif %}
+      </div>
+      <div><button onclick="copyCurrentUrl()">공유</button></div>
+    </div>
+
+    <hr>
+    <h3>댓글 {{ comments|length }}개</h3>
+
+    {% if messages %}
+    <div>
+      {% for message in messages %}
+      <p style="color: red;">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom: 1rem;">
+      {% if request.GET.sort == 'popular' or not request.GET.sort %}
+      <strong>인기순</strong>
+      {% else %}
+      <a href="?sort=popular">인기순</a>
+      {% endif %}
+
+      {% if request.GET.sort == 'recent' %}
+      <strong>최신순</strong>
+      {% else %}
+      <a href="?sort=recent">최신순</a>
+      {% endif %}
+    </div>
+
+    {% for comment in comments %}
+    <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
+      <strong>{{ comment.anonymous_name }}</strong>
+      <small>{% if comment.user.sex == 'M' %}(남성){% elif comment.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
+
+      {% if editing_comment_id == comment.id %}
+      <!-- <form method="post" action="{% url 'articles:comment_update' article.id comment.id %}">
+          {% csrf_token %}
+          <textarea name="content" style="width:100%; height:60px;">{{ comment.content }}</textarea><br>
+          <button type="submit">수정 완료</button>
+        </form> -->
+      {% else %}
+      <p>{{ comment.content }}</p>
+      {% if request.user == comment.user %}
+      <!-- <form method="get" action="">
+            <input type="hidden" name="edit_comment" value="{{ comment.id }}">
+            <button>수정</button>
+          </form> -->
+      <form method="post" action="{% url 'articles:comment_delete' article.id comment.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
+      </form>
+      {% else %}
+      <button>신고하기</button>
+      {% endif %}
+      {% endif %}
+
+      <p>
+        {{ comment.created_at|date:"Y.m.d" }}
+        <button onclick="toggleReply({{ comment.id }})">
+          💬 대댓글 ({{ comment.article_replies.count }})
+        </button>
+        <a href="{% url 'articles:comment_like' article.id comment.id %}">❤️ {{ comment.liked.count }}</a>
+      </p>
+
+      {% if opened_reply_comment_id == comment.id %}
+        <div id="reply-section-{{ comment.id }}" style="display:block;">
+      {% else %}
+        <div id="reply-section-{{ comment.id }}" style="display:none;">
+      {% endif %}
+
+        {% for reply in comment.article_replies.all %}
+          <div id="reply_{{ reply.id }}">
+            <strong>{{ reply.anonymous_name }}</strong>
+            <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
+
+          {% if editing_reply_id == reply.id %}
+            <!-- <form method="post" action="{% url 'articles:reply_update' article.id comment.id reply.id %}">
+              {% csrf_token %}
+              <textarea name="content" style="width:100%; height:60px;">{{ reply.content }}</textarea><br>
+              <button type="submit">수정 완료</button>
+            </form> -->
+          {% else %}
+            <p>{{ reply.content }}</p>
+            {% if request.user == reply.user %}
+            <!-- <form method="get" action="">
+                <input type="hidden" name="edit_reply" value="{{ reply.id }}">
+                <input type="hidden" name="open_reply" value="{{ comment.id }}">
+                <button>수정</button>
+              </form> -->
+            <form method="post" action="{% url 'articles:reply_delete' article.id comment.id reply.id %}"
+              style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+            </form>
+            {% else %}
+            <button>신고하기</button>
+            {% endif %}
+          {% endif %}
+
+          <small>{{ reply.created_at|date:"Y.m.d" }}</small>
+          <a href="{% url 'articles:reply_like' article.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+          </div>
+          {% empty %}
+          <p>대댓글이 없습니다.</p>
+          {% endfor %}
+
+          <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'articles:reply_create' article.id comment.id %}">
+            {% csrf_token %}
+            {% if opened_reply_comment_id == comment.id %}
+              {{ reply_form.content }}
+            {% else %}
+              <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea>
+            {% endif %}
+            <br>
+            <button type="submit">등록</button>
+            <button type="button" id="ai-button-reply-{{ comment.id }}">AI</button>
+          </form>
+          <script>
+            document.getElementById('ai-button-reply-{{ comment.id }}').addEventListener('click', function() {
+              const form = document.getElementById('reply-form-{{ comment.id }}');
+              form.action = "{% url 'articles:detail_reply_ai_response' article.id comment.id %}";
+              form.submit();
+            });
+          </script>
+          <!-- AI 결과 영역 (기본 숨김) -->
+          {% if replyEvidenceMap %}
+          {% with replyEvidenceList=replyEvidenceMap|dict_get:comment.id %}
+          {% if replyEvidenceList %}
+            {% for replyEvidence in replyEvidenceList %}
+              <div id="aiResultR" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
+                <div style="font-weight:bold; margin-bottom:6px;">result</div>
+                <div style="background:#555; padding:10px; border-radius:4px;">
+                  자료 검색 결과<br>
+
+                  AI 주석<br>
+                  {{ replyEvidence.keyword }}<br>
+
+                  <a href="{{ replyEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+                  <a href="{{ replyEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% endwith %}
+          {% endif %}
+
+          <script>
+            const aiBtnR = document.getElementById('aiBtnR');
+            const aiResultR = document.getElementById('aiResultR');
+
+            aiBtnR.addEventListener('click', () => {
+              if (aiResultR.style.display === 'none') {
+                aiResultR.style.display = 'block';
+              } else {
+                aiResultR.style.display = 'none';
+              }
+            });
+          </script>
+        </div>
+      </div>
+    {% empty %}
+    <p>아직 의견이 없습니다.</p>
+    {% endfor %}
+
+      <h3>댓글 작성</h3>
+      <form method="post" id="comment-form" action="{% url 'articles:comment_create' article.id %}">
+        {% csrf_token %}
+        {{ comment_form.content }}
+        <button type="submit">등록</button>
+        <button type="button" id="ai-button">AI</button>
+      </form>
+
+      <script>
+        document.getElementById('ai-button').addEventListener('click', function() {
+          const form = document.getElementById('comment-form');
+          form.action = "{% url 'articles:detail_comment_ai_response' article.id %}";
+          form.submit();
+        });
+      </script>
+
+      <!-- AI 결과 영역 (기본 숨김) -->
+      {% if commentEvidence %}
+        <div id="aiResult" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
+          <div style="font-weight:bold; margin-bottom:6px;">result</div>
+          <div style="background:#555; padding:10px; border-radius:4px;">
+            자료 검색 결과<br>
+
+            AI 주석<br>
+            {{ commentEvidence.keyword }}<br>
+
+            <a href="{{ commentEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+            <a href="{{ commentEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+          </div>
+        </div>
+      {% endif %}
+
+      <script>
+        const aiBtn = document.getElementById('aiBtn');
+        const aiResult = document.getElementById('aiResult');
+
+        aiBtn.addEventListener('click', () => {
+          if (aiResult.style.display === 'none') {
+            aiResult.style.display = 'block';
+          } else {
+            aiResult.style.display = 'none';
+          }
+        });
+      </script>
+
+    <hr>
+    <h3>관련 커뮤니티 게시글</h3>
+    <section class="grid" style="margin-bottom: 2rem;">
+      {% for post in related_posts %}
+      <a href="{% url 'community:detail' post.id %}" class="card-link">
+        <div class="card">
+          <!-- if 넣기 -->
+          <div class="thumbnail"><img src="{{ post.image.url }}"></div>
+          <div class="card-content">{{ post.title|truncatechars:30 }}</div>
+          <div class="meta">
+            투표수: {{ post.votes.count }} | 💬 {{ post.filtered_comments.count }}
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p style="color: #999;">이 아티클과 연결된 커뮤니티 게시글이 없습니다.</p>
+      {% endfor %}
+    </section>
+
+    <footer>
+      <div class="logo">더 커뮤니티</div>
+    </footer>
+
+    <script>
+      function copyCurrentUrl() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url);
+        alert("링크가 복사되었습니다!");
+      }
+
+      function toggleReply(commentId) {
+        const el = document.getElementById('reply-section-' + commentId);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+      }
+    </script>
+{% if opened_reply_comment_id %}
+<script>
+  window.onload = function() {
+    const target = document.getElementById("reply-form-{{ opened_reply_comment_id }}");
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+</script>
+{% endif %}
+</body>
+
+</html>

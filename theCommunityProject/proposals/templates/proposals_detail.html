@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+{% load static %}
+{% load custom_filters %}
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>{{ post.title }} - 정책 제안</title>
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      color: black;
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      height: 60px;
+      margin-bottom: 10px;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: #1f1f1f;
+      padding: 1rem;
+      border-radius: 10px;
+      color: white;
+      transition: transform 0.2s ease;
+    }
+
+    .article-thumbnail {
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      background-color: #ccc;
+      object-fit: cover;
+    }
+  </style>
+</head>
+
+<body>
+
+  {% if messages %}
+  <div>
+    {% for message in messages %}
+    <p style="color:red;">{{ message }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <a href="{% url 'proposals:home' %}">← 정책 제안 홈으로</a>
+  <h2>{{ post.title }}에 대하여, 새로운 정책을 제안해 주세요</h2>
+  <hr>
+
+  <h3>투표 결과</h3>
+  <p>Q. {{ post.question }}</p>
+  <p>결과: {{ post.result_choice }} ({{ post.result_percent }}%)</p>
+  <p>
+    <a href="{% url 'community:detail' post.community_post.id %}">
+      {{ post.community_post.title }}
+    </a>
+  </p>
+  <p>
+    라는 논제에 대한 국민 투표 결과, <strong>{{ post.result_choice }}</strong>는 의견이 다수를 차지하며 종료되었습니다.
+  </p>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div><a href="{% url 'proposals:detail_post_like' post.id %}">❤️ {{ post.liked.count }}</a></div>
+    <div>💬 {{ post.proposal_comments.count }}</div>
+    <div>
+      {% if request.user in post.scrapped.all %}
+      <a style="color: #a57bff;" href="{% url 'proposals:detail_post_scrap' post.id %}">스크랩</a>
+      {% else %}
+      <a style="color: #000;" href="{% url 'proposals:detail_post_scrap' post.id %}">스크랩</a>
+      {% endif %}
+    </div>
+    <div><button onclick="copyCurrentUrl()">공유</button></div>
+  </div>
+
+  <hr>
+  <!-- 정책 제안 버튼 -->
+  <button onclick="openProposalModal()">정책 제안하기</button>
+
+  <!-- 정책 제안 모델 -->
+  <div id="proposalModal" class="modal">
+    <div class="modal-content">
+      <h3>정책 제안하기</h3>
+      <form method="post" action="{% url 'proposals:detail_comment_create' post.id %}">
+        {% csrf_token %}
+        <label>제안 제목</label><br>
+        <textarea name="title" required></textarea><br>
+        <label>현황 및 문제점</label><br>
+        <textarea name="problem" required></textarea><br>
+        <label>개선 방안</label><br>
+        <textarea name="solution" required></textarea><br>
+        <label>기대 효과</label><br>
+        <textarea name="effect" required></textarea><br>
+        <button type="submit">제안하기</button>
+        <button type="button" onclick="closeProposalModal()">닫기</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 수정 모델 -->
+  <!-- <div id="editCommentModal" class="modal">
+    <div class="modal-content">
+      <h3>정책 제안 수정</h3>
+      <form method="post" id="editCommentForm">
+        {% csrf_token %}
+        <label>제안 제목</label><br>
+        <textarea name="title" id="editCommentTitle" required></textarea><br>
+        <label>현황 및 문제점</label><br>
+        <textarea name="problem" id="editCommentProblem" required></textarea><br>
+        <label>개선 방안</label><br>
+        <textarea name="solution" id="editCommentSolution" required></textarea><br>
+        <label>기대 효과</label><br>
+        <textarea name="effect" id="editCommentEffect" required></textarea><br>
+        <button type="submit">수정 완료</button>
+        <button type="button" onclick="closeEditModal()">닫기</button>
+      </form>
+    </div>
+  </div> -->
+
+  <div id="linkModal" class="modal">
+    <div class="modal-content">
+      <h3>링크 추가 / 수정</h3>
+      <form method="post" id="linkForm">
+        {% csrf_token %}
+        <label for="link_url">URL</label><br>
+        <input type="url" id="link_url_input" name="link_url" style="width:100%;" required><br><br>
+        <button type="submit">저장</button>
+        <button type="button" onclick="closeLinkModal()">닫기</button>
+      </form>
+    </div>
+  </div>
+
+  <hr>
+  <h3>제안 ({{ post.proposal_comments.count }})</h3>
+  <!-- 정렬 -->
+  {% if request.GET.sort == 'popular' or not request.GET.sort %}
+  <strong>인기순</strong>
+  {% else %}
+  <a href="?sort=popular{% if request.GET.filter == 'petition' %}&filter=petition{% endif %}">인기순</a>
+  {% endif %}
+
+  {% if request.GET.sort == 'recent' %}
+  <strong>최신순</strong>
+  {% else %}
+  <a href="?sort=recent{% if request.GET.filter == 'petition' %}&filter=petition{% endif %}">최신순</a>
+  {% endif %}
+
+  <!-- 청원 24 필터 -->
+  <form method="get" style="display:inline;">
+    {% if request.GET.sort %}
+      <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+    {% endif %}
+    <label>
+      <input type="checkbox" name="filter" value="petition" 
+        {% if request.GET.filter == 'petition' %}checked{% endif %}
+        onchange="this.form.submit()">
+      청원 24에 올라간 제안
+    </label>
+  </form>
+
+  {% for comment in comments %}
+  <div id="comment_{{ comment.id }}" style="border-top:1px solid #000; padding:10px 0;">
+    <div>
+      {% if comment.link_url %}
+      <span style="background-color: #a57bff;">국민청원등록</span>
+      {% endif %}
+      {% if comment.is_best %}
+      <span style="background-color: gray">Best</span>
+      {% endif %}
+    </div>
+    <!-- 제안 작성자의 아이디는 띄우지 않음 -->
+    <p><strong>{{ comment.title }}</strong></p>
+    <p><b>현황 및 문제점:</b> {{ comment.problem }}</p>
+    <p><b>개선 방안:</b> {{ comment.solution }}</p>
+    <p><b>기대 효과:</b> {{ comment.effect }}</p>
+    {% if request.user == comment.user %}
+      <!-- <button
+        onclick="openEditCommentModal('{{ comment.title|escapejs }}', '{{ comment.problem|escapejs }}', '{{ comment.solution|escapejs }}', '{{ comment.effect|escapejs }}', '{% url 'proposals:detail_comment_update' post.id comment.id %}')">수정</button> -->
+
+      <form method="post" action="{% url 'proposals:detail_comment_delete' post.id comment.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?');">삭제</button>
+      </form>
+
+      {% if comment.link_url %}
+      <button
+        onclick="openLinkModal('{{ comment.link_url }}', '{% url 'proposals:detail_comment_link' post.id comment.id %}')">링크편집</button>
+      {% else %}
+      <button onclick="openLinkModal('', '{% url 'proposals:detail_comment_link' post.id comment.id %}')">링크추가</button>
+      {% endif %}
+
+    {% else %}
+    <button>신고하기</button>
+    {% endif %}
+
+    <p>
+      {{ comment.created_at|date:"Y.m.d" }}
+      <button onclick="toggleReply({{ comment.id }})">
+        💬 대댓글 ({{ comment.proposal_replies.count }})
+      </button>
+      <a href="{% url 'proposals:detail_comment_like' post.id comment.id %}">❤️ {{ comment.liked.count }}</a>
+      {% if comment.link_url %}
+      <a href="{{ comment.link_url }}" target="_blank">청원24바로가기</a>
+      {% endif %}
+    </p>
+
+    {% if comment.id == opened_reply_comment_id %}
+    <div id="reply-section-{{ comment.id }}" style="display:block;">
+    {% else %}
+    <div id="reply-section-{{ comment.id }}" style="display:none;">
+    {% endif %}
+      {% for reply in comment.proposal_replies.all %}
+        <div id="reply_{{ reply.id }}">
+          <strong>
+            {% if reply.user == comment.user %}
+              글쓴이
+            {% else %}
+              {{ reply.anonymous_name }}
+            {% endif %}
+          </strong>
+          <!-- 성별 출력 추가 -->
+          <small>{% if reply.user.sex == 'M' %}(남성){% elif reply.user.sex == 'F' %}(여성){% else %}(기타){% endif %}</small>:
+          {% if editing_reply_id == reply.id %}
+          <!-- <form method="post" action="{% url 'proposals:detail_reply_update' post.id comment.id reply.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="reply_update">
+            <textarea name="content" style="width:100%; height:60px;">{{ reply.content }}</textarea><br>
+            <button type="submit">수정 완료</button>
+            <a href="{% url 'proposals:detail' post.id %}?open_reply={{ comment.id }}">취소</a>
+          </form> -->
+          {% else %}
+            <p>{{ reply.content }}</p>
+            <small>{{ reply.created_at|date:"Y.m.d" }}</small>
+            <a href="{% url 'proposals:detail_reply_like' post.id comment.id reply.id %}">❤️ {{ reply.liked.count }}</a>
+            {% if request.user == reply.user %}
+            <!-- <a
+              href="{% url 'proposals:detail' post.id %}?edit_reply={{ reply.id }}&open_reply={{ comment.id }}#reply_{{ reply.id }}">수정</a> -->
+            <form method="post" action="{% url 'proposals:detail_reply_delete' post.id comment.id reply.id %}"
+              style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?');">삭제</button>
+            </form>
+            {% else %}
+            <button>신고하기</button>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% empty %}
+      <p>대댓글이 없습니다.</p>
+      {% endfor %}
+
+        <form method="post" id="reply-form-{{ comment.id }}" action="{% url 'proposals:detail_reply_create' post.id comment.id %}">
+          {% csrf_token %}
+          {% if opened_reply_comment_id == comment.id %}
+            {{ reply_form.content }}
+          {% else %}
+          <textarea name="content" placeholder="대댓글을 입력하세요..." style="width:100%; height:60px;"></textarea>
+          {% endif %}
+          <br>
+          <button type="submit">등록</button>
+          <button type="button" id="ai-button-reply-{{ comment.id }}">AI</button>
+        </form>
+          <script>
+            document.getElementById('ai-button-reply-{{ comment.id }}').onclick = function () {
+              const form = document.getElementById('reply-form-{{ comment.id }}');
+              form.action = "{% url 'proposals:detail_reply_ai_response' post.id comment.id %}";
+              form.submit();
+            };
+          </script>
+          <!-- AI 결과 영역 (기본 숨김) -->
+          {% if replyEvidenceMap %}
+          {% with replyEvidenceList=replyEvidenceMap|dict_get:comment.id %}
+          {% if replyEvidenceList %}
+            {% for replyEvidence in replyEvidenceList %}
+              <div id="aiResultR-{{ forloop.counter }}" style="background:#333; color:#eee; padding:10px; margin-top:10px; border-radius:8px;">
+                <div style="font-weight:bold; margin-bottom:6px;">result</div>
+                <div style="background:#555; padding:10px; border-radius:4px;">
+                  자료 검색 결과<br>
+
+                  AI 주석<br>
+                  {{ replyEvidence.keyword }}<br>
+
+                  <a href="{{ replyEvidence.link1 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+                  <a href="{{ replyEvidence.link2 }}" target="_blank" style="color:#9cf;">출처 링크</a>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% endwith %}
+          {% endif %}
+
+          <script>
+            const aiBtnR = document.getElementById('aiBtnR');
+            const aiResultR = document.getElementById('aiResultR');
+
+            aiBtnR.addEventListener('click', () => {
+              if (aiResultR.style.display === 'none') {
+                aiResultR.style.display = 'block';
+              } else {
+                aiResultR.style.display = 'none';
+              }
+            });
+          </script>
+      </div>
+    </div>
+  {% empty %}
+  <p>아직 제안이 없습니다.</p>
+  {% endfor %}
+
+    <h3>관련 아티클</h3>
+    {% if post.community_post.related_article %}
+    <a href="{% url 'articles:detail' post.community_post.related_article.id %}" class="card-link">
+      <div class="card">
+        <div class="article-thumbnail">
+          <img src="{{ post.community_post.related_article.image.url }}" alt="썸네일" style="width: 100%;">
+        </div>
+        <div class="card-content">
+          {{ post.community_post.related_article.title|truncatechars:30 }}
+        </div>
+        <div class="meta">
+          ❤️ {{ post.community_post.related_article.liked.count }} | 💬 {{ post.community_post.related_article.article_comments.count }}
+        </div>
+      </div>
+    </a>
+    {% else %}
+    <p style="color: #999;">이 제안과 연결된 아티클이 없습니다.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>추천 아티클</h3>
+    <section class="grid">
+      {% for article in recommended_articles %}
+      <a href="{% url 'articles:detail' article.id %}" class="card-link">
+        <div class="card">
+          <div class="article-thumbnail">
+            <img src="{{ article.image.url }}" alt="썸네일" style="width: 100%;">
+          </div>
+          <div class="card-content">
+            {{ article.title|truncatechars:30 }}
+          </div>
+          <div class="meta">
+            ❤️ {{ article.liked.count }} | 💬 {{ article.article_comments.count }}
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p style="color: #999;">추천 아티클이 없습니다.</p>
+      {% endfor %}
+    </section>
+
+    <script>
+      function toggleReply(commentId) {
+        const el = document.getElementById('reply-section-' + commentId);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+      }
+      function openProposalModal() {
+        document.getElementById('proposalModal').classList.add('show');
+      }
+      function closeProposalModal() {
+        document.getElementById('proposalModal').classList.remove('show');
+      }
+      function openEditCommentModal(title, problem, solution, effect, actionUrl) {
+        document.getElementById('editCommentTitle').value = title;
+        document.getElementById('editCommentProblem').value = problem;
+        document.getElementById('editCommentSolution').value = solution;
+        document.getElementById('editCommentEffect').value = effect;
+        document.getElementById('editCommentForm').action = actionUrl;
+        document.getElementById('editCommentModal').classList.add('show');
+      }
+      function closeEditModal() {
+        document.getElementById('editCommentModal').classList.remove('show');
+      }
+
+      function openLinkModal(currentUrl, actionUrl) {
+        document.getElementById("link_url_input").value = currentUrl || "";
+        document.getElementById("linkForm").action = actionUrl;
+        document.getElementById("linkModal").classList.add("show");
+      }
+
+      function closeLinkModal() {
+        document.getElementById("linkModal").classList.remove("show");
+      }
+
+      function copyCurrentUrl() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url);
+        alert("링크가 복사되었습니다!");
+      }
+    </script>
+{% if opened_reply_comment_id %}
+<script>
+  window.onload = function() {
+    const target = document.getElementById("reply-form-{{ opened_reply_comment_id }}");
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+</script>
+{% endif %}
+
+</body>
+
+</html>
