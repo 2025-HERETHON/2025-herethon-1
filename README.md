@@ -64,6 +64,11 @@
 <img width="1920" height="1080" alt="16 GUI" src="https://github.com/user-attachments/assets/ce8fa85d-e6ef-4436-9244-a849e02f3a43" />
 투표 결과를 바탕으로, 자신이 바라는 해결 방안을 ‘정책’으로 제안하는 공간입니다.
 
+</br>
+</br>
+
+**이제는 민감하지만 중요한 사회적 이슈를 피하지 마시고, 사상사이를 통해 educate 학습하고, express 표현하고, explore 탐구하세요.**
+
 
 ### Tech Stacks
 
