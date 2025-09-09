@@ -114,24 +114,24 @@ function Footer() {
                 <div class="about">
                     <p class="ab">ABOUT</p>
                     <div class="box_1">
-                        <p class="p1"><a href="https://youtu.be/eVObLrm8Whs?si=FY_UZV0F5iMvH8az">더 커뮤니티 소개</a></p>
-                        <a href="https://youtu.be/eVObLrm8Whs?si=FY_UZV0F5iMvH8az" class="arrow">${ArrowSvg()}</a>
+                        <p class="p1"><a href="/">더 커뮤니티 소개</a></p>
+                        <a href="/" class="arrow">${ArrowSvg()}</a>
                     </div>
                     <div class="box_2">
-                        <a href="https://www.instagram.com/ivestarship/">${InstaSvg()}</a>
-                        <a href="https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&mra=bjky&x_csa=%7B%22fromUi%22%3A%22kb_artist%22%7D&pkid=1&os=24893563&qvt=0&query=%EC%95%84%EC%9D%B4%EB%B8%8C">${NaverSvg()}</a>
-                        <a href="https://www.facebook.com/IVEstarship">${FacebookSvg()}</a>
+                        <a href="/">${InstaSvg()}</a>
+                        <a href="/">${NaverSvg()}</a>
+                        <a href="/">${FacebookSvg()}</a>
                     </div>
                 </div>
                 <div class="contact">
                     <p class="co">CONTACT US</p>
                     <div class="box_3">
-                        <p class="p2"><a href="https://youtu.be/cU0JrSAyy7o?si=58BUzQMDrqKJMJsb">광고·제휴</a></p>
-                        <a href="https://youtu.be/cU0JrSAyy7o?si=58BUzQMDrqKJMJsb" class="arrow">${ArrowSvg()}</a>
+                        <p class="p2"><a href="/">광고·제휴</a></p>
+                        <a href="/" class="arrow">${ArrowSvg()}</a>
                     </div>
                     <div class="box_4">
-                        <p class="p3"><a href="https://youtu.be/XZrTB15l4yc?si=tCKkvQPpuWNqaEj4">오류신고</a></p>
-                        <a href="https://youtu.be/XZrTB15l4yc?si=tCKkvQPpuWNqaEj4" class="arrow">${ArrowSvg()}</a>
+                        <p class="p3"><a href="/">오류신고</a></p>
+                        <a href="/" class="arrow">${ArrowSvg()}</a>
                     </div>
                 </div>
             </div>
@@ -139,9 +139,9 @@ function Footer() {
         <div class="section_2">
             <p class="copyright">© 2025 사상사이. All rights reserved.</p>
             <div class="box_5">
-                <p class="copyright"><a href="https://youtu.be/MA2xJPy2GSM?si=yGdv8c0V_faFSSj4">이용약관</a></p>
+                <p class="copyright"><a href="/">이용약관</a></p>
                 <p class="copyright">|</p>
-                <p class="copyright"><a href="https://youtu.be/lfos88tJmew?si=zYWBOpKaS2hAzp-u">개인정보 처리방침</a></p>
+                <p class="copyright"><a href="/">개인정보 처리방침</a></p>
             </div>
         </div>
     </footer>
